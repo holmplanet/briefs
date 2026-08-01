@@ -56,6 +56,11 @@ User → AI Assistant → MCP (remote HTTP) → src/mcp/
 
 Read (default) and later write external systems. Personal Pack: calendar, email, weather.
 
+- **`ReadOnlyConnector`** — base class; implement `fetch()` returning normalized nodes/edges
+- **`ConnectorRegistry`** — register connectors by name without touching core engine code
+- **`ConnectorRunner`** — syncs into the Event Graph and records per-user status metadata
+- **Normalized payload** — `externalId`-based records mapped to stable graph node/edge IDs
+
 ### Event Graph
 
 Persistent relationships between events, people, tasks, and dependencies. The moat — connectors are interchangeable; the graph is the product.

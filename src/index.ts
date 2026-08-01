@@ -7,6 +7,8 @@ import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 import { VERSION, loadConfig, type BriefEnv } from "./config.js";
+import { ConnectorRunner, createConnectorRegistry } from "./connectors/index.js";
+import { getConnectorRegistry, setConnectorRegistry } from "./connectors/runtime.js";
 import { createGraphStore } from "./graph/factory.js";
 import { setGraphStore } from "./graph/runtime.js";
 import { createMcpServer } from "./mcp/tools.js";
@@ -15,6 +17,10 @@ export async function bootstrap(): Promise<BriefEnv> {
   const config = loadConfig();
   const store = await createGraphStore(config);
   setGraphStore(store);
+
+  const runner = new ConnectorRunner(store);
+  setConnectorRegistry(createConnectorRegistry(runner));
+
   return config;
 }
 
@@ -25,6 +31,13 @@ export function createApp(config: BriefEnv) {
   });
 
   app.get("/health", (_req: Request, res: Response) => {
+    let connectors = 0;
+    try {
+      connectors = getConnectorRegistry().listNames().length;
+    } catch {
+      connectors = 0;
+    }
+
     res.status(200).json({
       status: "ok",
       service: "holmplanet-brief",
@@ -34,6 +47,7 @@ export function createApp(config: BriefEnv) {
         graph: config.databaseUrl ? "postgres" : "memory",
         cache: config.redisUrl ? "redis" : "none",
       },
+      connectors,
     });
   });
 

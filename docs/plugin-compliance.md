@@ -52,7 +52,7 @@ References:
 
 ## Shared rules
 
-1. Business logic lives in `src/brief/` only — never in plugin manifests.
+1. Business logic lives in `src/` only — never in plugin manifests.
 2. Plugin folders contain manifests, skills, and assets — not duplicate services.
 3. v0 MCP tools: `brief_me`, `what_changed`, `get_context`, `propose_action`, `approve_action`.
 4. Vertical-specific tools are registered by `apps/*` packs post-v0.

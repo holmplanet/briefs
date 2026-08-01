@@ -15,18 +15,20 @@ Repo-local architecture reference. Canonical spec: `2nd-brain/knowledge/research
 brief/
 ├── README.md
 ├── VISION.md
-├── pyproject.toml
+├── package.json
+├── tsconfig.json
 ├── docs/
 │   ├── architecture.md          # this file
 │   └── plugin-compliance.md
-├── src/brief/                   # CORE — lives at repo root
-│   ├── api/                     # HTTP: health, OAuth, webhooks
-│   ├── connectors/              # connector framework + personal connectors
+├── src/                         # CORE — TypeScript platform at repo root
+│   ├── index.ts                 # HTTP + MCP server entrypoint
+│   ├── config.ts
 │   ├── graph/                   # Event Graph models + persistence
+│   ├── connectors/              # connector framework + personal connectors
 │   ├── reasoning/               # change detection, rules
 │   ├── briefs/                  # brief templates + generator
 │   ├── actions/                 # approval queue + execution
-│   └── mcp/                     # MCP tool handlers
+│   └── mcp/                     # MCP tool registration
 ├── plugin/
 │   ├── .mcp.json
 │   └── .codex-plugin/plugin.json
@@ -36,12 +38,12 @@ brief/
 └── tests/
 ```
 
-**Rule:** shared engine → `src/brief/`. Industry-specific → `apps/<name>/`.
+**Rule:** shared engine → `src/`. Industry-specific → `apps/<name>/`.
 
 ## Request flow
 
 ```
-User → AI Assistant → MCP (remote HTTP) → src/brief/mcp/
+User → AI Assistant → MCP (remote HTTP) → src/mcp/
                                               ↓
                                     graph + reasoning + briefs
                                               ↓
@@ -72,7 +74,7 @@ Produces Morning / Afternoon / Travel / Weekly / Project briefs from reasoning o
 
 ## Vertical apps (`apps/`)
 
-Vertical packs register extra connectors, graph types, and rules into the core engine. They do not duplicate `src/brief/`.
+Vertical packs register extra connectors, graph types, and rules into the core engine. They do not duplicate `src/`.
 
 | App | Status | Domain |
 |-----|--------|--------|

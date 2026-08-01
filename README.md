@@ -24,7 +24,7 @@ Canonical spec (2nd brain): `Developer/2nd-brain/knowledge/research/holmplanet-b
 
 ```
 brief/
-├── src/brief/          # core platform (repo root — not under apps/)
+├── src/                # core platform (TypeScript — repo root, not under apps/)
 ├── plugin/             # MCP + assistant manifests
 ├── apps/               # vertical packs (fishing, livestock, …)
 └── docs/
@@ -32,7 +32,16 @@ brief/
 
 ## Development
 
-Setup instructions coming with v0 backend scaffold.
+```bash
+npm install
+npm test
+npm run dev
+```
+
+- Health: `GET http://localhost:8000/health`
+- MCP: `http://localhost:8000/mcp` (streamable HTTP, stateless)
+
+See [GitHub Issues](https://github.com/holmplanet/brief/issues) for v0 backlog.
 
 ## Motto
 

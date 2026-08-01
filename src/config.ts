@@ -1,6 +1,8 @@
 import { GOOGLE_CALENDAR_READONLY_SCOPE } from "./auth/types.js";
+import { loadWeatherConfig, type WeatherConfig } from "./connectors/personal/weather/config.js";
 
 export const VERSION = "0.1.0";
+export type { WeatherConfig };
 
 export type GoogleConfig = {
   clientId: string;
@@ -20,6 +22,7 @@ export type BriefEnv = {
   redisUrl?: string;
   graphCacheTtlSeconds: number;
   google?: GoogleConfig;
+  weather?: WeatherConfig;
 };
 
 function readPort(value: string | undefined, fallback: number): number {
@@ -78,5 +81,6 @@ export function loadConfig(): BriefEnv {
     redisUrl: process.env.BRIEF_REDIS_URL,
     graphCacheTtlSeconds: readTtl(process.env.BRIEF_GRAPH_CACHE_TTL_SECONDS, 60),
     google: loadGoogleConfig(publicUrl),
+    weather: loadWeatherConfig(),
   };
 }

@@ -54,9 +54,22 @@ References:
 
 1. Business logic lives in `src/` only — never in plugin manifests.
 2. Plugin folders contain manifests, skills, and assets — not duplicate services.
-3. v0 MCP tools: `brief_me`, `what_changed`, `get_context`, `propose_action`, `approve_action`.
+3. v0 MCP tools: `sync_connectors`, `brief_me`, `what_changed`, `get_context`, `propose_action`, `approve_action`.
 4. Vertical-specific tools are registered by `apps/*` packs post-v0.
 5. Secrets via environment variables — never committed.
+
+## Local development
+
+```bash
+cp .env.example .env
+# Set BRIEF_WEATHER_LATITUDE / BRIEF_WEATHER_LONGITUDE for weather connector
+# Set BRIEF_GOOGLE_CLIENT_ID / SECRET for calendar connector
+npm run dev
+```
+
+Point assistants at `http://localhost:8000/mcp` or install the plugin bundle from `plugin/`.
+
+Update `plugin/.mcp.json` URL when deploying (use your `BRIEF_PUBLIC_URL` + `/mcp`).
 
 ## Build order
 

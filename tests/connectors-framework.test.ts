@@ -80,6 +80,38 @@ describe("connector framework", () => {
     ).toThrow(/unknown edge endpoints/i);
   });
 
+  it("resolves edge endpoints from an existing graph when provided", () => {
+    const result = mapPayloadToGraph(
+      "user-1",
+      "weather",
+      {
+        nodes: [
+          {
+            externalId: "wx-1",
+            kind: NodeKind.WEATHER,
+            label: "Rain",
+          },
+        ],
+        edges: [
+          {
+            externalId: "edge-1",
+            kind: EdgeKind.DEPENDS_ON,
+            sourceExternalId: "event-1",
+            targetExternalId: "wx-1",
+          },
+        ],
+      },
+      {
+        resolveExternalNodeId: (externalId) =>
+          externalId === "event-1" ? "existing-event-node" : undefined,
+      },
+    );
+
+    expect(result.edges).toHaveLength(1);
+    expect(result.edges[0]?.sourceId).toBe("existing-event-node");
+    expect(result.edges[0]?.targetId).toBe(result.nodes[0]?.id);
+  });
+
   it("registers connectors without modifying core engine code", () => {
     const registry = createConnectorRegistry(new ConnectorRunner(new InMemoryGraphStore()));
     registry.register(

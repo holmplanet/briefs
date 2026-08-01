@@ -18,6 +18,8 @@ Early development. **Personal Pack** first (calendar, weather, tasks). Vertical 
 | [docs/architecture.md](docs/architecture.md) | Monorepo layout and core components |
 | [docs/plugin-compliance.md](docs/plugin-compliance.md) | ChatGPT/Codex + Claude integration rules |
 | [docs/connectors/google-calendar.md](docs/connectors/google-calendar.md) | Google Calendar OAuth + sync |
+| [docs/connectors/weather.md](docs/connectors/weather.md) | Weather forecast connector (Open-Meteo) |
+| [plugin/](plugin/) | Codex + Claude MCP plugin manifests |
 
 Canonical spec (2nd brain): `Developer/2nd-brain/knowledge/research/holmplanet-brief-spec.md`
 

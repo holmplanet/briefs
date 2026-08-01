@@ -4,9 +4,9 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
 import { ActionStatus, actionQueue } from "../actions/queue.js";
-import { BriefKind, briefGenerator } from "../briefs/generator.js";
+import { BriefKind } from "../briefs/generator.js";
 import { getGraphStore } from "../graph/runtime.js";
-import { reasoningEngine } from "../reasoning/engine.js";
+import { generateBrief, generateDeltaBrief, syncConnectors } from "./brief-service.js";
 
 const briefKindSchema = z.enum([
   BriefKind.MORNING,
@@ -18,11 +18,16 @@ const briefKindSchema = z.enum([
 const briefMeInput = z.object({
   userId: z.string().default("default"),
   kind: briefKindSchema.default(BriefKind.ON_DEMAND),
+  syncFirst: z.boolean().default(true),
 });
 
 const whatChangedInput = z.object({
   userId: z.string().default("default"),
   since: z.string().optional(),
+});
+
+const syncConnectorsInput = z.object({
+  userId: z.string().default("default"),
 });
 
 const getContextInput = z.object({
@@ -42,17 +47,46 @@ const approveActionInput = z.object({
   actionId: z.string(),
 });
 
+const briefOutputSchema = z.object({
+  userId: z.string(),
+  kind: briefKindSchema,
+  generatedAt: z.string(),
+  greeting: z.string(),
+  bullets: z.array(
+    z.object({
+      text: z.string(),
+      priority: z.number(),
+    }),
+  ),
+});
+
 export function registerMcpTools(server: McpServer): void {
+  server.registerTool(
+    "sync_connectors",
+    {
+      description: "Sync all registered connectors (calendar, weather, etc.) into the Event Graph.",
+      inputSchema: syncConnectorsInput,
+    },
+    async ({ userId }) => {
+      const reports = await syncConnectors(userId);
+      const payload = { userId, reports };
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+      };
+    },
+  );
+
   server.registerTool(
     "brief_me",
     {
-      description: "Generate the current brief for a user.",
+      description:
+        "Generate the current brief for a user. Syncs connectors first by default, then reasons over the Event Graph.",
       inputSchema: briefMeInput,
+      outputSchema: briefOutputSchema,
     },
-    async ({ userId, kind }) => {
-      const snapshot = await getGraphStore().getSnapshot(userId);
-      const changes = reasoningEngine.analyze(snapshot);
-      const brief = briefGenerator.generate(userId, kind, changes);
+    async ({ userId, kind, syncFirst }) => {
+      const brief = await generateBrief(userId, kind, { syncFirst });
       return {
         content: [{ type: "text", text: JSON.stringify(brief, null, 2) }],
         structuredContent: brief,
@@ -65,16 +99,15 @@ export function registerMcpTools(server: McpServer): void {
     {
       description: "Return changes since the last brief or an explicit ISO timestamp.",
       inputSchema: whatChangedInput,
+      outputSchema: z.object({
+        since: z.string(),
+        checkedAt: z.string(),
+        previousBriefAt: z.string().optional(),
+        brief: briefOutputSchema,
+      }),
     },
     async ({ userId, since }) => {
-      const snapshot = await getGraphStore().getSnapshot(userId);
-      const changes = reasoningEngine.analyze(snapshot);
-      const brief = briefGenerator.generate(userId, BriefKind.DELTA, changes);
-      const payload = {
-        since: since ?? "last_brief",
-        checkedAt: new Date().toISOString(),
-        brief,
-      };
+      const payload = await generateDeltaBrief(userId, since);
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
         structuredContent: payload,

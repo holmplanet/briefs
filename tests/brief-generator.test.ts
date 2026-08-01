@@ -15,6 +15,6 @@ describe("brief generator", () => {
 
     expect(brief.greeting).toBe("Here's your brief.");
     expect(brief.bullets).toHaveLength(1);
-    expect(brief.bullets[0]?.text).toContain("Connect a calendar");
+    expect(brief.bullets[0]?.text).toContain("sync_connectors");
   });
 });

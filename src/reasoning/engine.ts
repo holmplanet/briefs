@@ -1,4 +1,5 @@
 import type { GraphSnapshot } from "../graph/models.js";
+import { analyzeGraph } from "./analyze.js";
 
 export const InsightKind = {
   CONFLICT: "conflict",
@@ -25,22 +26,7 @@ export type ChangeSet = {
 
 export class ReasoningEngine {
   analyze(snapshot: GraphSnapshot): ChangeSet {
-    const insights: Insight[] = [];
-
-    if (snapshot.nodes.length === 0) {
-      insights.push({
-        kind: InsightKind.MISSING_INFO,
-        message: "No graph data yet. Connect a calendar to get started.",
-        priority: 2,
-        relatedNodeIds: [],
-      });
-    }
-
-    return {
-      userId: snapshot.userId,
-      generatedAt: new Date().toISOString(),
-      insights,
-    };
+    return analyzeGraph(snapshot);
   }
 }
 

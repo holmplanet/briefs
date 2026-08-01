@@ -101,6 +101,9 @@ export function mapPayloadToGraph(
   userId: string,
   connectorName: string,
   payload: NormalizedSyncPayload,
+  options: {
+    resolveExternalNodeId?: (externalId: string) => string | undefined;
+  } = {},
 ): ConnectorSyncResult {
   const namespace = `${userId}:${connectorName}`;
   const syncedAt = new Date().toISOString();
@@ -125,10 +128,13 @@ export function mapPayloadToGraph(
     };
   });
 
+  const resolveNodeId = (externalId: string): string | undefined =>
+    externalToInternal.get(externalId) ?? options.resolveExternalNodeId?.(externalId);
+
   const edges: GraphEdge[] = [];
   for (const edge of payload.edges) {
-    const sourceId = externalToInternal.get(edge.sourceExternalId);
-    const targetId = externalToInternal.get(edge.targetExternalId);
+    const sourceId = resolveNodeId(edge.sourceExternalId);
+    const targetId = resolveNodeId(edge.targetExternalId);
     if (!sourceId || !targetId) {
       throw new Error(
         `Connector ${connectorName} referenced unknown edge endpoints: ${edge.sourceExternalId} -> ${edge.targetExternalId}`,

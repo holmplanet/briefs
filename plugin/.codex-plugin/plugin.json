@@ -1,0 +1,14 @@
+{
+  "name": "holmplanet-brief",
+  "version": "0.1.0",
+  "description": "AI coordination layer — connect your tools, understand your day, brief what matters.",
+  "author": "Holmplanet",
+  "homepage": "https://github.com/holmplanet/brief",
+  "repository": "https://github.com/holmplanet/brief",
+  "license": "MIT",
+  "keywords": ["brief", "mcp", "calendar", "coordination"],
+  "mcpServers": {
+    "brief": "./.mcp.json"
+  },
+  "skills": ["./skills/brief"]
+}

@@ -1,334 +1,39 @@
 # Holmplanet Brief
 
-> Your AI coordinator.
-> Connect your tools. Understand your day. Brief you on what matters.
+> Your AI coordinator. Connect your tools. Understand your day. Brief you on what matters.
 
-## Vision
+Holmplanet Brief is a **standalone, backend-first** coordination platform. It builds a persistent **Event Graph** from your existing tools and generates intelligent briefs on demand — morning, travel, project, or whenever you say "Brief me."
 
-Holmplanet Brief is an AI coordination layer that sits between your existing tools and your AI assistant.
+AI assistants (ChatGPT, Claude, Cursor, Codex) reach Brief through a **hosted MCP server**. Plugin manifests wrap that server for discovery and install — the platform is not embedded inside any one assistant.
 
-Instead of replacing your calendar, email, CRM, or project management software, Brief connects them together, understands how they relate, and helps you make better decisions.
+## Status
 
-The goal isn't to answer questions.
+Early development. **Personal Pack** first (calendar, weather, tasks). Vertical apps under `apps/` are placeholders.
 
-The goal is to answer the questions you didn't know to ask.
+## Docs
 
----
+| Doc | Purpose |
+|-----|---------|
+| [VISION.md](VISION.md) | Product vision and principles |
+| [docs/architecture.md](docs/architecture.md) | Monorepo layout and core components |
+| [docs/plugin-compliance.md](docs/plugin-compliance.md) | ChatGPT/Codex + Claude integration rules |
 
-## The Problem
+Canonical spec (2nd brain): `Developer/2nd-brain/knowledge/research/holmplanet-brief-spec.md`
 
-Today's work is fragmented.
+## Monorepo layout
 
-A typical professional uses:
+```
+brief/
+├── src/brief/          # core platform (repo root — not under apps/)
+├── plugin/             # MCP + assistant manifests
+├── apps/               # vertical packs (fishing, livestock, …)
+└── docs/
+```
 
-- Calendar
-- Email
-- Slack
-- Text Messages
-- CRM
-- Project Management
-- Notes
-- Weather
-- Maps
-- Industry-specific software
+## Development
 
-None of these systems understand each other.
-
-People spend hours every week figuring out:
-
-- What changed?
-- What should I do next?
-- What conflicts exist?
-- What should I reschedule?
-- What am I forgetting?
-
----
-
-## The Solution
-
-Brief builds a unified understanding of your day.
-
-It connects to every system you already use and creates a living model of:
-
-- Events
-- People
-- Tasks
-- Deadlines
-- Dependencies
-- Context
-
-Then every morning (or whenever requested) it generates an intelligent brief.
-
-Example:
-
-Good morning.
-
-• Leave 20 minutes earlier.
-• Your 2 PM meeting conflicts with incoming weather.
-• John's waiting on your approval.
-• Two clients haven't responded.
-• You have enough time to stop by Home Depot before your afternoon meeting.
-
----
-
-## Core Principles
-
-### AI Native
-
-Users interact naturally.
-
-"Brief me."
-
-"What changed?"
-
-"What should I focus on?"
-
-"When should I leave?"
-
----
-
-### Existing Tools First
-
-Brief does not replace software.
-
-It coordinates it.
-
-Examples:
-
-- Google Calendar
-- Outlook
-- Gmail
-- Slack
-- Teams
-- Notion
-- Linear
-- Weather
-- GPS
-- CRM
-- Industry software
-
----
-
-### Action with Approval
-
-Brief doesn't just summarize.
-
-It recommends actions.
-
-Examples:
-
-- Move meeting
-- Notify customer
-- Schedule maintenance
-- Send reminder
-- Prepare documents
-- Draft replies
-
-The user approves before execution.
-
----
-
-## Architecture
-
-User
-↓
-AI Assistant
-↓
-Holmplanet Brief
-↓
-Coordination Engine
-↓
-Connectors
-↓
-External Services
-
----
-
-## Core Components
-
-### Connectors
-
-Responsible for reading data.
-
-Examples:
-
-- Calendar
-- Email
-- Slack
-- Weather
-- Maps
-- CRM
-- Accounting
-- Industry APIs
-
----
-
-### Event Graph
-
-Creates relationships between everything.
-
-Examples:
-
-Meeting
-depends on
-Weather
-
-Customer
-waiting on
-Invoice
-
-Trip
-depends on
-Fuel
-
-Task
-blocked by
-Approval
-
----
-
-### Reasoning Engine
-
-Finds important changes.
-
-Examples:
-
-- Conflicts
-- Opportunities
-- Delays
-- Missing information
-- Scheduling improvements
-- Risk detection
-
----
-
-### Brief Generator
-
-Produces concise updates.
-
-Morning Brief
-
-Afternoon Brief
-
-Travel Brief
-
-Weekly Brief
-
-Project Brief
-
----
-
-### Action Engine
-
-Executes approved tasks.
-
-Examples:
-
-- Reschedule meetings
-- Send emails
-- Update CRM
-- Notify customers
-- Create tasks
-- Generate reports
-
----
-
-## Vertical Packs
-
-The coordination engine stays the same.
-
-Only the domain knowledge changes.
-
-### Fishing
-
-- Tide
-- Weather
-- Customers
-- Waivers
-- Fuel
-- Maintenance
-- Catch Logs
-
----
-
-### Construction
-
-- RFIs
-- Deliveries
-- Weather
-- Inspections
-- Schedules
-- Subcontractors
-
----
-
-### Real Estate
-
-- Showings
-- Leads
-- Contracts
-- Inspections
-- Closings
-
----
-
-### Healthcare
-
-- Patients
-- Scheduling
-- Insurance
-- Labs
-- Follow-ups
-
----
-
-### Personal
-
-- Calendar
-- Bills
-- Travel
-- Family
-- Shopping
-- Health
-
----
-
-## Example Interaction
-
-User:
-
-Brief me.
-
-AI:
-
-Today's priorities:
-
-• Move your 2 PM meeting because storms arrive at 1:30.
-• Reply to John's proposal before noon.
-• Pick up supplies on your way home.
-• Tomorrow looks like a better fishing day.
-• Your vehicle service is due next week.
-
----
-
-## Long-Term Vision
-
-Become the coordination layer between AI and the real world.
-
-Instead of building another chatbot, Brief becomes the intelligence that understands how a person's tools, schedule, relationships, and responsibilities fit together.
-
-Every industry becomes another knowledge pack built on the same coordination engine.
-
-One platform.
-
-Unlimited domains.
-
----
+Setup instructions coming with v0 backend scaffold.
 
 ## Motto
 
-Connect everything.
-
-Understand everything.
-
-Brief only what matters.
+Connect everything. Understand everything. Brief only what matters.

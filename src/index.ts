@@ -6,11 +6,19 @@ import type { Request, Response } from "express";
 import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
-import { VERSION, loadConfig } from "./config.js";
+import { VERSION, loadConfig, type BriefEnv } from "./config.js";
+import { createGraphStore } from "./graph/factory.js";
+import { setGraphStore } from "./graph/runtime.js";
 import { createMcpServer } from "./mcp/tools.js";
 
-export function createApp() {
+export async function bootstrap(): Promise<BriefEnv> {
   const config = loadConfig();
+  const store = await createGraphStore(config);
+  setGraphStore(store);
+  return config;
+}
+
+export function createApp(config: BriefEnv) {
   const app = createMcpExpressApp({
     host: config.host,
     allowedHosts: ["localhost", "127.0.0.1", `${config.host}:${config.port}`],
@@ -22,6 +30,10 @@ export function createApp() {
       service: "holmplanet-brief",
       version: VERSION,
       transport: "stateless",
+      storage: {
+        graph: config.databaseUrl ? "postgres" : "memory",
+        cache: config.redisUrl ? "redis" : "none",
+      },
     });
   });
 
@@ -42,16 +54,22 @@ export function createApp() {
   app.get(config.mcpPath, handleMcpRequest);
   app.delete(config.mcpPath, handleMcpRequest);
 
-  return { app, config };
+  return app;
 }
 
-export function startServer() {
-  const { app, config } = createApp();
+export async function startServer() {
+  const config = await bootstrap();
+  const app = createApp(config);
 
   app.listen(config.port, config.host, () => {
     console.log(`Holmplanet Brief listening on ${config.publicUrl}`);
     console.log(`Health: ${config.publicUrl}/health`);
     console.log(`MCP: ${config.publicUrl}${config.mcpPath}`);
+    console.log(
+      `Graph: ${config.databaseUrl ? "postgres" : "memory"}${
+        config.redisUrl ? " + redis cache" : ""
+      }`,
+    );
   });
 
   return app;
@@ -59,5 +77,8 @@ export function startServer() {
 
 const entrypoint = fileURLToPath(import.meta.url);
 if (process.argv[1] === entrypoint) {
-  startServer();
+  startServer().catch((error) => {
+    console.error("Failed to start Brief:", error);
+    process.exit(1);
+  });
 }

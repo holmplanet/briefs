@@ -6,9 +6,17 @@ export type BriefEnv = {
   port: number;
   publicUrl: string;
   mcpPath: string;
+  databaseUrl?: string;
+  redisUrl?: string;
+  graphCacheTtlSeconds: number;
 };
 
 function readPort(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function readTtl(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
@@ -27,5 +35,8 @@ export function loadConfig(): BriefEnv {
     port,
     publicUrl,
     mcpPath: process.env.BRIEF_MCP_PATH ?? "/mcp",
+    databaseUrl: process.env.BRIEF_DATABASE_URL,
+    redisUrl: process.env.BRIEF_REDIS_URL,
+    graphCacheTtlSeconds: readTtl(process.env.BRIEF_GRAPH_CACHE_TTL_SECONDS, 60),
   };
 }

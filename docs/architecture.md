@@ -60,6 +60,10 @@ Read (default) and later write external systems. Personal Pack: calendar, email,
 
 Persistent relationships between events, people, tasks, and dependencies. The moat — connectors are interchangeable; the graph is the product.
 
+- **Postgres** — canonical graph storage (`graph_nodes`, `graph_edges`)
+- **Redis** — optional snapshot cache for `getSnapshot` reads (invalidated on writes)
+- **In-memory** — fallback when `BRIEF_DATABASE_URL` is unset (local/tests)
+
 ### Reasoning engine
 
 Walks the graph to find conflicts, opportunities, delays, and forgotten items since the last sync.

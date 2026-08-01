@@ -34,12 +34,16 @@ brief/
 
 ```bash
 npm install
+npm run db:up          # Postgres + Redis (optional but recommended)
+cp .env.example .env
 npm test
 npm run dev
 ```
 
 - Health: `GET http://localhost:8000/health`
 - MCP: `http://localhost:8000/mcp` (streamable HTTP, stateless)
+- Graph persistence: **Postgres** when `BRIEF_DATABASE_URL` is set; in-memory otherwise
+- Snapshot cache: **Redis** when `BRIEF_REDIS_URL` is set
 
 See [GitHub Issues](https://github.com/holmplanet/brief/issues) for v0 backlog.
 

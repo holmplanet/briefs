@@ -1,10 +1,11 @@
 import type { GraphEdge, GraphNode, GraphSnapshot } from "./models.js";
+import type { GraphStore } from "./store.interface.js";
 
-export class InMemoryGraphStore {
+export class InMemoryGraphStore implements GraphStore {
   private readonly nodes = new Map<string, GraphNode[]>();
   private readonly edges = new Map<string, GraphEdge[]>();
 
-  getSnapshot(userId: string): GraphSnapshot {
+  async getSnapshot(userId: string): Promise<GraphSnapshot> {
     return {
       userId,
       nodes: [...(this.nodes.get(userId) ?? [])],
@@ -13,7 +14,7 @@ export class InMemoryGraphStore {
     };
   }
 
-  upsertNode(node: GraphNode): GraphNode {
+  async upsertNode(node: GraphNode): Promise<GraphNode> {
     const existing = this.nodes.get(node.userId) ?? [];
     this.nodes.set(
       node.userId,
@@ -22,7 +23,7 @@ export class InMemoryGraphStore {
     return node;
   }
 
-  upsertEdge(edge: GraphEdge): GraphEdge {
+  async upsertEdge(edge: GraphEdge): Promise<GraphEdge> {
     const existing = this.edges.get(edge.userId) ?? [];
     this.edges.set(
       edge.userId,
@@ -30,6 +31,9 @@ export class InMemoryGraphStore {
     );
     return edge;
   }
-}
 
-export const graphStore = new InMemoryGraphStore();
+  async close(): Promise<void> {
+    this.nodes.clear();
+    this.edges.clear();
+  }
+}

@@ -5,7 +5,7 @@ import { z } from "zod";
 
 import { ActionStatus, actionQueue } from "../actions/queue.js";
 import { BriefKind, briefGenerator } from "../briefs/generator.js";
-import { graphStore } from "../graph/store.js";
+import { getGraphStore } from "../graph/runtime.js";
 import { reasoningEngine } from "../reasoning/engine.js";
 
 const briefKindSchema = z.enum([
@@ -50,7 +50,7 @@ export function registerMcpTools(server: McpServer): void {
       inputSchema: briefMeInput,
     },
     async ({ userId, kind }) => {
-      const snapshot = graphStore.getSnapshot(userId);
+      const snapshot = await getGraphStore().getSnapshot(userId);
       const changes = reasoningEngine.analyze(snapshot);
       const brief = briefGenerator.generate(userId, kind, changes);
       return {
@@ -67,7 +67,7 @@ export function registerMcpTools(server: McpServer): void {
       inputSchema: whatChangedInput,
     },
     async ({ userId, since }) => {
-      const snapshot = graphStore.getSnapshot(userId);
+      const snapshot = await getGraphStore().getSnapshot(userId);
       const changes = reasoningEngine.analyze(snapshot);
       const brief = briefGenerator.generate(userId, BriefKind.DELTA, changes);
       const payload = {
@@ -89,7 +89,7 @@ export function registerMcpTools(server: McpServer): void {
       inputSchema: getContextInput,
     },
     async ({ userId, topic }) => {
-      const snapshot = graphStore.getSnapshot(userId);
+      const snapshot = await getGraphStore().getSnapshot(userId);
       const nodes = topic
         ? snapshot.nodes.filter((node) => node.label.toLowerCase().includes(topic.toLowerCase()))
         : snapshot.nodes;

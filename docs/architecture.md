@@ -69,9 +69,15 @@ Persistent relationships between events, people, tasks, and dependencies. The mo
 - **Redis** — optional snapshot cache for `getSnapshot` reads (invalidated on writes)
 - **In-memory** — fallback when `BRIEF_DATABASE_URL` is unset (local/tests)
 
-### Reasoning engine
+## Reasoning engine
 
 Walks the graph to find conflicts, opportunities, delays, and forgotten items since the last sync.
+
+- **`ReasoningRule`** — pluggable rule interface; vertical packs register additional rules
+- **`ReasoningRuleRegistry`** — default v0 rules: weather conflicts, schedule conflicts, stale dependencies, upcoming events
+- **`ChangeSet`** — structured insights with stable `id`s for delta diffing
+- **`diffInsights`** — powers `what_changed` by comparing against the last brief's change set
+- **Connector status** — `lastSyncAt` metadata attached to each change set via `connectorStatusStore`
 
 ### Brief generator
 

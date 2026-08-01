@@ -1,32 +1,23 @@
 import type { GraphSnapshot } from "../graph/models.js";
-import { analyzeGraph } from "./analyze.js";
+import { analyzeContext, analyzeGraph } from "./analyze.js";
+import { buildReasoningContext, type BuildReasoningContextOptions } from "./context.js";
+import type { ReasoningContext } from "./rules/types.js";
+import type { ChangeSet } from "./types.js";
 
-export const InsightKind = {
-  CONFLICT: "conflict",
-  OPPORTUNITY: "opportunity",
-  DELAY: "delay",
-  MISSING_INFO: "missing_info",
-  REMINDER: "reminder",
-} as const;
-
-export type InsightKind = (typeof InsightKind)[keyof typeof InsightKind];
-
-export type Insight = {
-  kind: InsightKind;
-  message: string;
-  priority: number;
-  relatedNodeIds: string[];
-};
-
-export type ChangeSet = {
-  userId: string;
-  generatedAt: string;
-  insights: Insight[];
-};
+export { InsightKind } from "./types.js";
+export type { ChangeSet, Insight } from "./types.js";
 
 export class ReasoningEngine {
-  analyze(snapshot: GraphSnapshot): ChangeSet {
-    return analyzeGraph(snapshot);
+  analyze(snapshot: GraphSnapshot, options: BuildReasoningContextOptions = {}): ChangeSet {
+    return analyzeGraph(snapshot, options);
+  }
+
+  analyzeContext(context: ReasoningContext): ChangeSet {
+    return analyzeContext(context);
+  }
+
+  buildContext(snapshot: GraphSnapshot, options: BuildReasoningContextOptions = {}): ReasoningContext {
+    return buildReasoningContext(snapshot, options);
   }
 }
 

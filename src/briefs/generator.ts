@@ -1,4 +1,4 @@
-import type { ChangeSet } from "../reasoning/engine.js";
+import type { ChangeSet } from "../reasoning/types.js";
 
 export const BriefKind = {
   MORNING: "morning",

@@ -19,6 +19,7 @@ Early development. **Personal Pack** first (calendar, weather, tasks). Vertical 
 | [docs/plugin-compliance.md](docs/plugin-compliance.md) | ChatGPT/Codex + Claude integration rules |
 | [docs/connectors/google-calendar.md](docs/connectors/google-calendar.md) | Google Calendar OAuth + sync |
 | [docs/connectors/weather.md](docs/connectors/weather.md) | Weather forecast connector (Open-Meteo) |
+| [docs/smoke-test.md](docs/smoke-test.md) | Automated + manual v0 smoke test |
 | [plugin/](plugin/) | Codex + Claude MCP plugin manifests |
 
 Canonical spec (2nd brain): `Developer/2nd-brain/knowledge/research/holmplanet-brief-spec.md`
@@ -40,6 +41,7 @@ npm install
 npm run db:up          # Postgres + Redis (optional but recommended)
 cp .env.example .env
 npm test
+npm run test:smoke   # v0 end-to-end loop only
 npm run dev
 ```
 

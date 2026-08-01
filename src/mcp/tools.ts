@@ -108,9 +108,10 @@ export function registerMcpTools(server: McpServer): void {
     },
     async ({ userId, since }) => {
       const payload = await generateDeltaBrief(userId, since);
+      const { changeSet: _changeSet, ...structured } = payload;
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
-        structuredContent: payload,
+        structuredContent: structured,
       };
     },
   );

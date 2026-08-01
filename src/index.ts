@@ -10,6 +10,9 @@ import { VERSION, loadConfig, type BriefEnv } from "./config.js";
 import { createOAuthTokenStore } from "./auth/token-store.js";
 import { setOAuthTokenStore } from "./auth/runtime.js";
 import { mountGoogleAuthRoutes } from "./auth/routes.js";
+import { createActionEngine } from "./actions/engine.js";
+import { createActionStore } from "./actions/store.js";
+import { setActionEngine, setActionStore } from "./actions/runtime.js";
 import { ConnectorRunner, createConnectorRegistry } from "./connectors/index.js";
 import { registerPersonalConnectors } from "./connectors/personal/register.js";
 import { getConnectorRegistry, setConnectorRegistry } from "./connectors/runtime.js";
@@ -23,6 +26,10 @@ export async function bootstrap(): Promise<BriefEnv> {
   setGraphStore(store);
 
   setOAuthTokenStore(await createOAuthTokenStore(config));
+
+  const actionStore = await createActionStore(config);
+  setActionStore(actionStore);
+  setActionEngine(createActionEngine(actionStore));
 
   const registry = createConnectorRegistry(new ConnectorRunner(store));
   registerPersonalConnectors(registry, config);

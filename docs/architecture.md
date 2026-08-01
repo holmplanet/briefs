@@ -87,6 +87,13 @@ Produces Morning / Afternoon / Travel / Weekly / Project briefs from reasoning o
 
 `propose_action` → user approval → `approve_action` → execute. No silent writes.
 
+- **`ActionEngine`** — proposal queue, approval gate, executor dispatch
+- **`ActionExecutor`** — pluggable per `actionType`; v0 executors are draft-only
+- **`action_proposals` + `action_audit_log`** — Postgres persistence when configured
+- **`list_actions`** — retrieve pending or completed proposals for a user
+
+See [docs/actions.md](actions.md).
+
 ## Vertical apps (`apps/`)
 
 Vertical packs register extra connectors, graph types, and rules into the core engine. They do not duplicate `src/`.

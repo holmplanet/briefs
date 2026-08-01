@@ -20,6 +20,7 @@ Early development. **Personal Pack** first (calendar, weather, tasks). Vertical 
 | [docs/connectors/google-calendar.md](docs/connectors/google-calendar.md) | Google Calendar OAuth + sync |
 | [docs/connectors/weather.md](docs/connectors/weather.md) | Weather forecast connector (Open-Meteo) |
 | [docs/smoke-test.md](docs/smoke-test.md) | Automated + manual v0 smoke test |
+| [docs/actions.md](docs/actions.md) | Approval-gated action engine |
 | [plugin/](plugin/) | Codex + Claude MCP plugin manifests |
 
 Canonical spec (2nd brain): `Developer/2nd-brain/knowledge/research/holmplanet-brief-spec.md`

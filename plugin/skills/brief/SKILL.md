@@ -13,7 +13,7 @@ Use the bundled `holmplanet-brief` MCP server.
 2. **`brief_me`** — generate the current brief (morning, afternoon, or on-demand). Syncs connectors first by default.
 3. **`what_changed`** — delta since the last brief.
 4. **`get_context`** — fetch graph nodes for a topic when you need detail before proposing actions.
-5. **`propose_action` / `approve_action`** — recommend actions; execution requires explicit user approval.
+5. **`propose_action` / `list_actions` / `approve_action`** — recommend draft actions; execution requires explicit user approval.
 
 ## When to call what
 

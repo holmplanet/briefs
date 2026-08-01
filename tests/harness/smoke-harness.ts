@@ -6,6 +6,9 @@ import { ConnectorRunner, createConnectorRegistry } from "../../src/connectors/i
 import { connectorStatusStore } from "../../src/connectors/status.js";
 import { resetConnectorRegistry, setConnectorRegistry } from "../../src/connectors/runtime.js";
 import { briefStore } from "../../src/briefs/store.js";
+import { createActionEngine } from "../../src/actions/engine.js";
+import { InMemoryActionStore } from "../../src/actions/memory-store.js";
+import { resetActionRuntime, setActionEngine, setActionStore } from "../../src/actions/runtime.js";
 import { loadConfig, type BriefEnv } from "../../src/config.js";
 import { InMemoryGraphStore } from "../../src/graph/memory-store.js";
 import { resetGraphStore, setGraphStore } from "../../src/graph/runtime.js";
@@ -26,12 +29,18 @@ export function resetSmokeRuntime(): InMemoryGraphStore {
   resetGraphStore();
   resetConnectorRegistry();
   resetOAuthTokenStore();
+  resetActionRuntime();
   connectorStatusStore.clear();
   briefStore.clear();
 
   const store = new InMemoryGraphStore();
   setGraphStore(store);
   setOAuthTokenStore(new InMemoryOAuthTokenStore());
+
+  const actionStore = new InMemoryActionStore();
+  setActionStore(actionStore);
+  setActionEngine(createActionEngine(actionStore));
+
   installSmokeConnectors(store);
   return store;
 }

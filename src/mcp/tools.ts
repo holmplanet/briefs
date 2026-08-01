@@ -1,11 +1,10 @@
-import { randomUUID } from "node:crypto";
-
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
-import { ActionStatus, actionQueue } from "../actions/queue.js";
 import { BriefKind } from "../briefs/generator.js";
 import { getGraphStore } from "../graph/runtime.js";
+import { approveAction, listActions, proposeAction } from "./action-service.js";
+import { ActionStatus } from "../actions/types.js";
 import { generateBrief, generateDeltaBrief, syncConnectors } from "./brief-service.js";
 
 const briefKindSchema = z.enum([
@@ -45,6 +44,46 @@ const proposeActionInput = z.object({
 const approveActionInput = z.object({
   userId: z.string(),
   actionId: z.string(),
+});
+
+const listActionsInput = z.object({
+  userId: z.string(),
+  status: z.enum([
+    ActionStatus.PROPOSED,
+    ActionStatus.APPROVED,
+    ActionStatus.EXECUTED,
+    ActionStatus.REJECTED,
+    ActionStatus.FAILED,
+  ]).optional(),
+});
+
+const actionProposalSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  actionType: z.string(),
+  summary: z.string(),
+  payload: z.record(z.unknown()),
+  status: z.enum([
+    ActionStatus.PROPOSED,
+    ActionStatus.APPROVED,
+    ActionStatus.EXECUTED,
+    ActionStatus.REJECTED,
+    ActionStatus.FAILED,
+  ]),
+  createdAt: z.string(),
+  approvedAt: z.string().optional(),
+  executedAt: z.string().optional(),
+  rejectedAt: z.string().optional(),
+  result: z
+    .object({
+      mode: z.literal("draft"),
+      actionType: z.string(),
+      summary: z.string(),
+      message: z.string(),
+      draft: z.record(z.unknown()),
+    })
+    .optional(),
+  error: z.string().optional(),
 });
 
 const briefOutputSchema = z.object({
@@ -146,16 +185,14 @@ export function registerMcpTools(server: McpServer): void {
     {
       description: "Recommend an action that requires user approval before execution.",
       inputSchema: proposeActionInput,
+      outputSchema: actionProposalSchema,
     },
     async ({ userId, actionType, summary, payload }) => {
-      const proposal = actionQueue.propose({
-        id: randomUUID(),
+      const proposal = await proposeAction({
         userId,
         actionType,
         summary,
         payload,
-        status: ActionStatus.PROPOSED,
-        createdAt: new Date().toISOString(),
       });
       return {
         content: [{ type: "text", text: JSON.stringify(proposal, null, 2) }],
@@ -165,32 +202,38 @@ export function registerMcpTools(server: McpServer): void {
   );
 
   server.registerTool(
+    "list_actions",
+    {
+      description: "List proposed or executed actions for a user.",
+      inputSchema: listActionsInput,
+      outputSchema: z.object({
+        userId: z.string(),
+        actions: z.array(actionProposalSchema),
+      }),
+    },
+    async ({ userId, status }) => {
+      const actions = await listActions(userId, status);
+      const payload = { userId, actions };
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+      };
+    },
+  );
+
+  server.registerTool(
     "approve_action",
     {
       description: "Approve and execute a previously proposed action.",
       inputSchema: approveActionInput,
+      outputSchema: z
+        .object({
+          status: z.string(),
+        })
+        .passthrough(),
     },
     async ({ userId, actionId }) => {
-      const proposal = actionQueue.get(actionId);
-      if (!proposal) {
-        const payload = { status: "error", message: "Action not found" };
-        return {
-          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
-          structuredContent: payload,
-        };
-      }
-      if (proposal.userId !== userId) {
-        const payload = { status: "error", message: "Action does not belong to user" };
-        return {
-          content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
-          structuredContent: payload,
-        };
-      }
-      const payload = {
-        status: "not_implemented",
-        message: "Execution wiring lands in issue #9",
-        actionId,
-      };
+      const payload = await approveAction(userId, actionId);
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
         structuredContent: payload,

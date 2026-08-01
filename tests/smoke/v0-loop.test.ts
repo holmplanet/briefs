@@ -28,11 +28,20 @@ type SyncToolResult = {
   reports: Array<{ connector: string; ok: boolean }>;
 };
 
-function readStructuredContent<T>(value: unknown): T {
-  if (!value || typeof value !== "object") {
-    throw new Error("Expected structured MCP tool content");
+function readStructuredContent<T>(result: {
+  structuredContent?: unknown;
+  content: Array<{ type: string; text?: string }>;
+}): T {
+  if (result.structuredContent && typeof result.structuredContent === "object") {
+    return result.structuredContent as T;
   }
-  return value as T;
+
+  const text = result.content.find((item) => item.type === "text")?.text;
+  if (text) {
+    return JSON.parse(text) as T;
+  }
+
+  throw new Error("Expected structured MCP tool content");
 }
 
 describe("v0 smoke test", () => {
@@ -90,14 +99,22 @@ describe("v0 smoke test", () => {
 
       const tools = await client.listTools();
       expect(tools.tools.map((tool) => tool.name)).toEqual(
-        expect.arrayContaining(["sync_connectors", "brief_me", "what_changed", "get_context"]),
+        expect.arrayContaining([
+          "sync_connectors",
+          "brief_me",
+          "what_changed",
+          "get_context",
+          "propose_action",
+          "list_actions",
+          "approve_action",
+        ]),
       );
 
       const syncResult = await client.callTool({
         name: "sync_connectors",
         arguments: { userId: SMOKE_USER_ID },
       });
-      const syncPayload = readStructuredContent<SyncToolResult>(syncResult.structuredContent);
+      const syncPayload = readStructuredContent<SyncToolResult>(syncResult);
       expect(syncPayload.reports).toHaveLength(2);
       expect(syncPayload.reports.every((report) => report.ok)).toBe(true);
 
@@ -109,7 +126,7 @@ describe("v0 smoke test", () => {
           syncFirst: false,
         },
       });
-      const brief = readStructuredContent<BriefToolResult>(briefResult.structuredContent);
+      const brief = readStructuredContent<BriefToolResult>(briefResult);
       expect(brief.bullets.some((bullet) => bullet.text.includes(SMOKE_EVENT_LABEL))).toBe(true);
       expect(brief.bullets.some((bullet) => bullet.text.toLowerCase().includes("weather"))).toBe(
         true,
@@ -122,9 +139,35 @@ describe("v0 smoke test", () => {
       const deltaPayload = readStructuredContent<{
         brief: BriefToolResult;
         previousBriefAt?: string;
-      }>(deltaResult.structuredContent);
+      }>(deltaResult);
       expect(deltaPayload.previousBriefAt).toBeDefined();
       expect(deltaPayload.brief.bullets[0]?.text).toContain("No new changes");
+
+      const proposeResult = await client.callTool({
+        name: "propose_action",
+        arguments: {
+          userId: SMOKE_USER_ID,
+          actionType: "draft_reschedule",
+          summary: "Move outdoor standup due to weather",
+          payload: {
+            eventLabel: SMOKE_EVENT_LABEL,
+            newStart: "2026-08-02T15:00:00.000Z",
+            newEnd: "2026-08-02T15:30:00.000Z",
+          },
+        },
+      });
+      const proposal = readStructuredContent<{ id: string; status: string }>(proposeResult);
+      expect(proposal.status).toBe("proposed");
+
+      const approveResult = await client.callTool({
+        name: "approve_action",
+        arguments: { userId: SMOKE_USER_ID, actionId: proposal.id },
+      });
+      const approval = readStructuredContent<{ status: string; result?: { mode: string } }>(
+        approveResult,
+      );
+      expect(approval.status).toBe("executed");
+      expect(approval.result?.mode).toBe("draft");
     });
   });
 });

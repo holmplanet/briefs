@@ -1,4 +1,14 @@
+import { GOOGLE_CALENDAR_READONLY_SCOPE } from "./auth/types.js";
+
 export const VERSION = "0.1.0";
+
+export type GoogleConfig = {
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+  scopes: string[];
+  lookaheadDays: number;
+};
 
 export type BriefEnv = {
   env: string;
@@ -9,6 +19,7 @@ export type BriefEnv = {
   databaseUrl?: string;
   redisUrl?: string;
   graphCacheTtlSeconds: number;
+  google?: GoogleConfig;
 };
 
 function readPort(value: string | undefined, fallback: number): number {
@@ -19,6 +30,34 @@ function readPort(value: string | undefined, fallback: number): number {
 function readTtl(value: string | undefined, fallback: number): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function readPositiveInt(value: string | undefined, fallback: number): number {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? Math.floor(parsed) : fallback;
+}
+
+function loadGoogleConfig(publicUrl: string): GoogleConfig | undefined {
+  const clientId = process.env.BRIEF_GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.BRIEF_GOOGLE_CLIENT_SECRET;
+  if (!clientId || !clientSecret) {
+    return undefined;
+  }
+
+  const redirectUri =
+    process.env.BRIEF_GOOGLE_REDIRECT_URI ?? `${publicUrl}/auth/google/callback`;
+  const scopes = (process.env.BRIEF_GOOGLE_SCOPES ?? GOOGLE_CALENDAR_READONLY_SCOPE)
+    .split(/[,\s]+/)
+    .map((scope) => scope.trim())
+    .filter(Boolean);
+
+  return {
+    clientId,
+    clientSecret,
+    redirectUri,
+    scopes,
+    lookaheadDays: readPositiveInt(process.env.BRIEF_GOOGLE_CALENDAR_LOOKAHEAD_DAYS, 14),
+  };
 }
 
 export function loadConfig(): BriefEnv {
@@ -38,5 +77,6 @@ export function loadConfig(): BriefEnv {
     databaseUrl: process.env.BRIEF_DATABASE_URL,
     redisUrl: process.env.BRIEF_REDIS_URL,
     graphCacheTtlSeconds: readTtl(process.env.BRIEF_GRAPH_CACHE_TTL_SECONDS, 60),
+    google: loadGoogleConfig(publicUrl),
   };
 }

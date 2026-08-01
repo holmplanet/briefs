@@ -7,7 +7,11 @@ import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 import { VERSION, loadConfig, type BriefEnv } from "./config.js";
+import { createOAuthTokenStore } from "./auth/token-store.js";
+import { setOAuthTokenStore } from "./auth/runtime.js";
+import { mountGoogleAuthRoutes } from "./auth/routes.js";
 import { ConnectorRunner, createConnectorRegistry } from "./connectors/index.js";
+import { registerPersonalConnectors } from "./connectors/personal/register.js";
 import { getConnectorRegistry, setConnectorRegistry } from "./connectors/runtime.js";
 import { createGraphStore } from "./graph/factory.js";
 import { setGraphStore } from "./graph/runtime.js";
@@ -18,8 +22,11 @@ export async function bootstrap(): Promise<BriefEnv> {
   const store = await createGraphStore(config);
   setGraphStore(store);
 
-  const runner = new ConnectorRunner(store);
-  setConnectorRegistry(createConnectorRegistry(runner));
+  setOAuthTokenStore(await createOAuthTokenStore(config));
+
+  const registry = createConnectorRegistry(new ConnectorRunner(store));
+  registerPersonalConnectors(registry, config);
+  setConnectorRegistry(registry);
 
   return config;
 }
@@ -29,6 +36,8 @@ export function createApp(config: BriefEnv) {
     host: config.host,
     allowedHosts: ["localhost", "127.0.0.1", `${config.host}:${config.port}`],
   });
+
+  mountGoogleAuthRoutes(app, config);
 
   app.get("/health", (_req: Request, res: Response) => {
     let connectors = 0;
@@ -84,6 +93,10 @@ export async function startServer() {
         config.redisUrl ? " + redis cache" : ""
       }`,
     );
+    if (config.google) {
+      console.log(`Google OAuth: ${config.publicUrl}/auth/google/start?userId=<user-id>`);
+      console.log(`Scopes: ${config.google.scopes.join(", ")}`);
+    }
   });
 
   return app;

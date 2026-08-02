@@ -2,7 +2,7 @@
 
 How Brief integrates with ChatGPT/Codex and Claude without forking the backend.
 
-**One MCP server** in `src/brief/mcp/`. **Two plugin surfaces** in `plugin/`.
+**One MCP server** in `src/mcp/`. **Two plugin surfaces** in `plugin/`.
 
 ## OpenAI / Codex / ChatGPT
 

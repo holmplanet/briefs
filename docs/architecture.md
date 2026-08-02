@@ -19,7 +19,14 @@ brief/
 ├── tsconfig.json
 ├── docs/
 │   ├── architecture.md          # this file
-│   └── plugin-compliance.md
+│   ├── plugin-compliance.md
+│   ├── actions.md
+│   ├── trust.md
+│   ├── deploy.md
+│   ├── smoke-test.md
+│   └── connectors/
+├── db/migrations/
+├── scripts/dogfood.ts
 ├── src/                         # CORE — TypeScript platform at repo root
 │   ├── index.ts                 # HTTP + MCP server entrypoint
 │   ├── config.ts
@@ -27,10 +34,13 @@ brief/
 │   ├── connectors/              # connector framework + personal connectors
 │   ├── reasoning/               # change detection, rules
 │   ├── briefs/                  # brief templates + generator
-│   ├── actions/                 # approval queue + execution
+│   ├── actions/                 # approval queue + execution (v0: draft executors)
+│   ├── auth/                    # Google OAuth, MCP bearer tokens
+│   ├── db/                      # Postgres + Redis clients
 │   └── mcp/                     # MCP tool registration
 ├── plugin/
 │   ├── .mcp.json
+│   ├── skills/brief/
 │   └── .codex-plugin/plugin.json
 ├── apps/                        # vertical packs only
 │   ├── fishing/
@@ -109,8 +119,15 @@ Vertical packs register extra connectors, graph types, and rules into the core e
 
 ## v0 scope
 
-- Personal Pack only
+Shipped on `main` through `9589f25` (issues #1–#12, #15 closed).
+
+- Personal Pack only — `apps/*` README placeholders only
 - Google Calendar + weather connectors (read)
-- `brief_me`, `what_changed` MCP tools
-- Remote MCP + plugin manifests
-- No vertical app implementation
+- MCP tools: `sync_connectors`, `brief_me`, `what_changed`, `get_context`, `propose_action`, `list_actions`, `approve_action`
+- Remote streamable HTTP MCP at `/mcp` + plugin manifests (`plugin/.mcp.json`, Codex plugin, workflow skill)
+- Draft-only action engine (approval gate; no live external writes)
+- MCP bearer auth + per-user isolation (`docs/trust.md`)
+- Docker Compose deployment (`docs/deploy.md`)
+- Automated smoke test with fixture connectors (`npm run test:smoke`)
+
+**Not yet proven:** live Google OAuth dogfood (real calendar + weather conflict via `scripts/dogfood.ts`). See post-v0 in canonical spec.

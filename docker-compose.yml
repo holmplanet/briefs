@@ -1,3 +1,5 @@
+name: brief
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -9,6 +11,12 @@ services:
       - "5432:5432"
     volumes:
       - brief-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U brief -d brief"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
 
   redis:
     image: redis:7-alpine
@@ -16,6 +24,50 @@ services:
       - "6379:6379"
     volumes:
       - brief-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  brief:
+    build: .
+    ports:
+      - "${BRIEF_PORT:-8000}:8000"
+    environment:
+      BRIEF_ENV: ${BRIEF_ENV:-development}
+      BRIEF_HOST: 0.0.0.0
+      BRIEF_PORT: 8000
+      BRIEF_PUBLIC_URL: ${BRIEF_PUBLIC_URL:-http://localhost:8000}
+      BRIEF_DATABASE_URL: postgresql://brief:brief@postgres:5432/brief
+      BRIEF_REDIS_URL: redis://redis:6379
+      BRIEF_GRAPH_CACHE_TTL_SECONDS: ${BRIEF_GRAPH_CACHE_TTL_SECONDS:-60}
+      BRIEF_MCP_AUTH_DISABLED: ${BRIEF_MCP_AUTH_DISABLED:-true}
+      BRIEF_WEATHER_LATITUDE: ${BRIEF_WEATHER_LATITUDE:-35.7796}
+      BRIEF_WEATHER_LONGITUDE: ${BRIEF_WEATHER_LONGITUDE:--78.6382}
+      BRIEF_WEATHER_LOOKAHEAD_DAYS: ${BRIEF_WEATHER_LOOKAHEAD_DAYS:-7}
+      BRIEF_WEATHER_PRECIP_ALERT_THRESHOLD: ${BRIEF_WEATHER_PRECIP_ALERT_THRESHOLD:-50}
+      BRIEF_GOOGLE_CLIENT_ID: ${BRIEF_GOOGLE_CLIENT_ID:-}
+      BRIEF_GOOGLE_CLIENT_SECRET: ${BRIEF_GOOGLE_CLIENT_SECRET:-}
+      BRIEF_GOOGLE_REDIRECT_URI: ${BRIEF_GOOGLE_REDIRECT_URI:-http://localhost:8000/auth/google/callback}
+      BRIEF_AUTH_ADMIN_SECRET: ${BRIEF_AUTH_ADMIN_SECRET:-}
+      BRIEF_MCP_STATIC_TOKENS: ${BRIEF_MCP_STATIC_TOKENS:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:8000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
 volumes:
   brief-postgres:

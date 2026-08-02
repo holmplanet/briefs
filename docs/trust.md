@@ -12,7 +12,7 @@ Holmplanet Brief is a coordination layer over your personal data. Trust is a pro
 
 ## MCP authentication
 
-Brief follows the same pattern as Fairway: **Bearer token on every MCP request**, validated before tool handlers run.
+Brief uses the same **Bearer-on-every-request** middleware pattern as Fairway (`requireBearerAuth` from the MCP SDK), but **not** Fairway's Supabase stack. Auth is Holmplanet-owned **API bearer tokens** stored hashed in Postgres (or in-memory locally).
 
 | Mode | When | Behavior |
 |------|------|----------|
@@ -62,16 +62,20 @@ When MCP auth is enabled, `/auth/google/start` requires the same Bearer token. T
 
 ## Fairway comparison
 
-| Fairway | Brief v0 |
-|---------|----------|
-| Supabase OAuth + JWKS | API bearer tokens (Supabase OAuth planned post-v0) |
+We borrowed the middleware shape from Fairway Goose, not the identity provider.
+
+| Fairway Goose | Brief |
+|---------------|-------|
+| Supabase Auth + JWKS | Holmplanet API bearer tokens (`brief_…`) |
 | `requireBearerAuth` on `/mcp` | Same MCP SDK middleware |
-| RLS in Postgres | Application-level `user_id` filters |
-| Usage gating via RPC | Not in v0 |
+| Postgres RLS | Application-level `user_id` filters on graph/actions |
+| Usage gating via Supabase RPC | Not in v0 |
+
+Brief will **not** use Supabase. Connector OAuth (Google Calendar, etc.) is separate from MCP access tokens.
 
 ## Post-v0
 
-- Supabase (or similar) OAuth for MCP clients — same Fairway Goose pattern
-- Token rotation and revocation UI
+- Token rotation, revocation UI, and scoped token permissions
+- Optional Holmplanet OAuth for MCP clients (if assistants need interactive login — not Supabase)
 - Formal privacy policy and DPA
 - Audit export for enterprise customers

@@ -11,8 +11,11 @@
     "test": "vitest run",
     "test:smoke": "vitest run tests/smoke",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "db:up": "docker compose up -d",
-    "db:down": "docker compose down"
+    "db:up": "docker compose up -d postgres redis",
+    "db:down": "docker compose down",
+    "docker:build": "docker compose build brief",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose down"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",

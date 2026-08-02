@@ -22,6 +22,7 @@ Early development. **Personal Pack** first (calendar, weather, tasks). Vertical 
 | [docs/smoke-test.md](docs/smoke-test.md) | Automated + manual v0 smoke test |
 | [docs/actions.md](docs/actions.md) | Approval-gated action engine |
 | [docs/trust.md](docs/trust.md) | Auth, isolation, and trust principles |
+| [docs/deploy.md](docs/deploy.md) | Docker Compose deployment |
 | [plugin/](plugin/) | Codex + Claude MCP plugin manifests |
 
 Canonical spec (2nd brain): `Developer/2nd-brain/knowledge/research/holmplanet-brief-spec.md`
@@ -46,6 +47,16 @@ npm test
 npm run test:smoke   # v0 end-to-end loop only
 npm run dev
 ```
+
+**Docker (full stack):**
+
+```bash
+cp .env.example .env   # optional overrides
+npm run docker:up      # postgres + redis + brief container
+curl http://localhost:8000/health
+```
+
+See [docs/deploy.md](docs/deploy.md) for compose details.
 
 - Health: `GET http://localhost:8000/health`
 - MCP: `http://localhost:8000/mcp` (streamable HTTP, stateless)

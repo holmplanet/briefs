@@ -1,8 +1,19 @@
 import type { Express, Request, Response } from "express";
+import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
 
 import type { BriefEnv } from "../config.js";
 import { buildGoogleAuthUrl, decodeOAuthState, exchangeGoogleAuthCode } from "./google.js";
+import { BriefMcpTokenVerifier } from "./mcp/verifier.js";
 import { getOAuthTokenStore } from "./runtime.js";
+
+function readAuthenticatedUserId(req: Request, config: BriefEnv): string {
+  if (config.mcpAuth.enabled) {
+    const userId = req.auth?.extra?.userId;
+    return typeof userId === "string" ? userId : "";
+  }
+
+  return typeof req.query.userId === "string" ? req.query.userId : "";
+}
 
 export function mountGoogleAuthRoutes(app: Express, config: BriefEnv): void {
   const google = config.google;
@@ -10,10 +21,22 @@ export function mountGoogleAuthRoutes(app: Express, config: BriefEnv): void {
     return;
   }
 
-  app.get("/auth/google/start", (req: Request, res: Response) => {
-    const userId = typeof req.query.userId === "string" ? req.query.userId : "";
+  const startGuards = config.mcpAuth.enabled
+    ? [
+        requireBearerAuth({
+          verifier: new BriefMcpTokenVerifier(config.mcpAuth),
+        }),
+      ]
+    : [];
+
+  app.get("/auth/google/start", ...startGuards, (req: Request, res: Response) => {
+    const userId = readAuthenticatedUserId(req, config);
     if (!userId) {
-      res.status(400).json({ error: "userId query parameter is required" });
+      res.status(config.mcpAuth.enabled ? 401 : 400).json({
+        error: config.mcpAuth.enabled
+          ? "Authenticated MCP token required"
+          : "userId query parameter is required",
+      });
       return;
     }
 

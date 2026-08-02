@@ -4,12 +4,18 @@ import { fileURLToPath } from "node:url";
 
 import type { Request, Response } from "express";
 import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js";
+import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 import { VERSION, loadConfig, type BriefEnv } from "./config.js";
 import { createOAuthTokenStore } from "./auth/token-store.js";
 import { setOAuthTokenStore } from "./auth/runtime.js";
 import { mountGoogleAuthRoutes } from "./auth/routes.js";
+import { createMcpApiTokenStore, registerStaticMcpTokens } from "./auth/mcp/factory.js";
+import { mountMcpAuthRoutes } from "./auth/mcp/routes.js";
+import { setMcpApiTokenStore } from "./auth/mcp/runtime.js";
+import { BriefMcpTokenVerifier } from "./auth/mcp/verifier.js";
+import { createUserIdResolver } from "./auth/mcp/resolve-user.js";
 import { createActionEngine } from "./actions/engine.js";
 import { createActionStore } from "./actions/store.js";
 import { setActionEngine, setActionStore } from "./actions/runtime.js";
@@ -26,6 +32,10 @@ export async function bootstrap(): Promise<BriefEnv> {
   setGraphStore(store);
 
   setOAuthTokenStore(await createOAuthTokenStore(config));
+
+  const mcpTokenStore = await createMcpApiTokenStore(config);
+  await registerStaticMcpTokens(mcpTokenStore, config.mcpAuth.staticTokens);
+  setMcpApiTokenStore(mcpTokenStore);
 
   const actionStore = await createActionStore(config);
   setActionStore(actionStore);
@@ -45,6 +55,7 @@ export function createApp(config: BriefEnv) {
   });
 
   mountGoogleAuthRoutes(app, config);
+  mountMcpAuthRoutes(app, config);
 
   app.get("/health", (_req: Request, res: Response) => {
     let connectors = 0;
@@ -59,6 +70,9 @@ export function createApp(config: BriefEnv) {
       service: "holmplanet-brief",
       version: VERSION,
       transport: "stateless",
+      auth: {
+        mcp: config.mcpAuth.enabled ? "required" : "disabled",
+      },
       storage: {
         graph: config.databaseUrl ? "postgres" : "memory",
         cache: config.redisUrl ? "redis" : "none",
@@ -67,8 +81,15 @@ export function createApp(config: BriefEnv) {
     });
   });
 
+  const resolveUserId = createUserIdResolver(config.mcpAuth);
+  const mcpAuthMiddleware = config.mcpAuth.enabled
+    ? requireBearerAuth({
+        verifier: new BriefMcpTokenVerifier(config.mcpAuth),
+      })
+    : (_req: Request, _res: Response, next: () => void) => next();
+
   async function handleMcpRequest(req: Request, res: Response): Promise<void> {
-    const server = createMcpServer();
+    const server = createMcpServer({ resolveUserId });
     const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined });
 
     res.on("close", () => {
@@ -80,9 +101,9 @@ export function createApp(config: BriefEnv) {
     await transport.handleRequest(req, res, req.body);
   }
 
-  app.post(config.mcpPath, handleMcpRequest);
-  app.get(config.mcpPath, handleMcpRequest);
-  app.delete(config.mcpPath, handleMcpRequest);
+  app.post(config.mcpPath, mcpAuthMiddleware, handleMcpRequest);
+  app.get(config.mcpPath, mcpAuthMiddleware, handleMcpRequest);
+  app.delete(config.mcpPath, mcpAuthMiddleware, handleMcpRequest);
 
   return app;
 }
@@ -95,13 +116,18 @@ export async function startServer() {
     console.log(`Holmplanet Brief listening on ${config.publicUrl}`);
     console.log(`Health: ${config.publicUrl}/health`);
     console.log(`MCP: ${config.publicUrl}${config.mcpPath}`);
+    console.log(`MCP auth: ${config.mcpAuth.enabled ? "required" : "disabled"}`);
     console.log(
       `Graph: ${config.databaseUrl ? "postgres" : "memory"}${
         config.redisUrl ? " + redis cache" : ""
       }`,
     );
     if (config.google) {
-      console.log(`Google OAuth: ${config.publicUrl}/auth/google/start?userId=<user-id>`);
+      console.log(
+        config.mcpAuth.enabled
+          ? `Google OAuth: ${config.publicUrl}/auth/google/start (Bearer token required)`
+          : `Google OAuth: ${config.publicUrl}/auth/google/start?userId=<user-id>`,
+      );
       console.log(`Scopes: ${config.google.scopes.join(", ")}`);
     }
   });

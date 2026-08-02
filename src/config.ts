@@ -4,6 +4,13 @@ import { loadWeatherConfig, type WeatherConfig } from "./connectors/personal/wea
 export const VERSION = "0.1.0";
 export type { WeatherConfig };
 
+export type McpAuthConfig = {
+  enabled: boolean;
+  adminSecret?: string;
+  serverUri: string;
+  staticTokens?: string;
+};
+
 export type GoogleConfig = {
   clientId: string;
   clientSecret: string;
@@ -23,6 +30,7 @@ export type BriefEnv = {
   graphCacheTtlSeconds: number;
   google?: GoogleConfig;
   weather?: WeatherConfig;
+  mcpAuth: McpAuthConfig;
 };
 
 function readPort(value: string | undefined, fallback: number): number {
@@ -63,6 +71,19 @@ function loadGoogleConfig(publicUrl: string): GoogleConfig | undefined {
   };
 }
 
+function loadMcpAuthConfig(publicUrl: string, mcpPath: string): McpAuthConfig {
+  const explicitDisable = process.env.BRIEF_MCP_AUTH_DISABLED === "true";
+  const explicitEnable = process.env.BRIEF_MCP_AUTH_ENABLED === "true";
+  const isProduction = (process.env.BRIEF_ENV ?? "development") === "production";
+
+  return {
+    enabled: explicitDisable ? false : explicitEnable || isProduction,
+    adminSecret: process.env.BRIEF_AUTH_ADMIN_SECRET,
+    serverUri: `${publicUrl}${mcpPath}`,
+    staticTokens: process.env.BRIEF_MCP_STATIC_TOKENS,
+  };
+}
+
 export function loadConfig(): BriefEnv {
   const host = process.env.BRIEF_HOST ?? "0.0.0.0";
   const port = readPort(process.env.BRIEF_PORT, 8000);
@@ -82,5 +103,6 @@ export function loadConfig(): BriefEnv {
     graphCacheTtlSeconds: readTtl(process.env.BRIEF_GRAPH_CACHE_TTL_SECONDS, 60),
     google: loadGoogleConfig(publicUrl),
     weather: loadWeatherConfig(),
+    mcpAuth: loadMcpAuthConfig(publicUrl, process.env.BRIEF_MCP_PATH ?? "/mcp"),
   };
 }

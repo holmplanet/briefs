@@ -1,11 +1,16 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 
+import type { McpToolExtra } from "../auth/mcp/resolve-user.js";
 import { BriefKind } from "../briefs/generator.js";
 import { getGraphStore } from "../graph/runtime.js";
 import { approveAction, listActions, proposeAction } from "./action-service.js";
 import { ActionStatus } from "../actions/types.js";
 import { generateBrief, generateDeltaBrief, syncConnectors } from "./brief-service.js";
+
+export type McpToolDeps = {
+  resolveUserId: (extra: McpToolExtra, requestedUserId?: string) => string;
+};
 
 const briefKindSchema = z.enum([
   BriefKind.MORNING,
@@ -15,39 +20,39 @@ const briefKindSchema = z.enum([
 ]);
 
 const briefMeInput = z.object({
-  userId: z.string().default("default"),
+  userId: z.string().optional(),
   kind: briefKindSchema.default(BriefKind.ON_DEMAND),
   syncFirst: z.boolean().default(true),
 });
 
 const whatChangedInput = z.object({
-  userId: z.string().default("default"),
+  userId: z.string().optional(),
   since: z.string().optional(),
 });
 
 const syncConnectorsInput = z.object({
-  userId: z.string().default("default"),
+  userId: z.string().optional(),
 });
 
 const getContextInput = z.object({
-  userId: z.string().default("default"),
+  userId: z.string().optional(),
   topic: z.string().optional(),
 });
 
 const proposeActionInput = z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
   actionType: z.string(),
   summary: z.string(),
   payload: z.record(z.unknown()).default({}),
 });
 
 const approveActionInput = z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
   actionId: z.string(),
 });
 
 const listActionsInput = z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
   status: z.enum([
     ActionStatus.PROPOSED,
     ActionStatus.APPROVED,
@@ -99,16 +104,17 @@ const briefOutputSchema = z.object({
   ),
 });
 
-export function registerMcpTools(server: McpServer): void {
+export function registerMcpTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     "sync_connectors",
     {
       description: "Sync all registered connectors (calendar, weather, etc.) into the Event Graph.",
       inputSchema: syncConnectorsInput,
     },
-    async ({ userId }) => {
-      const reports = await syncConnectors(userId);
-      const payload = { userId, reports };
+    async ({ userId }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
+      const reports = await syncConnectors(resolvedUserId);
+      const payload = { userId: resolvedUserId, reports };
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
         structuredContent: payload,
@@ -124,8 +130,9 @@ export function registerMcpTools(server: McpServer): void {
       inputSchema: briefMeInput,
       outputSchema: briefOutputSchema,
     },
-    async ({ userId, kind, syncFirst }) => {
-      const brief = await generateBrief(userId, kind, { syncFirst });
+    async ({ userId, kind, syncFirst }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
+      const brief = await generateBrief(resolvedUserId, kind, { syncFirst });
       return {
         content: [{ type: "text", text: JSON.stringify(brief, null, 2) }],
         structuredContent: brief,
@@ -145,8 +152,9 @@ export function registerMcpTools(server: McpServer): void {
         brief: briefOutputSchema,
       }),
     },
-    async ({ userId, since }) => {
-      const payload = await generateDeltaBrief(userId, since);
+    async ({ userId, since }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
+      const payload = await generateDeltaBrief(resolvedUserId, since);
       const { changeSet: _changeSet, ...structured } = payload;
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
@@ -161,13 +169,14 @@ export function registerMcpTools(server: McpServer): void {
       description: "Fetch a graph slice for a person, event, or topic.",
       inputSchema: getContextInput,
     },
-    async ({ userId, topic }) => {
-      const snapshot = await getGraphStore().getSnapshot(userId);
+    async ({ userId, topic }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
+      const snapshot = await getGraphStore().getSnapshot(resolvedUserId);
       const nodes = topic
         ? snapshot.nodes.filter((node) => node.label.toLowerCase().includes(topic.toLowerCase()))
         : snapshot.nodes;
       const payload = {
-        userId,
+        userId: resolvedUserId,
         topic: topic ?? null,
         nodeCount: nodes.length,
         nodes,
@@ -187,9 +196,10 @@ export function registerMcpTools(server: McpServer): void {
       inputSchema: proposeActionInput,
       outputSchema: actionProposalSchema,
     },
-    async ({ userId, actionType, summary, payload }) => {
+    async ({ userId, actionType, summary, payload }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
       const proposal = await proposeAction({
-        userId,
+        userId: resolvedUserId,
         actionType,
         summary,
         payload,
@@ -211,9 +221,10 @@ export function registerMcpTools(server: McpServer): void {
         actions: z.array(actionProposalSchema),
       }),
     },
-    async ({ userId, status }) => {
-      const actions = await listActions(userId, status);
-      const payload = { userId, actions };
+    async ({ userId, status }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
+      const actions = await listActions(resolvedUserId, status);
+      const payload = { userId: resolvedUserId, actions };
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
         structuredContent: payload,
@@ -232,8 +243,9 @@ export function registerMcpTools(server: McpServer): void {
         })
         .passthrough(),
     },
-    async ({ userId, actionId }) => {
-      const payload = await approveAction(userId, actionId);
+    async ({ userId, actionId }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
+      const payload = await approveAction(resolvedUserId, actionId);
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
         structuredContent: payload,
@@ -242,11 +254,11 @@ export function registerMcpTools(server: McpServer): void {
   );
 }
 
-export function createMcpServer(): McpServer {
+export function createMcpServer(deps: McpToolDeps): McpServer {
   const server = new McpServer({
     name: "holmplanet-brief",
     version: "0.1.0",
   });
-  registerMcpTools(server);
+  registerMcpTools(server, deps);
   return server;
 }

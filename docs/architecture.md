@@ -94,6 +94,10 @@ Produces Morning / Afternoon / Travel / Weekly / Project briefs from reasoning o
 
 See [docs/actions.md](actions.md).
 
+### Trust and auth
+
+See [docs/trust.md](trust.md). MCP bearer tokens are required in production (`BRIEF_ENV=production`). Local dev disables auth unless `BRIEF_MCP_AUTH_ENABLED=true`.
+
 ## Vertical apps (`apps/`)
 
 Vertical packs register extra connectors, graph types, and rules into the core engine. They do not duplicate `src/`.

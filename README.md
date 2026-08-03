@@ -40,7 +40,12 @@ brief/
 
 ## Development
 
+**Branching:** `dev` is the default integration branch. Create feature branches off `dev` (`feat/<issue>-<description>`) and open PRs into `dev`. `main` is production — only release and hotfix branches merge there.
+
 ```bash
+git checkout dev
+git pull origin dev
+```
 npm install
 npm run db:up          # Postgres + Redis (optional but recommended)
 cp .env.example .env

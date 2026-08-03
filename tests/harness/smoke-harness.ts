@@ -1,7 +1,5 @@
 import type { Server } from "node:http";
 
-import { InMemoryOAuthTokenStore } from "../../src/auth/memory-token-store.js";
-import { resetOAuthTokenStore, setOAuthTokenStore } from "../../src/auth/runtime.js";
 import { ConnectorRunner, createConnectorRegistry } from "../../src/connectors/index.js";
 import { BriefTasksConnector } from "../../src/connectors/personal/brief-tasks/connector.js";
 import { connectorStatusStore } from "../../src/connectors/status.js";
@@ -26,7 +24,6 @@ export function installSmokeConnectors(store: InMemoryGraphStore): void {
 export function resetSmokeRuntime(): InMemoryGraphStore {
   resetGraphStore();
   resetConnectorRegistry();
-  resetOAuthTokenStore();
   resetActionRuntime();
   resetBriefTaskRuntime();
   connectorStatusStore.clear();
@@ -34,7 +31,6 @@ export function resetSmokeRuntime(): InMemoryGraphStore {
 
   const store = new InMemoryGraphStore();
   setGraphStore(store);
-  setOAuthTokenStore(new InMemoryOAuthTokenStore());
 
   const actionStore = new InMemoryActionStore();
   setActionStore(actionStore);

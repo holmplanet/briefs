@@ -54,4 +54,3 @@ Use the bundled `holmplanet-brief` MCP server. **Brief does not connect to the u
 
 - `userId` is optional when MCP auth binds the session.
 - Local dev: `npm run dev` → `http://localhost:8000/mcp` (see `.cursor/mcp.json`).
-- Legacy first-party calendar/weather connectors require `BRIEF_LEGACY_CONNECTORS=true` on the server — prefer user MCPs + `ingest_context`.

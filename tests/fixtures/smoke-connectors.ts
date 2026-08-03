@@ -1,18 +1,7 @@
-import {
-  ConnectorPack,
-  ReadOnlyConnector,
-  mapPayloadToGraph,
-  type NormalizedSyncPayload,
-} from "../../src/connectors/index.js";
-import { GOOGLE_CALENDAR_CONNECTOR_NAME } from "../../src/connectors/personal/google-calendar/connector.js";
-import { WEATHER_CONNECTOR_NAME } from "../../src/connectors/personal/weather/connector.js";
-import {
-  buildWeatherPayload,
-  parseOpenMeteoHourly,
-} from "../../src/connectors/personal/weather/map-forecast.js";
-import type { InMemoryGraphStore } from "../../src/graph/memory-store.js";
+import type { NormalizedSyncPayload } from "../../src/connectors/types.js";
 import { EdgeKind, NodeKind } from "../../src/graph/models.js";
 import { ingestContext } from "../../src/mcp/ingest-service.js";
+import { buildWeatherPayload, parseOpenMeteoHourly } from "./smoke-weather.js";
 
 export const SMOKE_USER_ID = "smoke-user";
 export const SMOKE_EVENT_LABEL = "Outdoor standup";
@@ -20,77 +9,17 @@ export const SMOKE_WEATHER_TIME = "2026-08-01T18:00";
 export const SMOKE_EVENT_START = "2026-08-01T18:15:00.000Z";
 export const SMOKE_EVENT_END = "2026-08-01T19:00:00.000Z";
 
-export class SmokeCalendarConnector extends ReadOnlyConnector {
-  readonly definition = {
-    name: GOOGLE_CALENDAR_CONNECTOR_NAME,
-    pack: ConnectorPack.PERSONAL,
-    description: "Smoke-test calendar fixture",
-    readOnly: true,
-  };
-
-  async fetch(): Promise<NormalizedSyncPayload> {
-    return {
-      nodes: [
-        {
-          externalId: "smoke-event-1",
-          kind: NodeKind.EVENT,
-          label: SMOKE_EVENT_LABEL,
-          startsAt: SMOKE_EVENT_START,
-          endsAt: SMOKE_EVENT_END,
-        },
-      ],
-      edges: [],
-    };
-  }
-}
-
-export class SmokeWeatherConnector extends ReadOnlyConnector {
-  readonly definition = {
-    name: WEATHER_CONNECTOR_NAME,
-    pack: ConnectorPack.PERSONAL,
-    description: "Smoke-test weather fixture",
-    readOnly: true,
-  };
-
-  constructor(private readonly store: InMemoryGraphStore) {
-    super();
-  }
-
-  async fetch(userId: string): Promise<NormalizedSyncPayload> {
-    const snapshot = await this.store.getSnapshot(userId);
-    const periods = parseOpenMeteoHourly(
-      {
-        time: [SMOKE_WEATHER_TIME],
-        precipitation_probability: [80],
-        weathercode: [95],
-      },
-      50,
-    );
-    return buildWeatherPayload(snapshot, periods);
-  }
-
-  async sync(userId: string) {
-    const snapshot = await this.store.getSnapshot(userId);
-    const payload = await this.fetch(userId);
-    return mapPayloadToGraph(userId, this.definition.name, payload, {
-      resolveExternalNodeId: (externalId) =>
-        snapshot.nodes.find((node) => String(node.data.externalId ?? node.id) === externalId)?.id,
-    });
-  }
-}
+const SMOKE_HOURLY = {
+  time: [SMOKE_WEATHER_TIME],
+  precipitation_probability: [80],
+  weathercode: [95],
+} as const;
 
 export function createSmokeConnectorPayload(): {
   calendar: NormalizedSyncPayload;
   weatherPeriodCount: number;
 } {
-  const periods = parseOpenMeteoHourly(
-    {
-      time: [SMOKE_WEATHER_TIME],
-      precipitation_probability: [80],
-      weathercode: [95],
-    },
-    50,
-  );
+  const periods = parseOpenMeteoHourly(SMOKE_HOURLY, 50);
 
   return {
     calendar: {
@@ -126,7 +55,6 @@ export function expectSmokeGraphShape(
   }
 }
 
-/** Seed smoke graph via ingest_context (connector-agnostic path). */
 export async function ingestSmokeGraph(userId: string): Promise<void> {
   const { calendar } = createSmokeConnectorPayload();
 
@@ -139,14 +67,7 @@ export async function ingestSmokeGraph(userId: string): Promise<void> {
 
   const { getGraphStore } = await import("../../src/graph/runtime.js");
   const snapshot = await getGraphStore().getSnapshot(userId);
-  const periods = parseOpenMeteoHourly(
-    {
-      time: [SMOKE_WEATHER_TIME],
-      precipitation_probability: [80],
-      weathercode: [95],
-    },
-    50,
-  );
+  const periods = parseOpenMeteoHourly(SMOKE_HOURLY, 50);
   const weatherPayload = buildWeatherPayload(snapshot, periods);
 
   await ingestContext({
@@ -166,14 +87,7 @@ export const smokeCalendarIngestArgs = {
 export async function buildSmokeWeatherIngestArgs(userId: string) {
   const { getGraphStore } = await import("../../src/graph/runtime.js");
   const snapshot = await getGraphStore().getSnapshot(userId);
-  const periods = parseOpenMeteoHourly(
-    {
-      time: [SMOKE_WEATHER_TIME],
-      precipitation_probability: [80],
-      weathercode: [95],
-    },
-    50,
-  );
+  const periods = parseOpenMeteoHourly(SMOKE_HOURLY, 50);
   const weatherPayload = buildWeatherPayload(snapshot, periods);
   return {
     source: "smoke-weather",

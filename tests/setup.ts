@@ -5,8 +5,6 @@ import { InMemoryActionStore } from "../src/actions/memory-store.js";
 import { resetActionRuntime, setActionEngine, setActionStore } from "../src/actions/runtime.js";
 import { InMemoryMcpApiTokenStore } from "../src/auth/mcp/memory-store.js";
 import { resetMcpApiTokenStore, setMcpApiTokenStore } from "../src/auth/mcp/runtime.js";
-import { InMemoryOAuthTokenStore } from "../src/auth/memory-token-store.js";
-import { resetOAuthTokenStore, setOAuthTokenStore } from "../src/auth/runtime.js";
 import { ConnectorRunner, createConnectorRegistry } from "../src/connectors/index.js";
 import { BriefTasksConnector } from "../src/connectors/personal/brief-tasks/connector.js";
 import { connectorStatusStore } from "../src/connectors/status.js";
@@ -22,7 +20,6 @@ beforeEach(() => {
 
   resetGraphStore();
   resetConnectorRegistry();
-  resetOAuthTokenStore();
   resetActionRuntime();
   resetMcpApiTokenStore();
   resetBriefTaskRuntime();
@@ -30,7 +27,6 @@ beforeEach(() => {
 
   const store = new InMemoryGraphStore();
   setGraphStore(store);
-  setOAuthTokenStore(new InMemoryOAuthTokenStore());
 
   const actionStore = new InMemoryActionStore();
   setActionStore(actionStore);

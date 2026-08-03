@@ -8,9 +8,6 @@ import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middlew
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
 import { VERSION, loadConfig, type BriefEnv } from "./config.js";
-import { createOAuthTokenStore } from "./auth/token-store.js";
-import { setOAuthTokenStore } from "./auth/runtime.js";
-import { mountGoogleAuthRoutes } from "./auth/routes.js";
 import { createMcpApiTokenStore, registerStaticMcpTokens } from "./auth/mcp/factory.js";
 import { mountMcpAuthRoutes } from "./auth/mcp/routes.js";
 import { setMcpApiTokenStore } from "./auth/mcp/runtime.js";
@@ -32,8 +29,6 @@ export async function bootstrap(): Promise<BriefEnv> {
   const config = loadConfig();
   const store = await createGraphStore(config);
   setGraphStore(store);
-
-  setOAuthTokenStore(await createOAuthTokenStore(config));
 
   const mcpTokenStore = await createMcpApiTokenStore(config);
   await registerStaticMcpTokens(mcpTokenStore, config.mcpAuth.staticTokens);
@@ -59,7 +54,6 @@ export function createApp(config: BriefEnv) {
     allowedHosts: ["localhost", "127.0.0.1", `${config.host}:${config.port}`],
   });
 
-  mountGoogleAuthRoutes(app, config);
   mountMcpAuthRoutes(app, config);
 
   app.get("/health", (_req: Request, res: Response) => {
@@ -127,14 +121,6 @@ export async function startServer() {
         config.redisUrl ? " + redis cache" : ""
       }`,
     );
-    if (config.google) {
-      console.log(
-        config.mcpAuth.enabled
-          ? `Google OAuth: ${config.publicUrl}/auth/google/start (Bearer token required)`
-          : `Google OAuth: ${config.publicUrl}/auth/google/start?userId=<user-id>`,
-      );
-      console.log(`Scopes: ${config.google.scopes.join(", ")}`);
-    }
   });
 
   return app;

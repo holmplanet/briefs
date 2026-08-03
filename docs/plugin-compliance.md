@@ -46,7 +46,7 @@ References:
 ### Shape
 
 - **Remote streamable HTTP MCP** for multi-tenant hosted Brief.
-- OAuth at the platform layer for connector auth; bearer/session auth for MCP.
+- Bearer/session auth for MCP; external connectors are agent-mediated via `ingest_context`.
 - Follow pre-submission checklist: read/write tool split, annotations, prompt-injection rules.
 - Test via Claude Settings → Connectors before directory submission.
 
@@ -62,8 +62,6 @@ References:
 
 ```bash
 cp .env.example .env
-# Set BRIEF_WEATHER_LATITUDE / BRIEF_WEATHER_LONGITUDE for weather connector
-# Set BRIEF_GOOGLE_CLIENT_ID / SECRET for calendar connector
 npm run dev
 ```
 

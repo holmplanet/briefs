@@ -17,8 +17,6 @@ Early development. **Connector-agnostic orchestration** — Brief owns tasks and
 | [VISION.md](VISION.md) | Product vision and principles |
 | [docs/architecture.md](docs/architecture.md) | Monorepo layout and core components |
 | [docs/plugin-compliance.md](docs/plugin-compliance.md) | ChatGPT/Codex + Claude integration rules |
-| [docs/connectors/google-calendar.md](docs/connectors/google-calendar.md) | Google Calendar connector (legacy, opt-in) |
-| [docs/connectors/weather.md](docs/connectors/weather.md) | Weather connector (legacy, opt-in) |
 | [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md) | Brief-native task inbox + MCP tools |
 | [docs/ingest-context.md](docs/ingest-context.md) | Agent-mediated context upload (`ingest_context`) |
 | [docs/decisions/connector-agnostic-orchestration.md](docs/decisions/connector-agnostic-orchestration.md) | Why Brief orchestrates user MCPs instead of OAuth |

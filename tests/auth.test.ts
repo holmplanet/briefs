@@ -9,8 +9,6 @@ import { createMcpApiToken } from "../src/auth/mcp/factory.js";
 import { InMemoryMcpApiTokenStore } from "../src/auth/mcp/memory-store.js";
 import { getMcpApiTokenStore, resetMcpApiTokenStore, setMcpApiTokenStore } from "../src/auth/mcp/runtime.js";
 import { createUserIdResolver } from "../src/auth/mcp/resolve-user.js";
-import { InMemoryOAuthTokenStore } from "../src/auth/memory-token-store.js";
-import { resetOAuthTokenStore, setOAuthTokenStore } from "../src/auth/runtime.js";
 import { ConnectorRunner, createConnectorRegistry } from "../src/connectors/index.js";
 import { connectorStatusStore } from "../src/connectors/status.js";
 import { resetConnectorRegistry, setConnectorRegistry } from "../src/connectors/runtime.js";
@@ -46,12 +44,10 @@ describe("mcp auth", () => {
 
     resetGraphStore();
     resetConnectorRegistry();
-    resetOAuthTokenStore();
     resetActionRuntime();
     resetMcpApiTokenStore();
     connectorStatusStore.clear();
 
-    setOAuthTokenStore(new InMemoryOAuthTokenStore());
     setMcpApiTokenStore(new InMemoryMcpApiTokenStore());
 
     const actionStore = new InMemoryActionStore();

@@ -8,7 +8,7 @@ Agent-mediated upload of external context into the Event Graph. **Brief does not
 |------|---------|
 | **`ingest_context`** | Calendar events, GitHub issues, weather windows, CRM rows — anything from the user's MCPs |
 | **`create_task` / `list_tasks`** | Brief-native work items (Brief-owned) |
-| **`sync_connectors`** | Brief-owned connectors only (`brief-tasks`); legacy external connectors if `BRIEF_LEGACY_CONNECTORS=true` |
+| **`sync_connectors`** | Brief-owned connectors only (`brief-tasks`) |
 
 ## Workflow
 

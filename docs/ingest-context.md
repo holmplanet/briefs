@@ -78,5 +78,6 @@ Re-ingesting the same `source` + `externalId` updates existing graph nodes (stab
 
 ## See also
 
+- [Daily brief dogfood runbook](dogfood.md) — Cursor + calendar MCP morning routine
 - [ADR: Connector-agnostic orchestration](decisions/connector-agnostic-orchestration.md)
 - [Task protocol v1](graph/task-protocol.md)

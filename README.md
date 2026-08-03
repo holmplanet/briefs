@@ -18,6 +18,7 @@ Early development. **Connector-agnostic orchestration** — Brief owns tasks and
 | [docs/architecture.md](docs/architecture.md) | Monorepo layout and core components |
 | [docs/plugin-compliance.md](docs/plugin-compliance.md) | ChatGPT/Codex + Claude integration rules |
 | [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md) | Brief-native task inbox + MCP tools |
+| [docs/dogfood.md](docs/dogfood.md) | Daily brief workflow (Cursor + calendar MCP + `ingest_context`) |
 | [docs/ingest-context.md](docs/ingest-context.md) | Agent-mediated context upload (`ingest_context`) |
 | [docs/decisions/connector-agnostic-orchestration.md](docs/decisions/connector-agnostic-orchestration.md) | Why Brief orchestrates user MCPs instead of OAuth |
 | [docs/smoke-test.md](docs/smoke-test.md) | Automated + manual v0 smoke test |
@@ -68,14 +69,16 @@ See [docs/deploy.md](docs/deploy.md) for compose details.
 
 1. Start the server: `npm run db:up` then `npm run dev`
 2. Open this repo in Cursor — `.cursor/mcp.json` points at `http://localhost:8000/mcp`
-3. **Customize** sidebar → enable **holmplanet-brief**
-4. **New chat** → gather context with your calendar/GitHub MCPs, then try:
+3. **Customize** sidebar → enable **holmplanet-brief** and your **calendar MCP**
+4. **New chat** → see [docs/dogfood.md](docs/dogfood.md) for the full morning routine
+
+Quick prompt:
 
 ```
-Ingest my calendar events via ingest_context, then brief me.
+Brief me — fetch today's calendar via my calendar MCP, ingest_context, then brief_me with userId=carter.
 ```
 
-Or Brief-only: *"Create a task called 'Review PR' due tomorrow, then brief me."*
+Fixture-only (no calendar MCP): `npm run dogfood`
 
 Auth is disabled locally (`BRIEF_MCP_AUTH_DISABLED=true`). See [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md).
 

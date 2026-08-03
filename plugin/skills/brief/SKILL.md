@@ -7,50 +7,123 @@ description: Use Holmplanet Brief MCP tools to ingest context, manage tasks, and
 
 Use the bundled `holmplanet-brief` MCP server. **Brief does not connect to the user's calendar or email** — you use their MCPs for that.
 
-## Orchestration workflow
+## Daily brief (do this when user says "Brief me")
 
-1. **Gather context** — call the user's MCP tools (calendar, GitHub, weather, Linear, etc.).
-2. **Normalize** — map results to Brief graph shapes ([task protocol](https://github.com/holmplanet/brief/blob/dev/docs/graph/task-protocol.md), `event` nodes, edges).
-3. **`ingest_context`** — upload nodes/edges with a stable `source` id (e.g. `cursor-google-calendar`, `github-issues`).
-4. **`brief_me`** — generate the brief (`syncFirst: true` syncs Brief-owned tasks only).
-5. **`what_changed`** — delta since the last brief.
+Execute these steps **in order**. Do not call `brief_me` until context is ingested.
+
+### 1. Fetch calendar
+
+Call the user's **calendar MCP** (Google Calendar, Outlook, etc.) for events from **start of today** through **end of today** (or next 24h). Use the user's timezone when interpreting "today".
+
+If no calendar MCP is available, say so and offer Brief-only brief (`list_tasks` / `brief_me` with tasks only).
+
+### 2. Map events → normalized nodes
+
+For each event, build a node for `ingest_context`:
+
+```json
+{
+  "externalId": "<provider-event-id>",
+  "kind": "event",
+  "label": "<title>",
+  "startsAt": "<ISO-8601 UTC>",
+  "endsAt": "<ISO-8601 UTC>",
+  "data": {
+    "location": "<optional>",
+    "outdoor": true,
+    "htmlLink": "<optional>"
+  }
+}
+```
+
+| Field | Rule |
+|-------|------|
+| `externalId` | Provider's stable event id — never invent or hash |
+| `outdoor` | `true` if title/location suggests outdoor (yard, park, golf, patio, hike, etc.) |
+| `source` (on ingest call) | `"cursor-google-calendar"` or `"cursor-<provider>-calendar"` |
+
+### 3. `ingest_context`
+
+```json
+{
+  "userId": "carter",
+  "source": "cursor-google-calendar",
+  "nodes": [ "...mapped events..." ],
+  "edges": []
+}
+```
+
+Omit `userId` only when MCP auth binds the session. For local dogfood, always pass `"userId": "carter"` unless the user specifies another id.
+
+### 4. Optional — weather for outdoor events
+
+If the user has a weather MCP and any events are outdoor:
+
+1. Fetch forecast overlapping those event times.
+2. Ingest `kind: "weather"` nodes for severe or high-precip periods.
+3. Add `depends_on` edges: `sourceExternalId` = event id, `targetExternalId` = weather period id.
+
+Skip if no weather MCP — calendar + tasks still work.
+
+### 5. `brief_me`
+
+```json
+{
+  "userId": "carter",
+  "kind": "morning",
+  "syncFirst": true
+}
+```
+
+Use `"kind": "on_demand"` for non-morning requests. **`syncFirst: true`** syncs Brief-owned tasks before reasoning.
+
+### 6. Present the brief
+
+Show the greeting and bullets (priority order). Call out overdue tasks, upcoming meetings, and weather conflicts. Offer `what_changed` if the user wants a delta.
+
+---
+
+## Other workflows
+
+| Trigger | Steps |
+|---------|-------|
+| **"What changed?"** | Re-ingest fresh calendar if needed → `what_changed` |
+| **"Add a task"** | `create_task` → optionally `brief_me` |
+| **"What's on my plate?"** | `list_tasks` or `brief_me({ syncFirst: true })` |
+| **Specific meeting** | Calendar MCP → `get_context` with `topic` |
 
 ## Brief-owned tools
 
 | Tool | Use for |
 |------|---------|
+| `ingest_context` | Upload calendar, weather, GitHub, etc. from user's MCPs |
 | `create_task` / `list_tasks` / `update_task` | Brief-native work items |
 | `sync_connectors` | Sync Brief-owned data only (`brief-tasks`) |
+| `brief_me` | Generate brief after ingest |
+| `what_changed` | Delta since last brief |
+| `get_context` | Inspect graph for a topic |
 | `propose_action` / `list_actions` / `approve_action` | Approval-gated recommendations |
-| `get_context` | Inspect graph nodes for a topic |
 
-## When to call what
+## Task nodes (GitHub, Linear, etc.)
 
-- User says **"Brief me"** → gather via their MCPs → `ingest_context` → `brief_me`
-- User asks **"What changed?"** → `what_changed` (ingest fresh context first if needed)
-- User wants to **capture a task** → `create_task`
-- User asks **what's on their plate** → `list_tasks` or `brief_me`
-- User asks about a specific meeting → their calendar MCP, then `get_context` with a `topic`
-
-## ingest_context example
+Use `kind: "task"` with [task protocol v1](https://github.com/holmplanet/brief/blob/dev/docs/graph/task-protocol.md):
 
 ```json
 {
-  "source": "cursor-google-calendar",
-  "nodes": [
-    {
-      "externalId": "evt-1",
-      "kind": "event",
-      "label": "2 PM standup",
-      "startsAt": "2026-08-05T18:00:00.000Z",
-      "endsAt": "2026-08-05T18:30:00.000Z"
-    }
-  ],
-  "edges": []
+  "externalId": "gh-42",
+  "kind": "task",
+  "label": "Review PR",
+  "data": {
+    "schemaVersion": 1,
+    "status": "open",
+    "dueAt": "2026-08-05T17:00:00.000Z",
+    "priority": "high"
+  }
 }
 ```
 
 ## Notes
 
-- `userId` is optional when MCP auth binds the session.
 - Local dev: `npm run dev` → `http://localhost:8000/mcp` (see `.cursor/mcp.json`).
+- Full runbook: [docs/dogfood.md](https://github.com/holmplanet/brief/blob/dev/docs/dogfood.md).
+- Re-ingesting the same `source` + `externalId` updates graph nodes in place.

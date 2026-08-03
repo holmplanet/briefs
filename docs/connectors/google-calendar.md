@@ -1,5 +1,7 @@
 # Google Calendar connector
 
+> **Deprecated (legacy).** Brief does not connect to user calendars by default. Use the user's calendar MCP + [`ingest_context`](../ingest-context.md). This connector registers only when `BRIEF_LEGACY_CONNECTORS=true`.
+
 Read-only Personal Pack connector for upcoming Google Calendar events.
 
 ## OAuth scopes (v0)

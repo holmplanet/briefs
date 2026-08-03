@@ -7,7 +7,8 @@ Repo-local architecture reference. Canonical spec: `2nd-brain/knowledge/research
 - **Standalone platform, backend first** — Brief is a hosted Holmplanet service with its own API, auth, database, and workers.
 - **MCP is the assistant interface** — ChatGPT, Claude, and Cursor call the same remote MCP server.
 - **Plugin manifests are distribution** — `.codex-plugin/plugin.json` and Claude `.mcp.json` point at the hosted server; they do not contain business logic.
-- **Personal Pack is the base** — every account gets personal connectors and reasoning. Vertical apps extend the engine.
+- **Connector-agnostic orchestration** — Brief does not OAuth into user calendars or SaaS tools. Agents fetch via the user's MCPs and upload context with `ingest_context`. Brief owns tasks, briefs, reasoning, and actions. See [docs/decisions/connector-agnostic-orchestration.md](decisions/connector-agnostic-orchestration.md).
+- **Personal Pack** — Brief-native tasks plus graph protocols; external context is agent-ingested, not first-party synced (legacy google-calendar/weather connectors are opt-in).
 
 ## Monorepo layout
 
@@ -64,13 +65,17 @@ User → AI Assistant → MCP (remote HTTP) → src/mcp/
 
 ### Connectors
 
-Read (default) and later write external systems. Personal Pack: calendar, email, weather.
+**Brief-owned:** `brief-tasks` syncs the native task inbox into the graph.
 
-- **`ReadOnlyConnector`** — base class; implement `fetch()` returning normalized nodes/edges
+**Agent-ingested:** external context (calendar, GitHub, weather) via [`ingest_context`](../ingest-context.md) — the user's MCPs fetch data; Brief stores normalized nodes.
+
+**Legacy (opt-in):** `google-calendar` and `weather` first-party connectors when `BRIEF_LEGACY_CONNECTORS=true`. Deprecated; see [ADR](../decisions/connector-agnostic-orchestration.md).
+
+- **`ReadOnlyConnector`** — base class for legacy connectors; implement `fetch()` returning normalized nodes/edges
 - **`ConnectorRegistry`** — register connectors by name without touching core engine code
 - **`ConnectorRunner`** — syncs into the Event Graph and records per-user status metadata
 - **Normalized payload** — `externalId`-based records mapped to stable graph node/edge IDs
-- **Personal connectors** — `brief-tasks` (always on), Google Calendar and weather when configured
+- **Personal connectors** — `brief-tasks` (always on); legacy `google-calendar` / `weather` when `BRIEF_LEGACY_CONNECTORS=true`
 
 ### Event Graph
 

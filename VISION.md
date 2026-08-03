@@ -109,6 +109,19 @@ Examples:
 
 ---
 
+### Connector-agnostic orchestration
+
+Brief does not OAuth into a user's calendar, email, or CRM.
+
+The user's agent already has MCPs and tools for those systems. Brief **orchestrates**: it defines protocols (tasks, events, edges), ingests normalized snapshots via `ingest_context`, reasons over the graph, and generates briefs.
+
+**Brief owns:** tasks, briefs, reasoning, action proposals, graph history.  
+**Users own:** provider credentials, live data fetches, and writes in external tools.
+
+See [docs/decisions/connector-agnostic-orchestration.md](docs/decisions/connector-agnostic-orchestration.md).
+
+---
+
 ### Action with Approval
 
 Brief doesn't just summarize.

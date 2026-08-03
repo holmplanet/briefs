@@ -1,5 +1,7 @@
 # Weather connector
 
+> **Deprecated (legacy).** Use the user's weather MCP or agent fetch + [`ingest_context`](../ingest-context.md). Registers only when `BRIEF_LEGACY_CONNECTORS=true`.
+
 Read-only Personal Pack connector using [Open-Meteo](https://open-meteo.com/) (no API key required).
 
 ## Why Open-Meteo

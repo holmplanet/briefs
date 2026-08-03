@@ -46,7 +46,7 @@ References:
 ### Shape
 
 - **Remote streamable HTTP MCP** for multi-tenant hosted Brief.
-- OAuth at the platform layer for connector auth; bearer/session auth for MCP.
+- Bearer/session auth for MCP; external connectors are agent-mediated via `ingest_context`.
 - Follow pre-submission checklist: read/write tool split, annotations, prompt-injection rules.
 - Test via Claude Settings → Connectors before directory submission.
 
@@ -54,7 +54,7 @@ References:
 
 1. Business logic lives in `src/` only — never in plugin manifests.
 2. Plugin folders contain manifests, skills, and assets — not duplicate services.
-3. MCP tools: `sync_connectors`, `brief_me`, `what_changed`, `get_context`, `propose_action`, `list_actions`, `approve_action`, `list_tasks`, `create_task`, `update_task`.
+3. MCP tools: `ingest_context`, `sync_connectors`, `brief_me`, `what_changed`, `get_context`, `propose_action`, `list_actions`, `approve_action`, `list_tasks`, `create_task`, `update_task`.
 4. Vertical-specific tools are registered by `apps/*` packs post-v0.
 5. Secrets via environment variables — never committed.
 
@@ -62,8 +62,6 @@ References:
 
 ```bash
 cp .env.example .env
-# Set BRIEF_WEATHER_LATITUDE / BRIEF_WEATHER_LONGITUDE for weather connector
-# Set BRIEF_GOOGLE_CLIENT_ID / SECRET for calendar connector
 npm run dev
 ```
 

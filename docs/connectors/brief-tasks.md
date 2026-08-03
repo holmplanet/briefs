@@ -38,4 +38,4 @@ Writes sync to the graph immediately after each create/update.
 { "taskId": "<uuid>", "status": "done" }
 ```
 
-After sync, use `get_context` or `brief_me` to reason over tasks alongside calendar and weather nodes.
+After sync, use `get_context` or `brief_me` to reason over tasks alongside ingested event and weather nodes.

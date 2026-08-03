@@ -1,7 +1,5 @@
 import type { Server } from "node:http";
 
-import { InMemoryOAuthTokenStore } from "../../src/auth/memory-token-store.js";
-import { resetOAuthTokenStore, setOAuthTokenStore } from "../../src/auth/runtime.js";
 import { ConnectorRunner, createConnectorRegistry } from "../../src/connectors/index.js";
 import { BriefTasksConnector } from "../../src/connectors/personal/brief-tasks/connector.js";
 import { connectorStatusStore } from "../../src/connectors/status.js";
@@ -16,23 +14,16 @@ import { resetGraphStore, setGraphStore } from "../../src/graph/runtime.js";
 import { createApp } from "../../src/index.js";
 import { InMemoryBriefTaskStore } from "../../src/tasks/memory-store.js";
 import { resetBriefTaskRuntime, setBriefTaskStore } from "../../src/tasks/runtime.js";
-import {
-  SmokeCalendarConnector,
-  SmokeWeatherConnector,
-} from "../fixtures/smoke-connectors.js";
 
 export function installSmokeConnectors(store: InMemoryGraphStore): void {
   const registry = createConnectorRegistry(new ConnectorRunner(store));
   registry.register(new BriefTasksConnector());
-  registry.register(new SmokeCalendarConnector());
-  registry.register(new SmokeWeatherConnector(store));
   setConnectorRegistry(registry);
 }
 
 export function resetSmokeRuntime(): InMemoryGraphStore {
   resetGraphStore();
   resetConnectorRegistry();
-  resetOAuthTokenStore();
   resetActionRuntime();
   resetBriefTaskRuntime();
   connectorStatusStore.clear();
@@ -40,7 +31,6 @@ export function resetSmokeRuntime(): InMemoryGraphStore {
 
   const store = new InMemoryGraphStore();
   setGraphStore(store);
-  setOAuthTokenStore(new InMemoryOAuthTokenStore());
 
   const actionStore = new InMemoryActionStore();
   setActionStore(actionStore);

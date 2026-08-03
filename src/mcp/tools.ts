@@ -3,11 +3,13 @@ import { z } from "zod";
 
 import type { McpToolExtra } from "../auth/mcp/resolve-user.js";
 import { BriefKind } from "../briefs/generator.js";
+import { EdgeKind, NodeKind } from "../graph/models.js";
 import { TaskPriority, TaskStatus } from "../graph/tasks/protocol.js";
 import { getGraphStore } from "../graph/runtime.js";
 import { approveAction, listActions, proposeAction } from "./action-service.js";
 import { ActionStatus } from "../actions/types.js";
 import { generateBrief, generateDeltaBrief, syncConnectors } from "./brief-service.js";
+import { ingestContext } from "./ingest-service.js";
 import { createBriefTask, listBriefTasks, updateBriefTask } from "../tasks/service.js";
 
 export type McpToolDeps = {
@@ -34,6 +36,41 @@ const whatChangedInput = z.object({
 
 const syncConnectorsInput = z.object({
   userId: z.string().optional(),
+});
+
+const ingestNodeInput = z.object({
+  externalId: z.string(),
+  kind: z.enum([
+    NodeKind.EVENT,
+    NodeKind.PERSON,
+    NodeKind.TASK,
+    NodeKind.WEATHER,
+    NodeKind.CONTEXT,
+  ]),
+  label: z.string(),
+  data: z.record(z.unknown()).optional(),
+  startsAt: z.string().optional(),
+  endsAt: z.string().optional(),
+});
+
+const ingestEdgeInput = z.object({
+  externalId: z.string(),
+  kind: z.enum([
+    EdgeKind.DEPENDS_ON,
+    EdgeKind.WAITING_ON,
+    EdgeKind.BLOCKED_BY,
+    EdgeKind.RELATED_TO,
+  ]),
+  sourceExternalId: z.string(),
+  targetExternalId: z.string(),
+  data: z.record(z.unknown()).optional(),
+});
+
+const ingestContextInput = z.object({
+  userId: z.string().optional(),
+  source: z.string().min(1),
+  nodes: z.array(ingestNodeInput).default([]),
+  edges: z.array(ingestEdgeInput).default([]),
 });
 
 const getContextInput = z.object({
@@ -164,7 +201,8 @@ export function registerMcpTools(server: McpServer, deps: McpToolDeps): void {
   server.registerTool(
     "sync_connectors",
     {
-      description: "Sync all registered connectors (calendar, weather, etc.) into the Event Graph.",
+      description:
+        "Sync Brief-owned connectors (brief-tasks) into the Event Graph. For external data (calendar, GitHub, etc.), use the user's MCP tools and ingest_context instead.",
       inputSchema: syncConnectorsInput,
     },
     async ({ userId }, extra) => {
@@ -179,10 +217,39 @@ export function registerMcpTools(server: McpServer, deps: McpToolDeps): void {
   );
 
   server.registerTool(
+    "ingest_context",
+    {
+      description:
+        "Upload normalized graph nodes and edges from the user's MCP tools (calendar, GitHub, weather, etc.) into the Event Graph. Call this before brief_me when external context is needed.",
+      inputSchema: ingestContextInput,
+      outputSchema: z.object({
+        userId: z.string(),
+        source: z.string(),
+        syncedAt: z.string(),
+        nodesWritten: z.number(),
+        edgesWritten: z.number(),
+      }),
+    },
+    async ({ userId, source, nodes, edges }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
+      const report = await ingestContext({
+        userId: resolvedUserId,
+        source,
+        nodes,
+        edges,
+      });
+      return {
+        content: [{ type: "text", text: JSON.stringify(report, null, 2) }],
+        structuredContent: report,
+      };
+    },
+  );
+
+  server.registerTool(
     "brief_me",
     {
       description:
-        "Generate the current brief for a user. Syncs connectors first by default, then reasons over the Event Graph.",
+        "Generate the current brief. Syncs Brief-owned tasks first by default. Ingest external context via ingest_context (from the user's MCPs) before calling when needed.",
       inputSchema: briefMeInput,
       outputSchema: briefOutputSchema,
     },

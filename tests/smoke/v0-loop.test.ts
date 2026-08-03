@@ -11,7 +11,10 @@ import { generateBrief, generateDeltaBrief, syncConnectors } from "../../src/mcp
 import {
   SMOKE_EVENT_LABEL,
   SMOKE_USER_ID,
+  buildSmokeWeatherIngestArgs,
   expectSmokeGraphShape,
+  ingestSmokeGraph,
+  smokeCalendarIngestArgs,
 } from "../fixtures/smoke-connectors.js";
 import { resetSmokeRuntime, startSmokeServer } from "../harness/smoke-harness.js";
 
@@ -49,15 +52,14 @@ describe("v0 smoke test", () => {
     resetSmokeRuntime();
   });
 
-  it("runs calendar → weather sync → brief with a weather conflict bullet", async () => {
+  it("ingests context → brief with a weather conflict bullet", async () => {
+    await ingestSmokeGraph(SMOKE_USER_ID);
+
     const reports = await syncConnectors(SMOKE_USER_ID);
-    expect(reports).toHaveLength(3);
+    expect(reports).toHaveLength(1);
+    expect(reports[0]?.connector).toBe("brief-tasks");
     expect(reports.every((report) => report.ok)).toBe(true);
-    expect(getConnectorRegistry().listNames()).toEqual([
-      "brief-tasks",
-      "google-calendar",
-      "weather",
-    ]);
+    expect(getConnectorRegistry().listNames()).toEqual(["brief-tasks"]);
 
     const snapshot = await getGraphStore().getSnapshot(SMOKE_USER_ID);
     expectSmokeGraphShape(snapshot);
@@ -105,6 +107,7 @@ describe("v0 smoke test", () => {
       expect(tools.tools.map((tool) => tool.name)).toEqual(
         expect.arrayContaining([
           "sync_connectors",
+          "ingest_context",
           "brief_me",
           "what_changed",
           "get_context",
@@ -122,8 +125,19 @@ describe("v0 smoke test", () => {
         arguments: { userId: SMOKE_USER_ID },
       });
       const syncPayload = readStructuredContent<SyncToolResult>(syncResult);
-      expect(syncPayload.reports).toHaveLength(3);
+      expect(syncPayload.reports).toHaveLength(1);
+      expect(syncPayload.reports[0]?.connector).toBe("brief-tasks");
       expect(syncPayload.reports.every((report) => report.ok)).toBe(true);
+
+      await client.callTool({
+        name: "ingest_context",
+        arguments: { userId: SMOKE_USER_ID, ...smokeCalendarIngestArgs },
+      });
+      const weatherArgs = await buildSmokeWeatherIngestArgs(SMOKE_USER_ID);
+      await client.callTool({
+        name: "ingest_context",
+        arguments: { userId: SMOKE_USER_ID, ...weatherArgs },
+      });
 
       const briefResult = await client.callTool({
         name: "brief_me",

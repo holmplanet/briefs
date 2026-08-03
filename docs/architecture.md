@@ -7,7 +7,8 @@ Repo-local architecture reference. Canonical spec: `2nd-brain/knowledge/research
 - **Standalone platform, backend first** — Brief is a hosted Holmplanet service with its own API, auth, database, and workers.
 - **MCP is the assistant interface** — ChatGPT, Claude, and Cursor call the same remote MCP server.
 - **Plugin manifests are distribution** — `.codex-plugin/plugin.json` and Claude `.mcp.json` point at the hosted server; they do not contain business logic.
-- **Personal Pack is the base** — every account gets personal connectors and reasoning. Vertical apps extend the engine.
+- **Connector-agnostic orchestration** — Brief does not OAuth into user calendars or SaaS tools. Agents fetch via the user's MCPs and upload context with `ingest_context`. Brief owns tasks, briefs, reasoning, and actions. See [docs/decisions/connector-agnostic-orchestration.md](decisions/connector-agnostic-orchestration.md).
+- **Personal Pack** — Brief-native tasks plus graph protocols; external context is agent-ingested via `ingest_context`.
 
 ## Monorepo layout
 
@@ -26,7 +27,10 @@ brief/
 │   ├── smoke-test.md
 │   └── connectors/
 ├── db/migrations/
-├── scripts/dogfood.ts
+├── scripts/
+│   ├── dogfood.ts              # MCP dogfood: ingest fixtures → brief_me
+│   ├── try-tasks.ts            # MCP dogfood: create_task → brief_me
+│   └── lib/mcp-client.ts
 ├── src/                         # CORE — TypeScript platform at repo root
 │   ├── index.ts                 # HTTP + MCP server entrypoint
 │   ├── config.ts
@@ -35,7 +39,7 @@ brief/
 │   ├── reasoning/               # change detection, rules
 │   ├── briefs/                  # brief templates + generator
 │   ├── actions/                 # approval queue + execution (v0: draft executors)
-│   ├── auth/                    # Google OAuth, MCP bearer tokens
+│   ├── auth/                    # MCP bearer tokens
 │   ├── db/                      # Postgres + Redis clients
 │   └── mcp/                     # MCP tool registration
 ├── plugin/
@@ -57,20 +61,22 @@ User → AI Assistant → MCP (remote HTTP) → src/mcp/
                                               ↓
                                     graph + reasoning + briefs
                                               ↓
-                                         connectors → external APIs
+                         brief-tasks sync + ingest_context (agent-uploaded)
 ```
 
 ## Core components
 
 ### Connectors
 
-Read (default) and later write external systems. Personal Pack: calendar, email, weather.
+**Brief-owned:** `brief-tasks` syncs the native task inbox into the graph.
 
-- **`ReadOnlyConnector`** — base class; implement `fetch()` returning normalized nodes/edges
+**Agent-ingested:** external context (calendar, GitHub, weather) via [`ingest_context`](../ingest-context.md) — the user's MCPs fetch data; Brief stores normalized nodes.
+
+- **`ReadOnlyConnector`** — base class for future Brief-owned connectors; implement `fetch()` returning normalized nodes/edges
 - **`ConnectorRegistry`** — register connectors by name without touching core engine code
 - **`ConnectorRunner`** — syncs into the Event Graph and records per-user status metadata
 - **Normalized payload** — `externalId`-based records mapped to stable graph node/edge IDs
-- **Personal connectors** — `brief-tasks` (always on), Google Calendar and weather when configured
+- **Personal connectors** — `brief-tasks` (Brief-owned task inbox)
 
 ### Event Graph
 
@@ -121,15 +127,14 @@ Vertical packs register extra connectors, graph types, and rules into the core e
 
 ## v0 scope
 
-Shipped on `main` through `9589f25` (issues #1–#12, #15 closed).
+Current platform on `dev` (integration branch). `main` tracks production releases.
 
-- Personal Pack only — `apps/*` README placeholders only
-- Google Calendar + weather connectors (read)
-- MCP tools: `sync_connectors`, `brief_me`, `what_changed`, `get_context`, `propose_action`, `list_actions`, `approve_action`
+- Personal Pack — `brief-tasks` connector + `ingest_context` for external data
+- MCP tools: `ingest_context`, `sync_connectors`, `brief_me`, `what_changed`, `get_context`, `propose_action`, `list_actions`, `approve_action`, `list_tasks`, `create_task`, `update_task`
 - Remote streamable HTTP MCP at `/mcp` + plugin manifests (`plugin/.mcp.json`, Codex plugin, workflow skill)
 - Draft-only action engine (approval gate; no live external writes)
 - MCP bearer auth + per-user isolation (`docs/trust.md`)
 - Docker Compose deployment (`docs/deploy.md`)
-- Automated smoke test with fixture connectors (`npm run test:smoke`)
-
-**Not yet proven:** live Google OAuth dogfood (real calendar + weather conflict via `scripts/dogfood.ts`). See post-v0 in canonical spec.
+- Automated smoke test with fixture ingest (`npm run test:smoke`)
+- CI: GitHub Actions (`npm test`, `npm run typecheck`) with Postgres integration tests
+- Dogfood scripts: `npm run dogfood` (ingest + brief loop), `npm run dogfood:tasks` (task inbox)

@@ -1,10 +1,10 @@
 import { NodeKind } from "../../graph/models.js";
 import { asTaskNode } from "../../graph/tasks/parse.js";
-import { TaskStatus } from "../../graph/tasks/protocol.js";
+import { TaskStatus, type TaskStatus as TaskStatusType } from "../../graph/tasks/protocol.js";
 import { InsightKind } from "../types.js";
 import type { ReasoningRule } from "./types.js";
 
-const ACTIVE_STATUSES = new Set([TaskStatus.OPEN, TaskStatus.IN_PROGRESS]);
+const ACTIVE_STATUSES = new Set<TaskStatusType>([TaskStatus.OPEN, TaskStatus.IN_PROGRESS]);
 
 function parseTime(value?: string): number | undefined {
   if (!value) return undefined;

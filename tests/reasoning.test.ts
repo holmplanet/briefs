@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { EdgeKind, NodeKind } from "../src/graph/models.js";
+import { TaskStatus } from "../src/graph/tasks/protocol.js";
 import { analyzeGraph } from "../src/reasoning/analyze.js";
 import { diffInsights } from "../src/reasoning/diff.js";
 import { InsightKind } from "../src/reasoning/engine.js";
@@ -40,6 +41,28 @@ function weatherNode(id: string, label: string, startsAt: string, endsAt: string
     data: { summary: "Rain", precipitationProbability: 80 },
     startsAt,
     endsAt,
+    updatedAt: syncedAt,
+  };
+}
+
+function taskNode(
+  id: string,
+  label: string,
+  dueAt: string,
+  status: (typeof TaskStatus)[keyof typeof TaskStatus] = TaskStatus.OPEN,
+) {
+  return {
+    id,
+    userId: "user-1",
+    kind: NodeKind.TASK,
+    label,
+    data: {
+      schemaVersion: 1,
+      status,
+      dueAt,
+      externalId: id,
+    },
+    endsAt: dueAt,
     updatedAt: syncedAt,
   };
 }
@@ -95,6 +118,51 @@ describe("reasoning engine", () => {
     );
     expect(changes.insights[0]?.message).toContain("Standup");
     expect(changes.insights[0]?.message).toContain("Client call");
+  });
+
+  it("detects overdue tasks", () => {
+    const snapshot = {
+      userId: "user-1",
+      syncedAt,
+      nodes: [taskNode("task-1", "Review PR", "2026-07-31T17:00:00.000Z")],
+      edges: [],
+    };
+
+    const changes = analyzeGraph(snapshot, { now });
+    expect(changes.insights).toHaveLength(1);
+    expect(changes.insights[0]?.kind).toBe(InsightKind.DELAY);
+    expect(changes.insights[0]?.message).toContain("Overdue");
+    expect(changes.insights[0]?.message).toContain("Review PR");
+  });
+
+  it("detects tasks due today", () => {
+    const snapshot = {
+      userId: "user-1",
+      syncedAt,
+      nodes: [taskNode("task-1", "Ship connector", "2026-08-01T20:00:00.000Z")],
+      edges: [],
+    };
+
+    const changes = analyzeGraph(snapshot, { now });
+    expect(changes.insights).toHaveLength(1);
+    expect(changes.insights[0]?.kind).toBe(InsightKind.REMINDER);
+    expect(changes.insights[0]?.message).toContain("Due today");
+    expect(changes.insights[0]?.message).toContain("Ship connector");
+  });
+
+  it("ignores completed and cancelled tasks", () => {
+    const snapshot = {
+      userId: "user-1",
+      syncedAt,
+      nodes: [
+        taskNode("task-1", "Done task", "2026-07-31T17:00:00.000Z", TaskStatus.DONE),
+        taskNode("task-2", "Cancelled task", "2026-07-31T17:00:00.000Z", TaskStatus.CANCELLED),
+      ],
+      edges: [],
+    };
+
+    const changes = analyzeGraph(snapshot, { now });
+    expect(changes.insights.some((insight) => insight.id.startsWith("task-"))).toBe(false);
   });
 
   it("flags stale waiting_on dependencies", () => {

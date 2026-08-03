@@ -70,6 +70,7 @@ Read (default) and later write external systems. Personal Pack: calendar, email,
 - **`ConnectorRegistry`** — register connectors by name without touching core engine code
 - **`ConnectorRunner`** — syncs into the Event Graph and records per-user status metadata
 - **Normalized payload** — `externalId`-based records mapped to stable graph node/edge IDs
+- **Personal connectors** — `brief-tasks` (always on), Google Calendar and weather when configured
 
 ### Event Graph
 
@@ -78,13 +79,14 @@ Persistent relationships between events, people, tasks, and dependencies. The mo
 - **Postgres** — canonical graph storage (`graph_nodes`, `graph_edges`)
 - **Redis** — optional snapshot cache for `getSnapshot` reads (invalidated on writes)
 - **In-memory** — fallback when `BRIEF_DATABASE_URL` is unset (local/tests)
+- **Task protocol v1** — universal `task` node schema in `src/graph/tasks/`; see [docs/graph/task-protocol.md](graph/task-protocol.md)
 
 ## Reasoning engine
 
 Walks the graph to find conflicts, opportunities, delays, and forgotten items since the last sync.
 
 - **`ReasoningRule`** — pluggable rule interface; vertical packs register additional rules
-- **`ReasoningRuleRegistry`** — default v0 rules: weather conflicts, schedule conflicts, stale dependencies, upcoming events
+- **`ReasoningRuleRegistry`** — default v0 rules: weather conflicts, schedule conflicts, stale dependencies, task deadlines, upcoming events
 - **`ChangeSet`** — structured insights with stable `id`s for delta diffing
 - **`diffInsights`** — powers `what_changed` by comparing against the last brief's change set
 - **Connector status** — `lastSyncAt` metadata attached to each change set via `connectorStatusStore`

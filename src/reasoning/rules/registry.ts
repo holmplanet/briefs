@@ -1,6 +1,7 @@
 import type { ReasoningRule } from "./types.js";
 import { scheduleConflictsRule } from "./schedule-conflicts.js";
 import { staleDependenciesRule } from "./stale-dependencies.js";
+import { taskDeadlinesRule } from "./task-deadlines.js";
 import { upcomingEventsRule } from "./upcoming-events.js";
 import { weatherConflictsRule } from "./weather-conflicts.js";
 
@@ -8,6 +9,7 @@ const defaultRules: ReasoningRule[] = [
   weatherConflictsRule,
   scheduleConflictsRule,
   staleDependenciesRule,
+  taskDeadlinesRule,
   upcomingEventsRule,
 ];
 

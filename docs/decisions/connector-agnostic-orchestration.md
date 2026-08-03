@@ -31,10 +31,10 @@ External context enters Brief through **`ingest_context`** — the agent calls t
 - Reasoning engine + brief generator
 - Action engine (draft-first; live writes via user's tools after approval)
 
-### Park (removed)
+### Removed
 
-- ~~`google-calendar` and `weather` first-party connectors~~ — removed; use user MCPs + `ingest_context`
-- ~~Google OAuth routes~~ — removed with calendar connector
+- `google-calendar` and `weather` first-party connectors — use user MCPs + `ingest_context`
+- Google OAuth routes and `oauth_tokens` table — removed with calendar connector
 
 ### Agent workflow
 

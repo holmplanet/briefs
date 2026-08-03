@@ -161,18 +161,18 @@ External Services
 
 ### Connectors
 
-Responsible for reading data.
+Brief does not host calendar, email, or weather connectors. The user's agent fetches live data via MCPs and uploads normalized snapshots with `ingest_context`.
 
-Examples:
+**Brief-owned:** `brief-tasks` syncs the native task inbox into the graph.
 
-- Calendar
-- Email
-- Slack
-- Weather
-- Maps
-- CRM
-- Accounting
-- Industry APIs
+Examples of agent-ingested context:
+
+- Calendar events
+- Email threads
+- Slack messages
+- Weather windows
+- GitHub issues
+- CRM records
 
 ---
 

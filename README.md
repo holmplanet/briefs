@@ -84,7 +84,14 @@ Auth is disabled locally (`BRIEF_MCP_AUTH_DISABLED=true`). See [docs/connectors/
 - Graph persistence: **Postgres** when `BRIEF_DATABASE_URL` is set; in-memory otherwise
 - Snapshot cache: **Redis** when `BRIEF_REDIS_URL` is set
 
-See [GitHub Issues](https://github.com/holmplanet/brief/issues) for v0 backlog.
+See [GitHub Issues](https://github.com/holmplanet/brief/issues) for backlog.
+
+**Dogfood scripts** (server must be running: `npm run dev`):
+
+```bash
+npm run dogfood        # ingest fixture calendar/weather → brief_me
+npm run dogfood:tasks  # create_task → brief_me
+```
 
 ## Motto
 

@@ -27,7 +27,10 @@ brief/
 │   ├── smoke-test.md
 │   └── connectors/
 ├── db/migrations/
-├── scripts/dogfood.ts
+├── scripts/
+│   ├── dogfood.ts              # MCP dogfood: ingest fixtures → brief_me
+│   ├── try-tasks.ts            # MCP dogfood: create_task → brief_me
+│   └── lib/mcp-client.ts
 ├── src/                         # CORE — TypeScript platform at repo root
 │   ├── index.ts                 # HTTP + MCP server entrypoint
 │   ├── config.ts
@@ -124,7 +127,7 @@ Vertical packs register extra connectors, graph types, and rules into the core e
 
 ## v0 scope
 
-Shipped on `main` through `9589f25` (issues #1–#12, #15 closed).
+Current platform on `dev` (integration branch). `main` tracks production releases.
 
 - Personal Pack — `brief-tasks` connector + `ingest_context` for external data
 - MCP tools: `ingest_context`, `sync_connectors`, `brief_me`, `what_changed`, `get_context`, `propose_action`, `list_actions`, `approve_action`, `list_tasks`, `create_task`, `update_task`
@@ -133,3 +136,5 @@ Shipped on `main` through `9589f25` (issues #1–#12, #15 closed).
 - MCP bearer auth + per-user isolation (`docs/trust.md`)
 - Docker Compose deployment (`docs/deploy.md`)
 - Automated smoke test with fixture ingest (`npm run test:smoke`)
+- CI: GitHub Actions (`npm test`, `npm run typecheck`) with Postgres integration tests
+- Dogfood scripts: `npm run dogfood` (ingest + brief loop), `npm run dogfood:tasks` (task inbox)

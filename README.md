@@ -67,10 +67,11 @@ See [docs/deploy.md](docs/deploy.md) for compose details.
 
 ### Cursor MCP (local dogfood)
 
-1. Start the server: `npm run db:up` then `npm run dev`
-2. Open this repo in Cursor — `.cursor/mcp.json` points at `http://localhost:8000/mcp`
-3. **Customize** sidebar → enable **holmplanet-brief** and your **calendar MCP**
-4. **New chat** → see [docs/dogfood.md](docs/dogfood.md) for the full morning routine
+1. Start the stack: `npm run docker:up`
+2. Confirm: `curl http://localhost:8000/health`
+3. Open this repo in Cursor — `.cursor/mcp.json` points at `http://localhost:8000/mcp`
+4. **Customize** sidebar → enable **holmplanet-brief** and your **calendar MCP**
+5. **New chat** → see [docs/dogfood.md](docs/dogfood.md) for the full morning routine
 
 Quick prompt:
 
@@ -78,7 +79,7 @@ Quick prompt:
 Brief me — fetch today's calendar via my calendar MCP, ingest_context, then brief_me with userId=carter.
 ```
 
-Fixture-only (no calendar MCP): `npm run dogfood`
+Fixture-only (no calendar MCP): `npm run docker:up` then `npm run dogfood`
 
 Auth is disabled locally (`BRIEF_MCP_AUTH_DISABLED=true`). See [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md).
 
@@ -89,7 +90,7 @@ Auth is disabled locally (`BRIEF_MCP_AUTH_DISABLED=true`). See [docs/connectors/
 
 See [GitHub Issues](https://github.com/holmplanet/brief/issues) for backlog.
 
-**Dogfood scripts** (server must be running: `npm run dev`):
+**Dogfood scripts** (Docker must be running: `npm run docker:up`):
 
 ```bash
 npm run dogfood        # ingest fixture calendar/weather → brief_me

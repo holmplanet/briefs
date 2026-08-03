@@ -124,6 +124,7 @@ Use `kind: "task"` with [task protocol v1](https://github.com/holmplanet/brief/b
 
 ## Notes
 
-- Local dev: `npm run dev` → `http://localhost:8000/mcp` (see `.cursor/mcp.json`).
+- **Docker (recommended):** `npm run docker:up` → `http://localhost:8000/mcp` (see `.cursor/mcp.json`).
+- **Hybrid dev:** `npm run db:up && npm run dev` for hot reload on the host.
 - Full runbook: [docs/dogfood.md](https://github.com/holmplanet/brief/blob/dev/docs/dogfood.md).
 - Re-ingesting the same `source` + `externalId` updates graph nodes in place.

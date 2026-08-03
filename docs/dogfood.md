@@ -4,21 +4,45 @@ Prove the connector-agnostic loop: **your calendar MCP** fetches live data → *
 
 ## Prerequisites
 
-1. **Brief server running** (Postgres recommended so graph persists between sessions):
+### 1. Brief server (Docker — recommended)
+
+Run the full stack in Docker (Postgres + Redis + Brief). Cursor on your host still talks to `http://localhost:8000/mcp` via the published port.
+
+```bash
+npm run docker:up
+curl http://localhost:8000/health
+```
+
+Expected: `"status": "ok"`, `"connectors": 1`, `"storage": { "graph": "postgres", "cache": "redis" }`.
+
+Rebuild after code changes:
+
+```bash
+docker compose build brief && docker compose up -d brief
+```
+
+Logs: `npm run docker:logs` or `docker compose logs -f brief`
+
+Stop: `npm run docker:down`
+
+**Alternative (hybrid dev)** — databases in Docker, app on host with hot reload:
 
 ```bash
 npm run db:up
-cp .env.example .env   # if first time
+cp .env.example .env   # BRIEF_DATABASE_URL + BRIEF_REDIS_URL for host
 npm run dev
 ```
 
-Confirm: `curl http://localhost:8000/health` → `"status": "ok"`, `"connectors": 1`
+### 2. Cursor MCP
+`.cursor/mcp.json` wires `holmplanet-brief` to `http://localhost:8000/mcp` (works with Docker or host). In Cursor: **Customize → MCP → enable holmplanet-brief**.
 
-2. **Cursor MCP enabled** — `.cursor/mcp.json` wires `holmplanet-brief` to `http://localhost:8000/mcp`. In Cursor: **Customize → MCP → enable holmplanet-brief**.
+### 3. Calendar MCP
 
-3. **A calendar MCP** — any MCP that lists the user's events (Google Calendar, Outlook, etc.). Brief does not provide this; you bring your own.
+Any MCP that lists the user's events (Google Calendar, Outlook, etc.). Brief does not provide this; you bring your own.
 
-4. **Stable `userId`** — local dev uses auth-disabled mode. Pass `"userId": "carter"` (or your chosen id) on every Brief tool call so graph data stays consistent.
+### 4. Stable `userId`
+
+Local Docker uses auth-disabled mode (`BRIEF_MCP_AUTH_DISABLED=true` in compose). Pass `"userId": "carter"` (or your chosen id) on every Brief tool call so graph data stays consistent.
 
 ## Morning routine (agent workflow)
 
@@ -136,7 +160,9 @@ With calendar + tasks ingested, reasoning should surface:
 | Symptom | Fix |
 |---------|-----|
 | Empty brief | Run `ingest_context` first; confirm events have `startsAt` in the future or tasks exist |
-| Graph resets between sessions | Set `BRIEF_DATABASE_URL` in `.env` and run `npm run db:up` |
+| Graph resets between sessions | Use `npm run docker:up` (Postgres volume persists) — not `npm run dev` without `BRIEF_DATABASE_URL` |
+| Docker brief won't start | `docker compose logs brief` — wait for postgres/redis healthchecks |
+| Port 8000 in use | Set `BRIEF_PORT=8001` in `.env`, update `.cursor/mcp.json` URL |
 | Wrong user's data | Use the same `userId` on every tool call |
 | Calendar MCP not found | Enable the calendar MCP in Cursor; Brief cannot fetch calendar directly |
 | No weather conflicts | Ingest weather + `depends_on` edges, or mark outdoor events with `data.outdoor: true` |
@@ -144,12 +170,14 @@ With calendar + tasks ingested, reasoning should surface:
 
 ## Fixture dogfood (no calendar MCP)
 
-For CI or quick smoke without live calendar:
+With Docker running (`npm run docker:up`), smoke the MCP loop from your host:
 
 ```bash
 npm run dogfood        # fixture calendar/weather → brief_me
 npm run dogfood:tasks  # create_task → brief_me
 ```
+
+Both scripts call `http://localhost:8000/mcp` — same endpoint Cursor uses.
 
 See [smoke-test.md](smoke-test.md).
 

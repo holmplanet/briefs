@@ -17,7 +17,8 @@
     "db:down": "docker compose down",
     "docker:build": "docker compose build brief",
     "docker:up": "docker compose up -d --build",
-    "docker:down": "docker compose down"
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f brief"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",

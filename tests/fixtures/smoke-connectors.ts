@@ -95,3 +95,40 @@ export async function buildSmokeWeatherIngestArgs(userId: string) {
     edges: weatherPayload.edges,
   };
 }
+
+/** Static weather ingest args for MCP dogfood scripts (no in-process graph store). */
+export function buildStaticSmokeWeatherIngestArgs() {
+  const { calendar } = createSmokeConnectorPayload();
+  const event = calendar.nodes[0];
+  if (!event) {
+    throw new Error("Smoke calendar fixture is missing an event node");
+  }
+
+  const periods = parseOpenMeteoHourly(SMOKE_HOURLY, 50);
+  const weatherPayload = buildWeatherPayload(
+    {
+      userId: "dogfood",
+      nodes: [
+        {
+          id: "smoke-event-1",
+          userId: "dogfood",
+          kind: event.kind,
+          label: event.label,
+          startsAt: event.startsAt,
+          endsAt: event.endsAt,
+          data: { externalId: event.externalId },
+          updatedAt: new Date().toISOString(),
+        },
+      ],
+      edges: [],
+      syncedAt: new Date().toISOString(),
+    },
+    periods,
+  );
+
+  return {
+    source: "smoke-weather",
+    nodes: weatherPayload.nodes,
+    edges: weatherPayload.edges,
+  };
+}

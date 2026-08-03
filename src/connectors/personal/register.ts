@@ -7,6 +7,10 @@ import { WeatherConnector } from "./weather/connector.js";
 export function registerPersonalConnectors(registry: ConnectorRegistry, config: BriefEnv): void {
   registry.register(new BriefTasksConnector());
 
+  if (!config.legacyConnectors) {
+    return;
+  }
+
   if (config.google) {
     registry.register(new GoogleCalendarConnector(config.google));
   }

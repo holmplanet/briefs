@@ -16,16 +16,10 @@ import { resetGraphStore, setGraphStore } from "../../src/graph/runtime.js";
 import { createApp } from "../../src/index.js";
 import { InMemoryBriefTaskStore } from "../../src/tasks/memory-store.js";
 import { resetBriefTaskRuntime, setBriefTaskStore } from "../../src/tasks/runtime.js";
-import {
-  SmokeCalendarConnector,
-  SmokeWeatherConnector,
-} from "../fixtures/smoke-connectors.js";
 
 export function installSmokeConnectors(store: InMemoryGraphStore): void {
   const registry = createConnectorRegistry(new ConnectorRunner(store));
   registry.register(new BriefTasksConnector());
-  registry.register(new SmokeCalendarConnector());
-  registry.register(new SmokeWeatherConnector(store));
   setConnectorRegistry(registry);
 }
 

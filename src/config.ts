@@ -28,6 +28,7 @@ export type BriefEnv = {
   databaseUrl?: string;
   redisUrl?: string;
   graphCacheTtlSeconds: number;
+  legacyConnectors: boolean;
   google?: GoogleConfig;
   weather?: WeatherConfig;
   mcpAuth: McpAuthConfig;
@@ -101,6 +102,7 @@ export function loadConfig(): BriefEnv {
     databaseUrl: process.env.BRIEF_DATABASE_URL,
     redisUrl: process.env.BRIEF_REDIS_URL,
     graphCacheTtlSeconds: readTtl(process.env.BRIEF_GRAPH_CACHE_TTL_SECONDS, 60),
+    legacyConnectors: process.env.BRIEF_LEGACY_CONNECTORS === "true",
     google: loadGoogleConfig(publicUrl),
     weather: loadWeatherConfig(),
     mcpAuth: loadMcpAuthConfig(publicUrl, process.env.BRIEF_MCP_PATH ?? "/mcp"),

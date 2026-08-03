@@ -10,9 +10,12 @@ import {
   ReadOnlyConnector,
   createConnectorRegistry,
 } from "../src/connectors/index.js";
-import { resetConnectorRegistry, setConnectorRegistry } from "../src/connectors/runtime.js";
+import { BriefTasksConnector } from "../src/connectors/personal/brief-tasks/connector.js";
+import { getConnectorRegistry, resetConnectorRegistry, setConnectorRegistry } from "../src/connectors/runtime.js";
 import { InMemoryGraphStore } from "../src/graph/memory-store.js";
 import { resetGraphStore, setGraphStore } from "../src/graph/runtime.js";
+import { InMemoryBriefTaskStore } from "../src/tasks/memory-store.js";
+import { resetBriefTaskRuntime, setBriefTaskStore } from "../src/tasks/runtime.js";
 import { NodeKind } from "../src/graph/models.js";
 import type { NormalizedSyncPayload } from "../src/connectors/types.js";
 
@@ -44,10 +47,12 @@ describe("what_changed delta brief", () => {
   beforeEach(() => {
     resetGraphStore();
     resetConnectorRegistry();
+    resetBriefTaskRuntime();
     briefStore.clear();
 
     store = new InMemoryGraphStore();
     setGraphStore(store);
+    setBriefTaskStore(new InMemoryBriefTaskStore());
 
     const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
     const end = new Date(start.getTime() + 30 * 60 * 1000);
@@ -66,12 +71,14 @@ describe("what_changed delta brief", () => {
     });
 
     const registry = createConnectorRegistry(new ConnectorRunner(store));
+    registry.register(new BriefTasksConnector());
     registry.register(connector);
     setConnectorRegistry(registry);
   });
 
   it("returns only new insights compared to the previous brief", async () => {
-    const first = await generateBrief("user-1", BriefKind.ON_DEMAND, { syncFirst: true });
+    await getConnectorRegistry().sync("user-1", "fixture");
+    const first = await generateBrief("user-1", BriefKind.ON_DEMAND, { syncFirst: false });
     expect(first.bullets.some((bullet) => bullet.text.includes("Standup"))).toBe(true);
 
     const start = new Date(Date.now() + 2 * 60 * 60 * 1000);
@@ -99,13 +106,15 @@ describe("what_changed delta brief", () => {
       edges: [],
     });
 
+    await getConnectorRegistry().sync("user-1", "fixture");
     const delta = await generateDeltaBrief("user-1");
     expect(delta.previousBriefAt).toBe(first.generatedAt);
     expect(delta.brief.bullets.some((bullet) => bullet.text.includes("Client call"))).toBe(true);
   });
 
   it("reports no changes when the graph is unchanged", async () => {
-    await generateBrief("user-1", BriefKind.ON_DEMAND, { syncFirst: true });
+    await getConnectorRegistry().sync("user-1", "fixture");
+    await generateBrief("user-1", BriefKind.ON_DEMAND, { syncFirst: false });
     const delta = await generateDeltaBrief("user-1");
 
     expect(delta.brief.bullets).toHaveLength(1);

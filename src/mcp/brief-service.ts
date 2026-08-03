@@ -1,3 +1,4 @@
+import { BRIEF_TASKS_CONNECTOR_NAME } from "../connectors/personal/brief-tasks/connector.js";
 import { getConnectorRegistry } from "../connectors/runtime.js";
 import { briefGenerator, BriefKind, type Brief } from "../briefs/generator.js";
 import { briefStore } from "../briefs/store.js";
@@ -7,8 +8,15 @@ import { buildReasoningContext } from "../reasoning/context.js";
 import { diffInsights } from "../reasoning/diff.js";
 import { InsightKind, reasoningEngine, type ChangeSet } from "../reasoning/engine.js";
 
+/** Sync Brief-owned connectors only (brief-native tasks). */
+export async function syncBriefOwnedConnectors(userId: string): Promise<ConnectorSyncReport[]> {
+  const report = await getConnectorRegistry().sync(userId, BRIEF_TASKS_CONNECTOR_NAME);
+  return [report];
+}
+
+/** @deprecated Use `ingest_context` for external data. Syncs Brief-owned connectors only. */
 export async function syncConnectors(userId: string): Promise<ConnectorSyncReport[]> {
-  return getConnectorRegistry().syncAll(userId);
+  return syncBriefOwnedConnectors(userId);
 }
 
 export async function generateBrief(
@@ -17,7 +25,7 @@ export async function generateBrief(
   options: { syncFirst?: boolean } = {},
 ): Promise<Brief> {
   if (options.syncFirst ?? true) {
-    await syncConnectors(userId);
+    await syncBriefOwnedConnectors(userId);
   }
 
   const snapshot = await getGraphStore().getSnapshot(userId);
@@ -58,7 +66,7 @@ export async function generateDeltaBrief(
   const previousChangeSet = briefStore.getChangeSet(userId);
   const sinceTimestamp = since ?? previousBrief?.generatedAt;
 
-  await syncConnectors(userId);
+  await syncBriefOwnedConnectors(userId);
 
   const snapshot = await getGraphStore().getSnapshot(userId);
   const context = buildReasoningContext(snapshot, { since: sinceTimestamp });

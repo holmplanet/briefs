@@ -8,7 +8,7 @@ AI assistants (ChatGPT, Claude, Cursor, Codex) reach Brief through a **hosted MC
 
 ## Status
 
-Early development. **Personal Pack** first (calendar, weather, tasks). Vertical apps under `apps/` are placeholders.
+Early development. **Connector-agnostic orchestration** — Brief owns tasks and briefs; users bring their own MCPs for calendar, email, GitHub, etc. Vertical apps under `apps/` are placeholders.
 
 ## Docs
 
@@ -17,9 +17,11 @@ Early development. **Personal Pack** first (calendar, weather, tasks). Vertical 
 | [VISION.md](VISION.md) | Product vision and principles |
 | [docs/architecture.md](docs/architecture.md) | Monorepo layout and core components |
 | [docs/plugin-compliance.md](docs/plugin-compliance.md) | ChatGPT/Codex + Claude integration rules |
-| [docs/connectors/google-calendar.md](docs/connectors/google-calendar.md) | Google Calendar OAuth + sync |
-| [docs/connectors/weather.md](docs/connectors/weather.md) | Weather forecast connector (Open-Meteo) |
+| [docs/connectors/google-calendar.md](docs/connectors/google-calendar.md) | Google Calendar connector (legacy, opt-in) |
+| [docs/connectors/weather.md](docs/connectors/weather.md) | Weather connector (legacy, opt-in) |
 | [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md) | Brief-native task inbox + MCP tools |
+| [docs/ingest-context.md](docs/ingest-context.md) | Agent-mediated context upload (`ingest_context`) |
+| [docs/decisions/connector-agnostic-orchestration.md](docs/decisions/connector-agnostic-orchestration.md) | Why Brief orchestrates user MCPs instead of OAuth |
 | [docs/smoke-test.md](docs/smoke-test.md) | Automated + manual v0 smoke test |
 | [docs/actions.md](docs/actions.md) | Approval-gated action engine |
 | [docs/trust.md](docs/trust.md) | Auth, isolation, and trust principles |
@@ -69,7 +71,13 @@ See [docs/deploy.md](docs/deploy.md) for compose details.
 1. Start the server: `npm run db:up` then `npm run dev`
 2. Open this repo in Cursor — `.cursor/mcp.json` points at `http://localhost:8000/mcp`
 3. **Customize** sidebar → enable **holmplanet-brief**
-4. **New chat** → try: *"Create a task called 'Review PR' due tomorrow, then brief me."*
+4. **New chat** → gather context with your calendar/GitHub MCPs, then try:
+
+```
+Ingest my calendar events via ingest_context, then brief me.
+```
+
+Or Brief-only: *"Create a task called 'Review PR' due tomorrow, then brief me."*
 
 Auth is disabled locally (`BRIEF_MCP_AUTH_DISABLED=true`). See [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md).
 

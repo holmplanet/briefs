@@ -12,6 +12,7 @@ import {
 } from "../../src/connectors/personal/weather/map-forecast.js";
 import type { InMemoryGraphStore } from "../../src/graph/memory-store.js";
 import { EdgeKind, NodeKind } from "../../src/graph/models.js";
+import { ingestContext } from "../../src/mcp/ingest-service.js";
 
 export const SMOKE_USER_ID = "smoke-user";
 export const SMOKE_EVENT_LABEL = "Outdoor standup";
@@ -123,4 +124,60 @@ export function expectSmokeGraphShape(
   if (!snapshot.edges.some((edge) => edge.kind === EdgeKind.DEPENDS_ON)) {
     throw new Error("Expected depends_on edge between event and weather");
   }
+}
+
+/** Seed smoke graph via ingest_context (connector-agnostic path). */
+export async function ingestSmokeGraph(userId: string): Promise<void> {
+  const { calendar } = createSmokeConnectorPayload();
+
+  await ingestContext({
+    userId,
+    source: "smoke-calendar",
+    nodes: calendar.nodes,
+    edges: calendar.edges,
+  });
+
+  const { getGraphStore } = await import("../../src/graph/runtime.js");
+  const snapshot = await getGraphStore().getSnapshot(userId);
+  const periods = parseOpenMeteoHourly(
+    {
+      time: [SMOKE_WEATHER_TIME],
+      precipitation_probability: [80],
+      weathercode: [95],
+    },
+    50,
+  );
+  const weatherPayload = buildWeatherPayload(snapshot, periods);
+
+  await ingestContext({
+    userId,
+    source: "smoke-weather",
+    nodes: weatherPayload.nodes,
+    edges: weatherPayload.edges,
+  });
+}
+
+export const smokeCalendarIngestArgs = {
+  source: "smoke-calendar",
+  nodes: createSmokeConnectorPayload().calendar.nodes,
+  edges: [] as NormalizedSyncPayload["edges"],
+};
+
+export async function buildSmokeWeatherIngestArgs(userId: string) {
+  const { getGraphStore } = await import("../../src/graph/runtime.js");
+  const snapshot = await getGraphStore().getSnapshot(userId);
+  const periods = parseOpenMeteoHourly(
+    {
+      time: [SMOKE_WEATHER_TIME],
+      precipitation_probability: [80],
+      weathercode: [95],
+    },
+    50,
+  );
+  const weatherPayload = buildWeatherPayload(snapshot, periods);
+  return {
+    source: "smoke-weather",
+    nodes: weatherPayload.nodes,
+    edges: weatherPayload.edges,
+  };
 }

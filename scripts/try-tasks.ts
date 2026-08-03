@@ -1,13 +1,11 @@
-import { Client } from "@modelcontextprotocol/sdk/client/index.js";
-import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
+import { createMcpClient, readMcpPayload } from "./lib/mcp-client.js";
 
-const baseUrl = process.env.BRIEF_PUBLIC_URL ?? "http://localhost:8000";
 const userId = process.env.BRIEF_DOGFOOD_USER_ID ?? "carter";
 
 async function main() {
-  const client = new Client({ name: "try-tasks", version: "0.1.0" });
-  const transport = new StreamableHTTPClientTransport(new URL(`${baseUrl}/mcp`));
-  await client.connect(transport);
+  const { client, close } = await createMcpClient({
+    clientName: "try-tasks",
+  });
 
   const tools = await client.listTools();
   console.log(`\n=== MCP tools (${tools.tools.length}) ===`);
@@ -28,17 +26,16 @@ async function main() {
       description: "Live dogfood from this session",
     },
   });
-  console.log(JSON.stringify(created.structuredContent, null, 2));
+  console.log(JSON.stringify(readMcpPayload(created), null, 2));
 
   console.log(`\n=== brief_me ===`);
   const brief = await client.callTool({
     name: "brief_me",
-    arguments: { userId, kind: "on_demand", syncFirst: false },
+    arguments: { userId, kind: "on_demand", syncFirst: true },
   });
-  console.log(JSON.stringify(brief.structuredContent, null, 2));
+  console.log(JSON.stringify(readMcpPayload(brief), null, 2));
 
-  await client.close();
-  await transport.close();
+  await close();
 }
 
 main().catch((error) => {

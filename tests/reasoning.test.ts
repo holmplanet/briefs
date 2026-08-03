@@ -209,8 +209,8 @@ describe("reasoning engine", () => {
   });
 
   it("includes last sync metadata in the change set", () => {
-    connectorStatusStore.recordSuccess("user-1", "google-calendar", 1, 0, "2026-08-01T11:00:00.000Z");
-    connectorStatusStore.recordSuccess("user-1", "weather", 2, 1, "2026-08-01T11:30:00.000Z");
+    connectorStatusStore.recordSuccess("user-1", "smoke-calendar", 1, 0, "2026-08-01T11:00:00.000Z");
+    connectorStatusStore.recordSuccess("user-1", "smoke-weather", 2, 1, "2026-08-01T11:30:00.000Z");
 
     const snapshot = {
       userId: "user-1",

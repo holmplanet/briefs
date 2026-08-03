@@ -15,7 +15,7 @@ function emptyGraphInsight(): Insight {
   return {
     id: "missing-graph-data",
     kind: InsightKind.MISSING_INFO,
-    message: "No graph data yet. Connect a calendar and run sync_connectors.",
+    message: "No graph data yet. Use your MCP tools to gather context, then call ingest_context before brief_me.",
     priority: 2,
     relatedNodeIds: [],
   };

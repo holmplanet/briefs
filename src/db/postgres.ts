@@ -14,6 +14,11 @@ const schemaPath = join(
   "../../db/migrations/001_graph.sql",
 );
 
+const dropOAuthSchemaPath = join(
+  dirname(fileURLToPath(import.meta.url)),
+  "../../db/migrations/006_drop_oauth_tokens.sql",
+);
+
 export function createPostgresPool(options: PostgresPoolOptions): Pool {
   return new Pool({
     connectionString: options.connectionString,
@@ -24,6 +29,9 @@ export function createPostgresPool(options: PostgresPoolOptions): Pool {
 export async function initGraphSchema(pool: Pool): Promise<void> {
   const sql = await readFile(schemaPath, "utf8");
   await pool.query(sql);
+
+  const dropOAuthSql = await readFile(dropOAuthSchemaPath, "utf8");
+  await pool.query(dropOAuthSql);
 }
 
 export async function closePostgresPool(pool: Pool): Promise<void> {

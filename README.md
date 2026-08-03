@@ -64,6 +64,15 @@ curl http://localhost:8000/health
 
 See [docs/deploy.md](docs/deploy.md) for compose details.
 
+### Cursor MCP (local dogfood)
+
+1. Start the server: `npm run db:up` then `npm run dev`
+2. Open this repo in Cursor — `.cursor/mcp.json` points at `http://localhost:8000/mcp`
+3. **Customize** sidebar → enable **holmplanet-brief**
+4. **New chat** → try: *"Create a task called 'Review PR' due tomorrow, then brief me."*
+
+Auth is disabled locally (`BRIEF_MCP_AUTH_DISABLED=true`). See [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md).
+
 - Health: `GET http://localhost:8000/health`
 - MCP: `http://localhost:8000/mcp` (streamable HTTP, stateless)
 - Graph persistence: **Postgres** when `BRIEF_DATABASE_URL` is set; in-memory otherwise

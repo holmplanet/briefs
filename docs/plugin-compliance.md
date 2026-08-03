@@ -54,7 +54,7 @@ References:
 
 1. Business logic lives in `src/` only — never in plugin manifests.
 2. Plugin folders contain manifests, skills, and assets — not duplicate services.
-3. v0 MCP tools: `sync_connectors`, `brief_me`, `what_changed`, `get_context`, `propose_action`, `list_actions`, `approve_action`.
+3. MCP tools: `sync_connectors`, `brief_me`, `what_changed`, `get_context`, `propose_action`, `list_actions`, `approve_action`, `list_tasks`, `create_task`, `update_task`.
 4. Vertical-specific tools are registered by `apps/*` packs post-v0.
 5. Secrets via environment variables — never committed.
 

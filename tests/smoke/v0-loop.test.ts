@@ -51,9 +51,13 @@ describe("v0 smoke test", () => {
 
   it("runs calendar → weather sync → brief with a weather conflict bullet", async () => {
     const reports = await syncConnectors(SMOKE_USER_ID);
-    expect(reports).toHaveLength(2);
+    expect(reports).toHaveLength(3);
     expect(reports.every((report) => report.ok)).toBe(true);
-    expect(getConnectorRegistry().listNames()).toEqual(["google-calendar", "weather"]);
+    expect(getConnectorRegistry().listNames()).toEqual([
+      "brief-tasks",
+      "google-calendar",
+      "weather",
+    ]);
 
     const snapshot = await getGraphStore().getSnapshot(SMOKE_USER_ID);
     expectSmokeGraphShape(snapshot);
@@ -107,6 +111,9 @@ describe("v0 smoke test", () => {
           "propose_action",
           "list_actions",
           "approve_action",
+          "list_tasks",
+          "create_task",
+          "update_task",
         ]),
       );
 
@@ -115,7 +122,7 @@ describe("v0 smoke test", () => {
         arguments: { userId: SMOKE_USER_ID },
       });
       const syncPayload = readStructuredContent<SyncToolResult>(syncResult);
-      expect(syncPayload.reports).toHaveLength(2);
+      expect(syncPayload.reports).toHaveLength(3);
       expect(syncPayload.reports.every((report) => report.ok)).toBe(true);
 
       const briefResult = await client.callTool({

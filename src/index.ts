@@ -25,6 +25,8 @@ import { getConnectorRegistry, setConnectorRegistry } from "./connectors/runtime
 import { createGraphStore } from "./graph/factory.js";
 import { setGraphStore } from "./graph/runtime.js";
 import { createMcpServer } from "./mcp/tools.js";
+import { createBriefTaskStore } from "./tasks/store.js";
+import { setBriefTaskStore } from "./tasks/runtime.js";
 
 export async function bootstrap(): Promise<BriefEnv> {
   const config = loadConfig();
@@ -40,6 +42,9 @@ export async function bootstrap(): Promise<BriefEnv> {
   const actionStore = await createActionStore(config);
   setActionStore(actionStore);
   setActionEngine(createActionEngine(actionStore));
+
+  const taskStore = await createBriefTaskStore(config);
+  setBriefTaskStore(taskStore);
 
   const registry = createConnectorRegistry(new ConnectorRunner(store));
   registerPersonalConnectors(registry, config);

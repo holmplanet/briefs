@@ -19,6 +19,7 @@ Early development. **Personal Pack** first (calendar, weather, tasks). Vertical 
 | [docs/plugin-compliance.md](docs/plugin-compliance.md) | ChatGPT/Codex + Claude integration rules |
 | [docs/connectors/google-calendar.md](docs/connectors/google-calendar.md) | Google Calendar OAuth + sync |
 | [docs/connectors/weather.md](docs/connectors/weather.md) | Weather forecast connector (Open-Meteo) |
+| [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md) | Brief-native task inbox + MCP tools |
 | [docs/smoke-test.md](docs/smoke-test.md) | Automated + manual v0 smoke test |
 | [docs/actions.md](docs/actions.md) | Approval-gated action engine |
 | [docs/trust.md](docs/trust.md) | Auth, isolation, and trust principles |

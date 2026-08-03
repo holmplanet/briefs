@@ -12,8 +12,9 @@ describe("mcp brief service", () => {
 
   it("syncs connectors and surfaces weather conflicts in brief_me", async () => {
     const reports = await syncConnectors(SMOKE_USER_ID);
-    expect(reports).toHaveLength(2);
+    expect(reports).toHaveLength(3);
     expect(reports.every((report) => report.ok)).toBe(true);
+    expect(reports.find((report) => report.connector === "brief-tasks")?.nodesWritten).toBe(0);
 
     const brief = await generateBrief(SMOKE_USER_ID, BriefKind.ON_DEMAND, { syncFirst: false });
     expect(brief.bullets.some((bullet) => bullet.text.includes(SMOKE_EVENT_LABEL))).toBe(true);

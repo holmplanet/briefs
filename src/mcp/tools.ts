@@ -3,10 +3,12 @@ import { z } from "zod";
 
 import type { McpToolExtra } from "../auth/mcp/resolve-user.js";
 import { BriefKind } from "../briefs/generator.js";
+import { TaskPriority, TaskStatus } from "../graph/tasks/protocol.js";
 import { getGraphStore } from "../graph/runtime.js";
 import { approveAction, listActions, proposeAction } from "./action-service.js";
 import { ActionStatus } from "../actions/types.js";
 import { generateBrief, generateDeltaBrief, syncConnectors } from "./brief-service.js";
+import { createBriefTask, listBriefTasks, updateBriefTask } from "../tasks/service.js";
 
 export type McpToolDeps = {
   resolveUserId: (extra: McpToolExtra, requestedUserId?: string) => string;
@@ -60,6 +62,60 @@ const listActionsInput = z.object({
     ActionStatus.REJECTED,
     ActionStatus.FAILED,
   ]).optional(),
+});
+
+const taskStatusSchema = z.enum([
+  TaskStatus.OPEN,
+  TaskStatus.IN_PROGRESS,
+  TaskStatus.DONE,
+  TaskStatus.CANCELLED,
+]);
+
+const taskPrioritySchema = z.enum([
+  TaskPriority.LOW,
+  TaskPriority.NORMAL,
+  TaskPriority.HIGH,
+  TaskPriority.URGENT,
+]);
+
+const briefTaskSchema = z.object({
+  id: z.string(),
+  userId: z.string(),
+  label: z.string(),
+  status: taskStatusSchema,
+  dueAt: z.string().optional(),
+  scheduledAt: z.string().optional(),
+  completedAt: z.string().optional(),
+  priority: taskPrioritySchema.optional(),
+  description: z.string().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});
+
+const listTasksInput = z.object({
+  userId: z.string().optional(),
+  status: taskStatusSchema.optional(),
+});
+
+const createTaskInput = z.object({
+  userId: z.string().optional(),
+  label: z.string(),
+  dueAt: z.string().optional(),
+  scheduledAt: z.string().optional(),
+  priority: taskPrioritySchema.optional(),
+  description: z.string().optional(),
+});
+
+const updateTaskInput = z.object({
+  userId: z.string().optional(),
+  taskId: z.string(),
+  label: z.string().optional(),
+  status: taskStatusSchema.optional(),
+  dueAt: z.string().nullable().optional(),
+  scheduledAt: z.string().nullable().optional(),
+  completedAt: z.string().nullable().optional(),
+  priority: taskPrioritySchema.nullable().optional(),
+  description: z.string().nullable().optional(),
 });
 
 const actionProposalSchema = z.object({
@@ -249,6 +305,68 @@ export function registerMcpTools(server: McpServer, deps: McpToolDeps): void {
       return {
         content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
         structuredContent: payload,
+      };
+    },
+  );
+
+  server.registerTool(
+    "list_tasks",
+    {
+      description: "List Brief-native tasks for a user.",
+      inputSchema: listTasksInput,
+      outputSchema: z.object({
+        userId: z.string(),
+        tasks: z.array(briefTaskSchema),
+      }),
+    },
+    async ({ userId, status }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
+      const tasks = await listBriefTasks(resolvedUserId, status);
+      const payload = { userId: resolvedUserId, tasks };
+      return {
+        content: [{ type: "text", text: JSON.stringify(payload, null, 2) }],
+        structuredContent: payload,
+      };
+    },
+  );
+
+  server.registerTool(
+    "create_task",
+    {
+      description: "Create a Brief-native task and sync it into the Event Graph.",
+      inputSchema: createTaskInput,
+      outputSchema: briefTaskSchema,
+    },
+    async ({ userId, label, dueAt, scheduledAt, priority, description }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
+      const task = await createBriefTask({
+        userId: resolvedUserId,
+        label,
+        dueAt,
+        scheduledAt,
+        priority,
+        description,
+      });
+      return {
+        content: [{ type: "text", text: JSON.stringify(task, null, 2) }],
+        structuredContent: task,
+      };
+    },
+  );
+
+  server.registerTool(
+    "update_task",
+    {
+      description: "Update a Brief-native task and sync changes into the Event Graph.",
+      inputSchema: updateTaskInput,
+      outputSchema: briefTaskSchema,
+    },
+    async ({ userId, taskId, ...updates }, extra) => {
+      const resolvedUserId = deps.resolveUserId(extra, userId);
+      const task = await updateBriefTask(resolvedUserId, taskId, updates);
+      return {
+        content: [{ type: "text", text: JSON.stringify(task, null, 2) }],
+        structuredContent: task,
       };
     },
   );

@@ -8,10 +8,13 @@ import { resetMcpApiTokenStore, setMcpApiTokenStore } from "../src/auth/mcp/runt
 import { InMemoryOAuthTokenStore } from "../src/auth/memory-token-store.js";
 import { resetOAuthTokenStore, setOAuthTokenStore } from "../src/auth/runtime.js";
 import { ConnectorRunner, createConnectorRegistry } from "../src/connectors/index.js";
+import { BriefTasksConnector } from "../src/connectors/personal/brief-tasks/connector.js";
 import { connectorStatusStore } from "../src/connectors/status.js";
 import { resetConnectorRegistry, setConnectorRegistry } from "../src/connectors/runtime.js";
 import { InMemoryGraphStore } from "../src/graph/memory-store.js";
 import { resetGraphStore, setGraphStore } from "../src/graph/runtime.js";
+import { InMemoryBriefTaskStore } from "../src/tasks/memory-store.js";
+import { resetBriefTaskRuntime, setBriefTaskStore } from "../src/tasks/runtime.js";
 
 beforeEach(() => {
   process.env.BRIEF_MCP_AUTH_DISABLED = "true";
@@ -22,6 +25,7 @@ beforeEach(() => {
   resetOAuthTokenStore();
   resetActionRuntime();
   resetMcpApiTokenStore();
+  resetBriefTaskRuntime();
   connectorStatusStore.clear();
 
   const store = new InMemoryGraphStore();
@@ -32,7 +36,11 @@ beforeEach(() => {
   setActionStore(actionStore);
   setActionEngine(createActionEngine(actionStore));
 
+  setBriefTaskStore(new InMemoryBriefTaskStore());
+
   setMcpApiTokenStore(new InMemoryMcpApiTokenStore());
 
-  setConnectorRegistry(createConnectorRegistry(new ConnectorRunner(store)));
+  const registry = createConnectorRegistry(new ConnectorRunner(store));
+  registry.register(new BriefTasksConnector());
+  setConnectorRegistry(registry);
 });

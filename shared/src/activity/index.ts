@@ -1,8 +1,7 @@
 /**
- * Activity — append-only record of what happened to an item (Object).
+ * Activity — append-only record of what happened to an item.
  *
- * One log for creates, edits, moves, and archival. Inspired by ActivityPub /
- * passport §5–7; not an ActivityPub implementation.
+ * One log for creates, edits, moves, and archival.
  */
 
 export * from "./constants.js";

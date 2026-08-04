@@ -45,7 +45,7 @@ describe("item API", () => {
       expect(activitiesBody.activities).toHaveLength(1);
       expect(activitiesBody.activities[0]).toMatchObject({
         type: "Create",
-        objectId: created.item.id,
+        itemId: created.item.id,
       });
 
       const listResponse = await fetch(`${base}/api/v1/items`, { headers });

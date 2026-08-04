@@ -1,6 +1,6 @@
 # @briefs/shared
 
-Shared types for **Item (Object)**, **Actor**, and **Activity** — passport-inspired data contracts.
+Shared types for **item**, **actor**, and **activity** data contracts.
 
 ## Layout
 
@@ -9,7 +9,7 @@ src/
   common/          shared Zod helpers
   actor/           who acted
   activity/        append-only event log
-  item/            durable Object + workflow projection
+  item/            durable item + workflow projection
 ```
 
 ```ts

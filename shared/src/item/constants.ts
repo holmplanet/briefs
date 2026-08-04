@@ -3,7 +3,7 @@ export const ITEM_SCHEMA_VERSION = 2 as const;
 /** Default vertical/system context for new items. */
 export const ITEM_DEFAULT_CONTEXT = "core" as const;
 
-/** Passport-style lifecycle on the Object — distinct from workflow status. */
+/** Lifecycle on the item — distinct from workflow status. */
 export const ItemArchiveStatus = {
   ACTIVE: "active",
   ARCHIVED: "archived",
@@ -11,7 +11,7 @@ export const ItemArchiveStatus = {
 
 export type ItemArchiveStatus = (typeof ItemArchiveStatus)[keyof typeof ItemArchiveStatus];
 
-/** Typed links between items — passport §4.1. */
+/** Typed links between items. */
 export const ItemRefRel = {
   ADDRESSES: "addresses",
   DUPLICATES: "duplicates",

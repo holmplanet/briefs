@@ -12,8 +12,8 @@ export type ActivityChange = z.infer<typeof activityChangeSchema>;
 
 export const activityCreatedSchema = z.object({
   id: z.string().uuid(),
-  label: z.string().min(1),
-  itemType: z.string().min(1),
+  name: z.string().min(1),
+  kind: z.string().min(1),
   source: itemSourceSchema.optional(),
 });
 

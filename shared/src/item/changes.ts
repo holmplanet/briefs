@@ -2,18 +2,18 @@ import type { ActivityChange } from "../activity/result.js";
 import type { Item } from "./schema.js";
 
 const TRACKED_ITEM_FIELDS = [
-  "label",
+  "name",
   "status",
   "dueAt",
   "scheduledAt",
   "completedAt",
   "priority",
   "description",
-  "itemType",
+  "kind",
   "context",
   "tags",
   "refs",
-  "archiveStatus",
+  "lifecycle",
 ] as const satisfies readonly (keyof Item)[];
 
 function valuesEqual(before: unknown, after: unknown): boolean {

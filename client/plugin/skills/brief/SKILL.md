@@ -25,7 +25,7 @@ For each event, build a node for `ingest_context`:
 {
   "externalId": "<provider-event-id>",
   "kind": "event",
-  "label": "<title>",
+  "name": "<title>",
   "startsAt": "<ISO-8601 UTC>",
   "endsAt": "<ISO-8601 UTC>",
   "data": {
@@ -104,23 +104,41 @@ Show the greeting and bullets (priority order). Call out overdue tasks, upcoming
 | `get_context` | Inspect graph for a topic |
 | `propose_action` / `list_actions` / `approve_action` | Approval-gated recommendations |
 
-## Task nodes (GitHub, Linear, etc.)
+## Items API (tasks, events, ingest)
 
-Use `kind: "task"` with [task protocol v1](https://github.com/holmplanet/brief/blob/dev/docs/graph/task-protocol.md):
+Prefer `POST /api/v1/items` for durable work capture. Auth: `X-Briefs-User-Id` header.
+
+Task from GitHub, Linear, etc.:
 
 ```json
 {
-  "externalId": "gh-42",
+  "name": "Review PR",
   "kind": "task",
-  "label": "Review PR",
-  "data": {
-    "schemaVersion": 1,
-    "status": "open",
-    "dueAt": "2026-08-05T17:00:00.000Z",
-    "priority": "high"
+  "status": "open",
+  "dueAt": "2026-08-05T17:00:00.000Z",
+  "priority": "high",
+  "source": { "system": "github", "externalId": "gh-42" }
+}
+```
+
+Calendar event (deduped by `source`):
+
+```json
+{
+  "name": "Standup",
+  "kind": "event",
+  "occurredAt": "2026-08-04T09:00:00.000Z",
+  "scheduledAt": "2026-08-04T09:30:00.000Z",
+  "source": { "system": "google-calendar", "externalId": "evt-123" },
+  "performer": {
+    "kind": "Service",
+    "identity": "cursor:brief-skill",
+    "name": "Cursor Brief Skill"
   }
 }
 ```
+
+Item fields: `name`, `kind`, `status`, `lifecycle` (`active` | `archived`), `occurredAt`, `ownerActorId` (set by system), `context`, `source`, `ingestedAt`.
 
 ## Notes
 

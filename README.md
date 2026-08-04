@@ -9,7 +9,7 @@ shared/              Stitch + Brief schemas — single source of truth
 system/              Express REST backend
 client/
   web/               human-facing vertical UIs
-    personal/
+    core/              base users (Next.js + shadcn)
     livestock/
     fishing/
   plugin/            assistant manifests (Cursor/Codex, skills)
@@ -44,6 +44,7 @@ npm install
 npm run db:up
 cp .env.example .env
 npm run dev:system
+npm run dev:core    # http://localhost:3000
 ```
 
 ```bash
@@ -70,7 +71,7 @@ Auth: `X-Briefs-User-Id` header (or `BRIEFS_DEFAULT_USER_ID` env).
 |---------|------|
 | `@briefs/shared` | Stitch + Brief Zod schemas + store interfaces |
 | `@briefs/system` | REST API, Postgres stores, domain services |
-| `@briefs/personal` | Personal web client (re-exports shared; UI TBD) |
+| `@briefs/core` | Base web client (Next.js + shadcn) |
 | `@briefs/livestock` | Livestock web client (placeholder) |
 | `@briefs/fishing` | Fishing web client (placeholder) |
 

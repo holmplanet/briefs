@@ -1,9 +1,9 @@
 # Web clients
 
-Human-facing vertical UIs. Each package imports from `@briefs/shared` and will call `@briefs/system` APIs.
+Human-facing vertical UIs. Each package imports from `@briefs/shared` and calls `@briefs/system` APIs.
 
 | Package | Vertical |
 |---------|----------|
-| `@briefs/personal` | Personal |
+| `@briefs/core` | Base users (Next.js + shadcn) |
 | `@briefs/livestock` | Livestock (placeholder) |
 | `@briefs/fishing` | Fishing (placeholder) |

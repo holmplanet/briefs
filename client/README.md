@@ -8,4 +8,4 @@ client/
   plugin/    assistant integration (Cursor/Codex skills, MCP config)
 ```
 
-Web verticals are npm workspaces (`@briefs/personal`, etc.). Plugin is static manifests only.
+Web verticals are npm workspaces (`@briefs/core`, etc.). Plugin is static manifests only.

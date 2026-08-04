@@ -1,3 +1,3 @@
-# @brief/livestock
+# @briefs/livestock
 
-Livestock client — placeholder.
+Placeholder vertical client.

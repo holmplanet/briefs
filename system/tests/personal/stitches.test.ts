@@ -16,7 +16,7 @@ describe("personal stitches API", () => {
     const base = `http://127.0.0.1:${address.port}`;
     const headers = {
       "Content-Type": "application/json",
-      "X-Brief-User-Id": "test-user",
+      "X-Briefs-User-Id": "test-user",
     };
 
     try {

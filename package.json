@@ -1,8 +1,8 @@
 {
-  "name": "brief",
+  "name": "briefs",
   "private": true,
   "version": "0.3.0",
-  "description": "Holmplanet Brief — stitches and briefs",
+  "description": "Holmplanet Briefs — stitches and briefs",
   "engines": {
     "node": ">=22"
   },
@@ -15,10 +15,10 @@
   ],
   "scripts": {
     "dev": "npm run dev:system",
-    "dev:system": "npm run dev -w @brief/system",
+    "dev:system": "npm run dev -w @briefs/system",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "test": "npm run test -w @brief/system",
+    "test": "npm run test -w @briefs/system",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "docker:up": "docker compose up -d --build",

@@ -1,1 +1,1 @@
-export * from "@brief/shared";
+export * from "@briefs/shared";

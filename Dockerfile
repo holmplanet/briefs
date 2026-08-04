@@ -14,8 +14,8 @@ FROM node:22-alpine AS runtime
 
 WORKDIR /repo
 
-RUN addgroup -g 1001 -S brief \
-  && adduser -S brief -u 1001 -G brief
+RUN addgroup -g 1001 -S briefs \
+  && adduser -S briefs -u 1001 -G briefs
 
 COPY --from=deps /repo/node_modules ./node_modules
 COPY package.json package-lock.json tsconfig.base.json ./
@@ -24,11 +24,11 @@ COPY system system
 COPY client client
 COPY db db
 
-USER brief
+USER briefs
 
 ENV NODE_ENV=production
-ENV BRIEF_HOST=0.0.0.0
-ENV BRIEF_PORT=8000
+ENV BRIEFS_HOST=0.0.0.0
+ENV BRIEFS_PORT=8000
 
 EXPOSE 8000
 

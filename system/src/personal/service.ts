@@ -1,29 +1,29 @@
 import { randomUUID } from "node:crypto";
 
 import {
-  TaskStatus,
-  type CreateTaskNodeInput,
-  type TaskNode,
-  type TaskNodeStore,
-  type TaskStatus as TaskStatusType,
-  type UpdateTaskNodeInput,
+  StitchStatus,
+  type CreateStitchInput,
+  type Stitch,
+  type StitchStatus as StitchStatusType,
+  type StitchStore,
+  type UpdateStitchInput,
 } from "@brief/shared";
 
-export class PersonalTaskService {
-  constructor(private readonly store: TaskNodeStore) {}
+export class PersonalStitchService {
+  constructor(private readonly store: StitchStore) {}
 
-  list(userId: string, status?: TaskStatusType): Promise<TaskNode[]> {
+  list(userId: string, status?: StitchStatusType): Promise<Stitch[]> {
     return this.store.listForUser(userId, status);
   }
 
-  async create(userId: string, input: CreateTaskNodeInput): Promise<TaskNode> {
+  async create(userId: string, input: CreateStitchInput): Promise<Stitch> {
     const now = new Date().toISOString();
-    const task: TaskNode = {
+    const stitch: Stitch = {
       schemaVersion: 1,
       id: randomUUID(),
       userId,
       label: input.label.trim(),
-      status: input.status ?? TaskStatus.OPEN,
+      status: input.status ?? StitchStatus.OPEN,
       dueAt: input.dueAt,
       scheduledAt: input.scheduledAt,
       priority: input.priority,
@@ -32,21 +32,21 @@ export class PersonalTaskService {
       updatedAt: now,
     };
 
-    await this.store.save(task);
-    return task;
+    await this.store.save(stitch);
+    return stitch;
   }
 
-  async update(userId: string, taskId: string, input: UpdateTaskNodeInput): Promise<TaskNode> {
-    const existing = await this.store.get(taskId);
+  async update(userId: string, stitchId: string, input: UpdateStitchInput): Promise<Stitch> {
+    const existing = await this.store.get(stitchId);
     if (!existing || existing.userId !== userId) {
-      throw new Error(`Task not found: ${taskId}`);
+      throw new Error(`Stitch not found: ${stitchId}`);
     }
 
     const nextStatus = input.status ?? existing.status;
     const completedAt = resolveCompletedAt(existing, input, nextStatus);
     const now = new Date().toISOString();
 
-    const updated: TaskNode = {
+    const updated: Stitch = {
       ...existing,
       label: input.label?.trim() || existing.label,
       status: nextStatus,
@@ -66,9 +66,9 @@ export class PersonalTaskService {
 }
 
 function resolveCompletedAt(
-  existing: TaskNode,
-  input: UpdateTaskNodeInput,
-  nextStatus: TaskStatusType,
+  existing: Stitch,
+  input: UpdateStitchInput,
+  nextStatus: StitchStatusType,
 ): string | undefined {
   if (input.completedAt === null) {
     return undefined;
@@ -76,10 +76,10 @@ function resolveCompletedAt(
   if (input.completedAt) {
     return input.completedAt;
   }
-  if (nextStatus === TaskStatus.DONE && existing.status !== TaskStatus.DONE) {
+  if (nextStatus === StitchStatus.DONE && existing.status !== StitchStatus.DONE) {
     return new Date().toISOString();
   }
-  if (nextStatus !== TaskStatus.DONE) {
+  if (nextStatus !== StitchStatus.DONE) {
     return undefined;
   }
   return existing.completedAt;

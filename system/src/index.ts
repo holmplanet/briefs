@@ -7,12 +7,12 @@ import express, { type Express, type Request, type Response } from "express";
 import { mountApiRoutes } from "./api/router.js";
 import { loadConfig, type BriefConfig } from "./config.js";
 import { closePool, createPool, runMigrations } from "./db.js";
-import { PersonalTaskService } from "./personal/service.js";
-import { MemoryTaskNodeStore, PostgresTaskNodeStore } from "./personal/store.js";
+import { PersonalStitchService } from "./personal/service.js";
+import { MemoryStitchStore, PostgresStitchStore } from "./personal/store.js";
 
 export type AppContext = {
   config: BriefConfig;
-  service: PersonalTaskService;
+  service: PersonalStitchService;
 };
 
 export async function bootstrap(): Promise<AppContext> {
@@ -23,13 +23,13 @@ export async function bootstrap(): Promise<AppContext> {
     await runMigrations(pool);
     return {
       config,
-      service: new PersonalTaskService(new PostgresTaskNodeStore(pool)),
+      service: new PersonalStitchService(new PostgresStitchStore(pool)),
     };
   }
 
   return {
     config,
-    service: new PersonalTaskService(new MemoryTaskNodeStore()),
+    service: new PersonalStitchService(new MemoryStitchStore()),
   };
 }
 
@@ -57,7 +57,7 @@ export async function startServer(): Promise<Express> {
   app.listen(context.config.port, context.config.host, () => {
     console.log(`Brief API listening on http://${context.config.host}:${context.config.port}`);
     console.log(`Health: http://localhost:${context.config.port}/health`);
-    console.log(`Tasks: http://localhost:${context.config.port}/api/v1/tasks`);
+    console.log(`Stitches: http://localhost:${context.config.port}/api/v1/stitches`);
     console.log(`Storage: ${context.config.databaseUrl ? "postgres" : "memory"}`);
   });
 

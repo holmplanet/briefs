@@ -2,7 +2,7 @@
   "name": "brief",
   "private": true,
   "version": "0.3.0",
-  "description": "Holmplanet Brief — schema-first task platform",
+  "description": "Holmplanet Brief — stitches and briefs",
   "engines": {
     "node": ">=22"
   },

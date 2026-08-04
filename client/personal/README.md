@@ -1,8 +1,8 @@
 # @brief/personal
 
-Personal client — task inbox UI (placeholder).
+Personal client — stitch inbox UI (placeholder).
 
-Imports types from `@brief/shared`. Backend routes for personal are implemented in
+Imports types from `@brief/shared`. Backend routes for personal are in
 `@brief/system/src/personal/`.
 
 ```bash

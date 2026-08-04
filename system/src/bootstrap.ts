@@ -1,13 +1,15 @@
+import { ActorService, MemoryActorStore, PostgresActorStore } from "./actor/index.js";
+import { ActivityService, MemoryActivityStore, PostgresActivityStore } from "./activity/index.js";
 import type { BriefsConfig } from "./config.js";
 import { loadConfig } from "./config.js";
 import { createPool, runMigrations } from "./db.js";
-import { BriefService, MemoryBriefStore, PostgresBriefStore } from "./brief/index.js";
-import { MemoryStitchStore, PostgresStitchStore, StitchService } from "./stitch/index.js";
+import { ItemService, MemoryItemStore, PostgresItemStore } from "./item/index.js";
 
 export type AppContext = {
   config: BriefsConfig;
-  stitches: StitchService;
-  briefs: BriefService;
+  items: ItemService;
+  actors: ActorService;
+  activities: ActivityService;
 };
 
 export async function bootstrap(): Promise<AppContext> {
@@ -16,18 +18,16 @@ export async function bootstrap(): Promise<AppContext> {
   if (config.databaseUrl) {
     const pool = createPool(config.databaseUrl);
     await runMigrations(pool);
-    const stitches = new StitchService(new PostgresStitchStore(pool));
-    return {
-      config,
-      stitches,
-      briefs: new BriefService(new PostgresBriefStore(pool), stitches),
-    };
+    const actors = new ActorService(new PostgresActorStore(pool));
+    const activities = new ActivityService(new PostgresActivityStore(pool));
+    const itemStore = new PostgresItemStore(pool);
+    const items = new ItemService(itemStore, actors, activities);
+    return { config, actors, activities, items };
   }
 
-  const stitches = new StitchService(new MemoryStitchStore());
-  return {
-    config,
-    stitches,
-    briefs: new BriefService(new MemoryBriefStore(), stitches),
-  };
+  const actors = new ActorService(new MemoryActorStore());
+  const activities = new ActivityService(new MemoryActivityStore());
+  const itemStore = new MemoryItemStore();
+  const items = new ItemService(itemStore, actors, activities);
+  return { config, actors, activities, items };
 }

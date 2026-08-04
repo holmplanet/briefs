@@ -1,13 +1,6 @@
-node_modules
-dist
-.git
-.env
-.env.*
-!.env.example
-coverage
-*.md
-!docs/deploy.md
-tests
-scripts
-plugin
-apps
+FROM node:22-alpine AS deps
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev

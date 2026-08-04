@@ -16,41 +16,18 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 5s
 
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - brief-redis:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-      start_period: 5s
-
-  brief:
+  api:
     build: .
     ports:
       - "${BRIEF_PORT:-8000}:8000"
     environment:
-      BRIEF_ENV: ${BRIEF_ENV:-development}
+      BRIEF_ENV: development
       BRIEF_HOST: 0.0.0.0
       BRIEF_PORT: 8000
-      BRIEF_PUBLIC_URL: ${BRIEF_PUBLIC_URL:-http://localhost:8000}
       BRIEF_DATABASE_URL: postgresql://brief:brief@postgres:5432/brief
-      BRIEF_REDIS_URL: redis://redis:6379
-      BRIEF_GRAPH_CACHE_TTL_SECONDS: ${BRIEF_GRAPH_CACHE_TTL_SECONDS:-60}
-      BRIEF_MCP_AUTH_DISABLED: ${BRIEF_MCP_AUTH_DISABLED:-true}
-      BRIEF_AUTH_ADMIN_SECRET: ${BRIEF_AUTH_ADMIN_SECRET:-}
-      BRIEF_MCP_STATIC_TOKENS: ${BRIEF_MCP_STATIC_TOKENS:-}
-      BRIEF_ALLOWED_HOSTS: brief,brief:8000
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     healthcheck:
       test:
@@ -61,34 +38,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 20s
-
-  web:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-      args:
-        BRIEF_API_URL: http://brief:8000
-    ports:
-      - "${BRIEF_WEB_PORT:-3100}:3000"
-    environment:
-      BRIEF_API_URL: http://brief:8000
-      HOSTNAME: 0.0.0.0
-      PORT: 3000
-    depends_on:
-      brief:
-        condition: service_healthy
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "node -e \"fetch('http://127.0.0.1:3000').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
+      start_period: 15s
 
 volumes:
   brief-postgres:
-  brief-redis:

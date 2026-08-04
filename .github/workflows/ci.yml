@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [dev, main]
+    branches: [dev, main, hard-reset]
   pull_request:
     branches: [dev, main]
 
@@ -27,7 +27,6 @@ jobs:
 
     env:
       BRIEF_DATABASE_URL: postgresql://brief:brief@localhost:5432/brief
-      BRIEF_MCP_AUTH_DISABLED: "true"
 
     steps:
       - uses: actions/checkout@v4

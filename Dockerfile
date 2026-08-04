@@ -5,9 +5,9 @@ WORKDIR /repo
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY shared/package.json shared/
 COPY system/package.json system/
-COPY client/personal/package.json client/personal/
-COPY client/livestock/package.json client/livestock/
-COPY client/fishing/package.json client/fishing/
+COPY client/web/personal/package.json client/web/personal/
+COPY client/web/livestock/package.json client/web/livestock/
+COPY client/web/fishing/package.json client/web/fishing/
 RUN npm ci
 
 FROM node:22-alpine AS runtime

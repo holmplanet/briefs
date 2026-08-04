@@ -9,9 +9,9 @@
   "workspaces": [
     "shared",
     "system",
-    "client/personal",
-    "client/livestock",
-    "client/fishing"
+    "client/web/personal",
+    "client/web/livestock",
+    "client/web/fishing"
   ],
   "scripts": {
     "dev": "npm run dev:system",

@@ -1,3 +1,4 @@
+import "./loadEnv.js";
 import "dotenv/config";
 
 import { fileURLToPath } from "node:url";

@@ -9,13 +9,14 @@
   "workspaces": [
     "shared",
     "system",
-    "client/web/personal",
+    "client/web/core",
     "client/web/livestock",
     "client/web/fishing"
   ],
   "scripts": {
     "dev": "npm run dev:system",
     "dev:system": "npm run dev -w @briefs/system",
+    "dev:core": "npm run dev -w @briefs/core",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test -w @briefs/system",

@@ -5,7 +5,7 @@ WORKDIR /repo
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY shared/package.json shared/
 COPY system/package.json system/
-COPY client/web/personal/package.json client/web/personal/
+COPY client/web/core/package.json client/web/core/
 COPY client/web/livestock/package.json client/web/livestock/
 COPY client/web/fishing/package.json client/web/fishing/
 RUN npm ci

@@ -1,7 +1,7 @@
 /**
  * Actor — who acted on an item.
  *
- * Inspired by ActivityPub actors; systems are values on items, not actors.
+ * Actors are people and software only — systems are values on items, not actors.
  */
 
 export * from "./constants.js";

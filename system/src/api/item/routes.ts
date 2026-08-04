@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { ItemStatus, createItemInputSchema, updateItemInputSchema } from "@briefs/shared/item";
+import { ItemStatus, itemCreateInputSchema, itemUpdateInputSchema } from "@briefs/shared/item";
 
 import type { ItemService } from "../../item/service.js";
 import { ApiError } from "../errors.js";
@@ -32,7 +32,7 @@ export function createItemRouter(service: ItemService): Router {
   router.post("/", async (req, res, next) => {
     try {
       const userId = (req as AuthedRequest).userId;
-      const body = createItemInputSchema.parse(req.body);
+      const body = itemCreateInputSchema.parse(req.body);
       const item = await service.create(userId, body);
       res.status(201).json({ item });
     } catch (error) {
@@ -43,7 +43,7 @@ export function createItemRouter(service: ItemService): Router {
   router.patch("/:itemId", async (req, res, next) => {
     try {
       const userId = (req as unknown as AuthedRequest).userId;
-      const body = updateItemInputSchema.parse(req.body);
+      const body = itemUpdateInputSchema.parse(req.body);
       const item = await service.update(userId, req.params.itemId, body);
       res.json({ item });
     } catch (error) {

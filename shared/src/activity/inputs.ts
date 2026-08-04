@@ -9,7 +9,7 @@ const activityVerbInputSchema = z
   .min(1)
   .regex(/^[A-Z][A-Za-z0-9]*(:[A-Za-z][A-Za-z0-9]+)?$/);
 
-export const recordActivityInputSchema = z
+export const activityRecordInputSchema = z
   .object({
     type: activityVerbInputSchema,
     actorId: z.string().uuid(),
@@ -31,4 +31,4 @@ export const recordActivityInputSchema = z
     }
   });
 
-export type RecordActivityInput = z.infer<typeof recordActivityInputSchema>;
+export type ActivityRecordInput = z.infer<typeof activityRecordInputSchema>;

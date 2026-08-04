@@ -5,7 +5,7 @@ import { itemPerformerSchema } from "./performer.js";
 import { itemRefSchema } from "./schema.js";
 import { itemSourceSchema } from "./source.js";
 
-export const createItemInputSchema = z.object({
+export const itemCreateInputSchema = z.object({
   name: z.string().min(1),
   status: z.nativeEnum(ItemStatus).optional(),
   dueAt: z.string().optional(),
@@ -24,9 +24,9 @@ export const createItemInputSchema = z.object({
   clientKey: z.string().min(1).optional(),
 });
 
-export type CreateItemInput = z.infer<typeof createItemInputSchema>;
+export type ItemCreateInput = z.infer<typeof itemCreateInputSchema>;
 
-export const updateItemInputSchema = z.object({
+export const itemUpdateInputSchema = z.object({
   name: z.string().min(1).optional(),
   status: z.nativeEnum(ItemStatus).optional(),
   dueAt: z.string().nullable().optional(),
@@ -43,4 +43,4 @@ export const updateItemInputSchema = z.object({
   clientKey: z.string().min(1).optional(),
 });
 
-export type UpdateItemInput = z.infer<typeof updateItemInputSchema>;
+export type ItemUpdateInput = z.infer<typeof itemUpdateInputSchema>;

@@ -4,7 +4,7 @@ import {
   activitySchema,
   type Activity,
   type ActivityStore,
-  type RecordActivityInput,
+  type ActivityRecordInput,
 } from "@briefs/shared/activity";
 
 export class ActivityService {
@@ -14,7 +14,7 @@ export class ActivityService {
     return this.store.listForItem(itemId);
   }
 
-  async record(input: RecordActivityInput): Promise<Activity> {
+  async record(input: ActivityRecordInput): Promise<Activity> {
     if (input.clientKey) {
       const existing = await this.store.getByClientKey(input.actorId, input.clientKey);
       if (existing) {

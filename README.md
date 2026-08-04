@@ -23,7 +23,7 @@ Three primitives:
 | **Actor** | **actor** | Person or software that acted |
 | **Activity** | **activity** | Append-only record of what happened to an item |
 
-**Invariant:** item state changes only via activities in the write path.
+**Write path:** item projection updates and activity records happen together. Activity `result` uses structured deltas (`changes`) on update and a compact `created` payload on create.
 
 ## Quick start
 
@@ -68,9 +68,9 @@ Source of truth: `shared/src/` (`@briefs/shared`).
 
 | Entity | Shared | Migration | Table |
 |--------|--------|-----------|-------|
-| Actor | `shared/src/actor/` | `004_actors.sql` | `actors` |
-| Activity | `shared/src/activity/` | `005_activities.sql` | `activities` |
-| Item | `shared/src/item/` | `001`–`006`, `007`, `009_rename_object_columns_to_item.sql` | `items` |
+| Actor | `shared/src/actor/` | `db/migrations/001_initial.sql` | `actors` |
+| Activity | `shared/src/activity/` | `db/migrations/001_initial.sql` | `activities` |
+| Item | `shared/src/item/` | `db/migrations/001_initial.sql` | `items` |
 
 ## Docker
 

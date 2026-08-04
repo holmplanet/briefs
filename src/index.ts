@@ -7,6 +7,8 @@ import { createMcpExpressApp } from "@modelcontextprotocol/sdk/server/express.js
 import { requireBearerAuth } from "@modelcontextprotocol/sdk/server/auth/middleware/bearerAuth.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 
+import { mountApiRoutes } from "./api/router.js";
+import { apiErrorHandler } from "./api/middleware/user.js";
 import { VERSION, loadConfig, type BriefEnv } from "./config.js";
 import { createMcpApiTokenStore, registerStaticMcpTokens } from "./auth/mcp/factory.js";
 import { mountMcpAuthRoutes } from "./auth/mcp/routes.js";
@@ -24,6 +26,7 @@ import { setGraphStore } from "./graph/runtime.js";
 import { createMcpServer } from "./mcp/tools.js";
 import { createBriefTaskStore } from "./tasks/store.js";
 import { setBriefTaskStore } from "./tasks/runtime.js";
+import { initializePlatform } from "./platform/bootstrap.js";
 
 export async function bootstrap(): Promise<BriefEnv> {
   const config = loadConfig();
@@ -45,16 +48,19 @@ export async function bootstrap(): Promise<BriefEnv> {
   registerPersonalConnectors(registry, config);
   setConnectorRegistry(registry);
 
+  initializePlatform();
+
   return config;
 }
 
 export function createApp(config: BriefEnv) {
   const app = createMcpExpressApp({
     host: config.host,
-    allowedHosts: ["localhost", "127.0.0.1", `${config.host}:${config.port}`],
+    allowedHosts: config.allowedHosts,
   });
 
   mountMcpAuthRoutes(app, config);
+  mountApiRoutes(app, config);
 
   app.get("/health", (_req: Request, res: Response) => {
     let connectors = 0;
@@ -104,6 +110,8 @@ export function createApp(config: BriefEnv) {
   app.get(config.mcpPath, mcpAuthMiddleware, handleMcpRequest);
   app.delete(config.mcpPath, mcpAuthMiddleware, handleMcpRequest);
 
+  app.use(apiErrorHandler);
+
   return app;
 }
 
@@ -115,6 +123,8 @@ export async function startServer() {
     console.log(`Holmplanet Brief listening on ${config.publicUrl}`);
     console.log(`Health: ${config.publicUrl}/health`);
     console.log(`MCP: ${config.publicUrl}${config.mcpPath}`);
+    console.log(`API: ${config.publicUrl}/api/v1`);
+    console.log(`Web (dev): http://localhost:3100 — run npm run dev:web`);
     console.log(`MCP auth: ${config.mcpAuth.enabled ? "required" : "disabled"}`);
     console.log(
       `Graph: ${config.databaseUrl ? "postgres" : "memory"}${

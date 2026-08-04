@@ -1,5 +1,5 @@
 /**
- * Actor — who acted on an item (Object).
+ * Actor — who acted on an item.
  *
  * Inspired by ActivityPub actors; systems are values on items, not actors.
  */

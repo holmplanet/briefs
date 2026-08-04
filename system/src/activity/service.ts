@@ -10,8 +10,8 @@ import {
 export class ActivityService {
   constructor(private readonly store: ActivityStore) {}
 
-  listForObject(objectId: string): Promise<Activity[]> {
-    return this.store.listForObject(objectId);
+  listForItem(itemId: string): Promise<Activity[]> {
+    return this.store.listForItem(itemId);
   }
 
   async record(input: RecordActivityInput): Promise<Activity> {
@@ -29,7 +29,7 @@ export class ActivityService {
       id: randomUUID(),
       type: input.type,
       actorId: input.actorId,
-      objectId: input.objectId,
+      itemId: input.itemId,
       origin: input.origin,
       target: input.target,
       summary: input.summary,

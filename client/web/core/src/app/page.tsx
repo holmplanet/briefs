@@ -47,7 +47,7 @@ export default async function HomePage() {
             Items, actors, and activities.
           </h1>
           <p className="max-w-2xl text-lg text-muted-foreground">
-            A passport-inspired spine for durable work — objects you capture, who acted on them,
+            A durable spine for work — items you capture, who acted on them,
             and an append-only log of what changed.
           </p>
         </section>
@@ -60,7 +60,7 @@ export default async function HomePage() {
               </div>
               <CardTitle>Items</CardTitle>
               <CardDescription>
-                Durable objects — tasks, notes, commitments — with stable identity.
+                Durable items — tasks, notes, commitments — with stable identity.
               </CardDescription>
             </CardHeader>
             <CardContent>

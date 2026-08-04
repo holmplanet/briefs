@@ -1,8 +1,8 @@
 export const ACTIVITY_SCHEMA_VERSION = 1 as const;
 
 /**
- * Shared activity vocabulary — borrowed from ActivityStreams 2.0 / passport §6.
- * System-specific verbs use a namespace prefix, e.g. `livestock:Weigh`.
+ * Shared activity vocabulary. System-specific verbs use a namespace prefix,
+ * e.g. `livestock:Weigh`.
  */
 export const ActivityType = {
   CREATE: "Create",

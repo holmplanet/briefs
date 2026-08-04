@@ -1,7 +1,9 @@
 import { z } from "zod";
 
 import { ItemPriority, ItemStatus } from "./constants.js";
+import { itemPerformerSchema } from "./performer.js";
 import { itemRefSchema } from "./schema.js";
+import { itemSourceSchema } from "./source.js";
 
 export const createItemInputSchema = z.object({
   label: z.string().min(1),
@@ -15,6 +17,10 @@ export const createItemInputSchema = z.object({
   originContext: z.string().min(1).optional(),
   tags: z.array(z.string().min(1)).optional(),
   refs: z.array(itemRefSchema).optional(),
+  source: itemSourceSchema.optional(),
+  publishedAt: z.string().optional(),
+  ingestedAt: z.string().optional(),
+  performer: itemPerformerSchema.optional(),
   clientKey: z.string().min(1).optional(),
 });
 
@@ -33,6 +39,7 @@ export const updateItemInputSchema = z.object({
   refs: z.array(itemRefSchema).nullable().optional(),
   archiveStatus: z.enum(["active", "archived"]).optional(),
   summary: z.string().min(1).optional(),
+  performer: itemPerformerSchema.optional(),
   clientKey: z.string().min(1).optional(),
 });
 

@@ -9,6 +9,7 @@ import {
   ItemRefRel,
   ItemStatus,
 } from "./constants.js";
+import { itemSourceSchema } from "./source.js";
 
 export const itemRefSchema = z.object({
   rel: z.enum([
@@ -58,6 +59,9 @@ export const itemSchema = z
     archiveStatus: z
       .enum([ItemArchiveStatus.ACTIVE, ItemArchiveStatus.ARCHIVED])
       .default(ItemArchiveStatus.ACTIVE),
+    source: itemSourceSchema.optional(),
+    /** When Briefs first ingested this item from an external system. */
+    ingestedAt: isoDateTimeSchema.optional(),
     state: z.record(z.unknown()).optional(),
     publishedAt: isoDateTimeSchema,
     createdAt: isoDateTimeSchema,

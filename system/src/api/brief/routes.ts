@@ -1,10 +1,10 @@
 import { Router } from "express";
 
-import type { PersonalBriefService } from "../../personal/brief-service.js";
+import type { BriefService } from "../../brief/service.js";
 import { ApiError } from "../errors.js";
 import type { AuthedRequest } from "../middleware.js";
 
-export function createBriefsRouter(service: PersonalBriefService): Router {
+export function createBriefsRouter(service: BriefService): Router {
   const router = Router();
 
   router.get("/", async (req, res, next) => {

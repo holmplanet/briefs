@@ -5,40 +5,11 @@ import { fileURLToPath } from "node:url";
 import express, { type Express, type Request, type Response } from "express";
 
 import { mountApiRoutes } from "./api/router.js";
-import { loadConfig, type BriefsConfig } from "./config.js";
-import { closePool, createPool, runMigrations } from "./db.js";
-import { PersonalBriefService } from "./personal/brief-service.js";
-import { MemoryBriefStore, PostgresBriefStore } from "./personal/brief-store.js";
-import { PersonalStitchService } from "./personal/service.js";
-import { MemoryStitchStore, PostgresStitchStore } from "./personal/store.js";
+import { bootstrap, type AppContext } from "./bootstrap.js";
+import { closePool, createPool } from "./db.js";
 
-export type AppContext = {
-  config: BriefsConfig;
-  stitches: PersonalStitchService;
-  briefs: PersonalBriefService;
-};
-
-export async function bootstrap(): Promise<AppContext> {
-  const config = loadConfig();
-
-  if (config.databaseUrl) {
-    const pool = createPool(config.databaseUrl);
-    await runMigrations(pool);
-    const stitches = new PersonalStitchService(new PostgresStitchStore(pool));
-    return {
-      config,
-      stitches,
-      briefs: new PersonalBriefService(new PostgresBriefStore(pool), stitches),
-    };
-  }
-
-  const stitches = new PersonalStitchService(new MemoryStitchStore());
-  return {
-    config,
-    stitches,
-    briefs: new PersonalBriefService(new MemoryBriefStore(), stitches),
-  };
-}
+export type { AppContext } from "./bootstrap.js";
+export { bootstrap };
 
 export function createApp(context: AppContext): Express {
   const app = express();

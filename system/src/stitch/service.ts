@@ -7,9 +7,9 @@ import {
   type StitchStatus as StitchStatusType,
   type StitchStore,
   type UpdateStitchInput,
-} from "@briefs/shared";
+} from "@briefs/shared/stitch";
 
-export class PersonalStitchService {
+export class StitchService {
   constructor(private readonly store: StitchStore) {}
 
   list(userId: string, status?: StitchStatusType): Promise<Stitch[]> {

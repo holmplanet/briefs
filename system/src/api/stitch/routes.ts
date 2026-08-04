@@ -4,13 +4,13 @@ import {
   StitchStatus,
   createStitchInputSchema,
   updateStitchInputSchema,
-} from "@briefs/shared";
+} from "@briefs/shared/stitch";
 
-import type { PersonalStitchService } from "../../personal/service.js";
+import type { StitchService } from "../../stitch/service.js";
 import { ApiError } from "../errors.js";
 import type { AuthedRequest } from "../middleware.js";
 
-export function createStitchesRouter(service: PersonalStitchService): Router {
+export function createStitchRouter(service: StitchService): Router {
   const router = Router();
 
   router.get("/", async (req, res, next) => {

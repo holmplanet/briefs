@@ -17,7 +17,7 @@ services:
       timeout: 5s
       retries: 10
 
-  api:
+  system:
     build: .
     ports:
       - "${BRIEF_PORT:-8000}:8000"

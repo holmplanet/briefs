@@ -1,16 +1,15 @@
 # Holmplanet Brief
 
-Barebones backend API. Schema-first task nodes for the **personal** client.
 
 ```
-brief/
-├── client/
-│   ├── personal/     # TaskNode schema + store + service (active)
-│   ├── livestock/    # placeholder
-│   └── fishing/      # placeholder
-├── src/              # Express API
-├── db/migrations/    # Postgres schema
-└── plugin/           # untouched — assistant manifests
+shared/              TaskNode schema + types — single source of truth
+system/              Express REST backend
+client/
+  personal/          personal client (UI placeholder)
+  livestock/         placeholder
+  fishing/           placeholder
+plugin/              assistant manifests (unchanged)
+db/migrations/       Postgres schema
 ```
 
 ## Quick start
@@ -19,7 +18,7 @@ brief/
 npm install
 npm run db:up
 cp .env.example .env
-npm run dev
+npm run dev:system
 ```
 
 ```bash
@@ -27,20 +26,19 @@ curl http://localhost:8000/health
 curl -H "X-Brief-User-Id: demo" http://localhost:8000/api/v1/tasks
 ```
 
-## API
+## Workspaces
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Health check |
-| GET | `/api/v1/tasks` | List tasks (`?status=open`) |
-| POST | `/api/v1/tasks` | Create task |
-| PATCH | `/api/v1/tasks/:id` | Update task |
-
-Pass `X-Brief-User-Id` header to scope tasks to a user (defaults to `default`).
+| Package | Role |
+|---------|------|
+| `@brief/shared` | TaskNode Zod schema + `TaskNodeStore` interface |
+| `@brief/system` | REST API, Postgres store, personal service |
+| `@brief/personal` | Personal client (re-exports shared; UI TBD) |
+| `@brief/livestock` | Placeholder |
+| `@brief/fishing` | Placeholder |
 
 ## Schema
 
-See [tasknode.txt](tasknode.txt) and `client/personal/schema/task-node.ts`.
+See [tasknode.txt](tasknode.txt) and `shared/src/task-node.ts`.
 
 ## Docker
 
@@ -48,4 +46,4 @@ See [tasknode.txt](tasknode.txt) and `client/personal/schema/task-node.ts`.
 npm run docker:up
 ```
 
-Postgres + API on port 8000.
+Postgres + `@brief/system` on port 8000.

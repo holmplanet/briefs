@@ -41,13 +41,16 @@ API shape (camelCase JSON)
 Source of truth
 ---------------
 
-- Zod schema: client/personal/schema/task-node.ts
+- Zod schema: shared/src/task-node.ts  (@brief/shared)
 - SQL migration: db/migrations/001_task_nodes.sql
-- API: GET/POST/PATCH /api/v1/tasks
+- API: @brief/system — GET/POST/PATCH /api/v1/tasks
 
-Clients
--------
+Monorepo layout (workspace-style)
+----------------------------
 
-- personal  — implemented
-- livestock — placeholder (client/livestock/)
-- fishing   — placeholder (client/fishing/)
+shared/     types + contract (like @fort/shared)
+system/     REST backend (like @fort/backend)
+client/     vertical clients (like @fort/frontend)
+  personal/   active
+  livestock/  placeholder
+  fishing/    placeholder

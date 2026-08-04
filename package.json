@@ -1,33 +1,28 @@
 {
-  "name": "holmplanet-brief",
-  "version": "0.2.0",
+  "name": "brief",
   "private": true,
-  "type": "module",
-  "description": "Holmplanet Brief — schema-first task API",
+  "version": "0.3.0",
+  "description": "Holmplanet Brief — schema-first task platform",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "shared",
+    "system",
+    "client/personal",
+    "client/livestock",
+    "client/fishing"
+  ],
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/src/index.js",
-    "test": "vitest run",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "npm run dev:system",
+    "dev:system": "npm run dev -w @brief/system",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test -w @brief/system",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down",
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f api"
-  },
-  "dependencies": {
-    "dotenv": "^16.6.1",
-    "express": "^5.2.1",
-    "pg": "^8.16.3",
-    "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node": "^22.15.30",
-    "@types/pg": "^8.15.5",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+    "docker:logs": "docker compose logs -f system"
   }
 }

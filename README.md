@@ -59,8 +59,8 @@ Auth: `X-Briefs-User-Id` header (or `BRIEFS_DEFAULT_USER_ID` env).
 | `@briefs/shared` | Item + Actor + Activity schemas |
 | `@briefs/system` | REST API, Postgres stores, domain services |
 | `@briefs/core` | Base web client (Next.js + shadcn) |
-| `@briefs/livestock` | Livestock web client (placeholder) |
-| `@briefs/fishing` | Fishing web client (placeholder) |
+| `@briefs/livestock` | Livestock web client (placeholder, not in workspaces yet) |
+| `@briefs/fishing` | Fishing web client (placeholder, not in workspaces yet) |
 
 ## Schema
 

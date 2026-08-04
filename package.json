@@ -9,9 +9,7 @@
   "workspaces": [
     "shared",
     "system",
-    "client/web/core",
-    "client/web/livestock",
-    "client/web/fishing"
+    "client/web/core"
   ],
   "scripts": {
     "dev": "npm run dev:system",
@@ -28,6 +26,6 @@
   },
   "allowScripts": {
     "esbuild@0.28.1": true,
-    "unrs-resolver@1.12.2": true
+    "fsevents@2.3.3": true
   }
 }

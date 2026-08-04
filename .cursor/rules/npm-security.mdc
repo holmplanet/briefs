@@ -1,0 +1,58 @@
+---
+description: npm supply-chain hardening — install policy, allowScripts, and campaign posture
+alwaysApply: true
+---
+
+# npm supply-chain security
+
+Active posture from 2026-08-04 hardening after the Keyv/Cacheable/Shai-Hulud npm campaign. Source: 2nd-brain journal `journal/work/2026/08/2026-08-04.md`.
+
+## Campaign context
+
+- Treat the machine as **hardened but not ecosystem-clear** — no local compromise evidence, but affected-package lists may still move.
+- Re-scan OX, Aikido, and Socket advisories when the list stabilizes or before large dependency changes.
+- `briefs` lockfile had **no exact affected package/version matches** at scan time; related packages (`keyv`, `flat-cache`, `file-entry-cache`) were non-affected versions.
+
+## Default behavior for agents
+
+- **Avoid** `npm install`, `npm update`, and dependency bumps unless the task explicitly requires them or the user asks.
+- When installs are necessary: use **npm v12**, lockfile-driven installs, and review any blocked script/package before approval.
+- **Never** suggest bypassing script policy (`--ignore-scripts`, disabling `strict-allow-scripts`, etc.).
+- **Never** commit secrets; `.env` and credential files stay out of git.
+
+## User npm config (`~/.npmrc`)
+
+Expect these settings on Carter's machine:
+
+- `allow-git=none`
+- `allow-remote=none`
+- `strict-allow-scripts=true`
+- `min-release-age=7`
+
+## Repo install-script allowlist
+
+Root `package.json` pins explicit install-script approval via `allowScripts`. New packages with lifecycle scripts will fail until allowlisted.
+
+Current allowlist (update when justified):
+
+```json
+"allowScripts": {
+  "esbuild@0.28.1": true,
+  "unrs-resolver@1.12.2": true
+}
+```
+
+When adding a dependency that needs install scripts:
+
+1. Confirm the package/version is not on active campaign advisories.
+2. Add **only** that exact `name@version` to `allowScripts` with a short reason in the commit message.
+3. Do not blanket-allow packages or use wildcards.
+
+## After dependency changes
+
+- Note whether a campaign re-scan against Socket/OX/Aikido CSVs is warranted.
+- Run tests/typecheck; do not assume install success means safety.
+
+## Related repos
+
+Same posture applies to `hive` and `sous` (sibling npm surfaces). Stale local clones were removed to reduce attack surface; prefer active repos only.

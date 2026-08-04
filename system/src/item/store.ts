@@ -4,6 +4,7 @@ import type {
   Item,
   ItemArchiveStatus,
   ItemPriority,
+  ItemSource,
   ItemStatus,
   ItemStore,
 } from "@briefs/shared/item";
@@ -25,15 +26,22 @@ type ItemRow = {
   tags: string[] | null;
   refs: Item["refs"] | null;
   archive_status: ItemArchiveStatus;
+  source: ItemSource | null;
+  ingested_at: Date | null;
   state: Record<string, unknown> | null;
   published_at: Date;
   created_at: Date;
   updated_at: Date;
 };
 
+const ITEM_COLUMNS = `id, user_id, label, status, due_at, scheduled_at, completed_at,
+  priority, description, item_type, attributed_to_actor_id, context,
+  origin_context, tags, refs, archive_status, source, ingested_at, state,
+  published_at, created_at, updated_at`;
+
 function mapRow(row: ItemRow): Item {
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     id: row.id,
     userId: row.user_id,
     label: row.label,
@@ -50,6 +58,8 @@ function mapRow(row: ItemRow): Item {
     tags: row.tags ?? undefined,
     refs: row.refs ?? undefined,
     archiveStatus: row.archive_status,
+    source: row.source ?? undefined,
+    ingestedAt: row.ingested_at?.toISOString(),
     state: row.state ?? undefined,
     publishedAt: row.published_at.toISOString(),
     createdAt: row.created_at.toISOString(),
@@ -65,9 +75,9 @@ export class PostgresItemStore implements ItemStore {
       `INSERT INTO items (
          id, user_id, label, status, due_at, scheduled_at, completed_at,
          priority, description, item_type, attributed_to_actor_id, context,
-         origin_context, tags, refs, archive_status, state, published_at,
-         created_at, updated_at
-       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`,
+         origin_context, tags, refs, archive_status, source, ingested_at, state,
+         published_at, created_at, updated_at
+       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)`,
       [
         item.id,
         item.userId,
@@ -85,6 +95,8 @@ export class PostgresItemStore implements ItemStore {
         item.tags ? JSON.stringify(item.tags) : null,
         item.refs ? JSON.stringify(item.refs) : null,
         item.archiveStatus,
+        item.source ? JSON.stringify(item.source) : null,
+        item.ingestedAt ?? null,
         item.state ? JSON.stringify(item.state) : null,
         item.publishedAt,
         item.createdAt,
@@ -96,13 +108,21 @@ export class PostgresItemStore implements ItemStore {
 
   async get(itemId: string): Promise<Item | undefined> {
     const result = await this.pool.query<ItemRow>(
-      `SELECT id, user_id, label, status, due_at, scheduled_at, completed_at,
-              priority, description, item_type, attributed_to_actor_id, context,
-              origin_context, tags, refs, archive_status, state, published_at,
-              created_at, updated_at
-       FROM items
-       WHERE id = $1`,
+      `SELECT ${ITEM_COLUMNS} FROM items WHERE id = $1`,
       [itemId],
+    );
+    const row = result.rows[0];
+    return row ? mapRow(row) : undefined;
+  }
+
+  async getBySource(userId: string, source: ItemSource): Promise<Item | undefined> {
+    const result = await this.pool.query<ItemRow>(
+      `SELECT ${ITEM_COLUMNS}
+       FROM items
+       WHERE user_id = $1
+         AND source->>'system' = $2
+         AND source->>'externalId' = $3`,
+      [userId, source.system, source.externalId],
     );
     const row = result.rows[0];
     return row ? mapRow(row) : undefined;
@@ -111,20 +131,14 @@ export class PostgresItemStore implements ItemStore {
   async listForUser(userId: string, status?: ItemStatus): Promise<Item[]> {
     const result = status
       ? await this.pool.query<ItemRow>(
-          `SELECT id, user_id, label, status, due_at, scheduled_at, completed_at,
-                  priority, description, item_type, attributed_to_actor_id, context,
-                  origin_context, tags, refs, archive_status, state, published_at,
-                  created_at, updated_at
+          `SELECT ${ITEM_COLUMNS}
            FROM items
            WHERE user_id = $1 AND status = $2
            ORDER BY updated_at DESC`,
           [userId, status],
         )
       : await this.pool.query<ItemRow>(
-          `SELECT id, user_id, label, status, due_at, scheduled_at, completed_at,
-                  priority, description, item_type, attributed_to_actor_id, context,
-                  origin_context, tags, refs, archive_status, state, published_at,
-                  created_at, updated_at
+          `SELECT ${ITEM_COLUMNS}
            FROM items
            WHERE user_id = $1
            ORDER BY updated_at DESC`,
@@ -151,9 +165,11 @@ export class PostgresItemStore implements ItemStore {
            tags = $13,
            refs = $14,
            archive_status = $15,
-           state = $16,
-           published_at = $17,
-           updated_at = $18
+           source = $16,
+           ingested_at = $17,
+           state = $18,
+           published_at = $19,
+           updated_at = $20
        WHERE id = $1`,
       [
         item.id,
@@ -171,6 +187,8 @@ export class PostgresItemStore implements ItemStore {
         item.tags ? JSON.stringify(item.tags) : null,
         item.refs ? JSON.stringify(item.refs) : null,
         item.archiveStatus,
+        item.source ? JSON.stringify(item.source) : null,
+        item.ingestedAt ?? null,
         item.state ? JSON.stringify(item.state) : null,
         item.publishedAt,
         item.updatedAt,
@@ -199,6 +217,15 @@ export class MemoryItemStore implements ItemStore {
 
   async get(itemId: string): Promise<Item | undefined> {
     return this.items.get(itemId);
+  }
+
+  async getBySource(userId: string, source: ItemSource): Promise<Item | undefined> {
+    return [...this.items.values()].find(
+      (item) =>
+        item.userId === userId &&
+        item.source?.system === source.system &&
+        item.source?.externalId === source.externalId,
+    );
   }
 
   async listForUser(userId: string, status?: ItemStatus): Promise<Item[]> {

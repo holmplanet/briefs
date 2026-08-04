@@ -1,4 +1,4 @@
-export type BriefConfig = {
+export type BriefsConfig = {
   env: string;
   host: string;
   port: number;
@@ -10,11 +10,11 @@ function readPort(value: string | undefined, fallback: number): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
-export function loadConfig(): BriefConfig {
+export function loadConfig(): BriefsConfig {
   return {
-    env: process.env.BRIEF_ENV ?? "development",
-    host: process.env.BRIEF_HOST ?? "0.0.0.0",
-    port: readPort(process.env.BRIEF_PORT, 8000),
-    databaseUrl: process.env.BRIEF_DATABASE_URL,
+    env: process.env.BRIEFS_ENV ?? "development",
+    host: process.env.BRIEFS_HOST ?? "0.0.0.0",
+    port: readPort(process.env.BRIEFS_PORT, 8000),
+    databaseUrl: process.env.BRIEFS_DATABASE_URL,
   };
 }

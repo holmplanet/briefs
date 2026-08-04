@@ -1,18 +1,18 @@
-name: brief
+name: briefs
 
 services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: brief
-      POSTGRES_PASSWORD: brief
-      POSTGRES_DB: brief
+      POSTGRES_USER: briefs
+      POSTGRES_PASSWORD: briefs
+      POSTGRES_DB: briefs
     ports:
       - "5432:5432"
     volumes:
-      - brief-postgres:/var/lib/postgresql/data
+      - briefs-postgres:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U brief -d brief"]
+      test: ["CMD-SHELL", "pg_isready -U briefs -d briefs"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -20,12 +20,12 @@ services:
   system:
     build: .
     ports:
-      - "${BRIEF_PORT:-8000}:8000"
+      - "${BRIEFS_PORT:-8000}:8000"
     environment:
-      BRIEF_ENV: development
-      BRIEF_HOST: 0.0.0.0
-      BRIEF_PORT: 8000
-      BRIEF_DATABASE_URL: postgresql://brief:brief@postgres:5432/brief
+      BRIEFS_ENV: development
+      BRIEFS_HOST: 0.0.0.0
+      BRIEFS_PORT: 8000
+      BRIEFS_DATABASE_URL: postgresql://briefs:briefs@postgres:5432/briefs
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,4 +41,4 @@ services:
       start_period: 15s
 
 volumes:
-  brief-postgres:
+  briefs-postgres:

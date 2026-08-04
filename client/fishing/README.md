@@ -1,3 +1,3 @@
-# @brief/fishing
+# @briefs/fishing
 
-Fishing client — placeholder.
+Placeholder vertical client.

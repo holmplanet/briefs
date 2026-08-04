@@ -4,7 +4,7 @@ import {
   StitchStatus,
   createStitchInputSchema,
   updateStitchInputSchema,
-} from "@brief/shared";
+} from "@briefs/shared";
 
 import type { PersonalStitchService } from "../../personal/service.js";
 import { ApiError } from "../errors.js";

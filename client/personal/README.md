@@ -1,10 +1,10 @@
-# @brief/personal
+# @briefs/personal
 
-Personal client — stitch inbox UI (placeholder).
+Personal vertical client (UI placeholder).
 
-Imports types from `@brief/shared`. Backend routes for personal are in
-`@brief/system/src/personal/`.
+Imports types from `@briefs/shared`. Backend routes for personal are in
+`@briefs/system/src/personal/`.
 
 ```bash
-npm run typecheck -w @brief/personal
+npm run typecheck -w @briefs/personal
 ```

@@ -1,6 +1,6 @@
 import type { Pool } from "pg";
 
-import type { Stitch, StitchPriority, StitchStatus, StitchStore } from "@brief/shared";
+import type { Stitch, StitchPriority, StitchStatus, StitchStore } from "@briefs/shared";
 
 type StitchRow = {
   id: string;

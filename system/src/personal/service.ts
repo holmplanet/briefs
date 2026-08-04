@@ -7,7 +7,7 @@ import {
   type StitchStatus as StitchStatusType,
   type StitchStore,
   type UpdateStitchInput,
-} from "@brief/shared";
+} from "@briefs/shared";
 
 export class PersonalStitchService {
   constructor(private readonly store: StitchStore) {}

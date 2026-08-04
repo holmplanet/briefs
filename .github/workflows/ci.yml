@@ -14,19 +14,19 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: brief
-          POSTGRES_PASSWORD: brief
-          POSTGRES_DB: brief
+          POSTGRES_USER: briefs
+          POSTGRES_PASSWORD: briefs
+          POSTGRES_DB: briefs
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U brief -d brief"
+          --health-cmd "pg_isready -U briefs -d briefs"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
 
     env:
-      BRIEF_DATABASE_URL: postgresql://brief:brief@localhost:5432/brief
+      BRIEFS_DATABASE_URL: postgresql://briefs:briefs@localhost:5432/briefs
 
     steps:
       - uses: actions/checkout@v4

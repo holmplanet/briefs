@@ -1,5 +1,5 @@
 {
-  "name": "@brief/personal",
+  "name": "@briefs/personal",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -13,7 +13,7 @@
     "test": "echo \"(no UI yet)\" && exit 0"
   },
   "dependencies": {
-    "@brief/shared": "*"
+    "@briefs/shared": "*"
   },
   "devDependencies": {
     "typescript": "^5.9.3"

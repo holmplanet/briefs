@@ -7,8 +7,9 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./stitch": "./src/stitch/index.ts",
-    "./brief": "./src/brief/index.ts"
+    "./actor": "./src/actor/index.ts",
+    "./activity": "./src/activity/index.ts",
+    "./item": "./src/item/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

@@ -1,0 +1,33 @@
+import { z } from "zod";
+
+import { isoDateTimeSchema } from "../common/iso-datetime.js";
+import { SUMMARY_REQUIRED_TYPES } from "./constants.js";
+
+const activityVerbInputSchema = z
+  .string()
+  .min(1)
+  .regex(/^[A-Z][A-Za-z0-9]*(:[A-Za-z][A-Za-z0-9]+)?$/);
+
+export const recordActivityInputSchema = z
+  .object({
+    type: activityVerbInputSchema,
+    actorId: z.string().uuid(),
+    objectId: z.string().uuid(),
+    origin: z.string().min(1).optional(),
+    target: z.string().min(1).optional(),
+    summary: z.string().min(1).optional(),
+    occurredAt: isoDateTimeSchema.optional(),
+    result: z.record(z.unknown()).optional(),
+    clientKey: z.string().min(1).optional(),
+  })
+  .superRefine((input, ctx) => {
+    if (SUMMARY_REQUIRED_TYPES.has(input.type) && !input.summary) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `summary is required for activity type ${input.type}`,
+        path: ["summary"],
+      });
+    }
+  });
+
+export type RecordActivityInput = z.infer<typeof recordActivityInputSchema>;

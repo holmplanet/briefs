@@ -42,9 +42,9 @@ API shape (camelCase JSON)
 Source of truth
 ---------------
 
-- Zod schema: shared/src/stitch.ts  (@brief/shared)
+- Zod schema: shared/src/stitch.ts  (@briefs/shared)
 - SQL migration: db/migrations/001_stitch_nodes.sql
-- API: @brief/system — GET/POST/PATCH /api/v1/stitches
+- API: @briefs/system — GET/POST/PATCH /api/v1/stitches
 
 Monorepo layout
 ---------------
@@ -53,7 +53,7 @@ shared/     Stitch schema + StitchStore interface
 system/     REST API + persistence
 client/     vertical UIs (personal active; livestock, fishing TBD)
 
-Briefs (separate entity, to implement)
---------------------------------------
+Briefs (separate entity, implemented)
+-------------------------------------
 
-AI-generated on `brief me`, persisted to `briefs` table. See docs/decisions/units-and-briefs.md.
+AI-generated on `brief me`, persisted to `briefs` table. See brief.txt and docs/decisions/units-and-briefs.md.

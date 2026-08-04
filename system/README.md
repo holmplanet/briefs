@@ -1,18 +1,16 @@
-# @brief/system
+# @briefs/system
 
-Express REST backend. Serves Stitch data from Postgres (or in-memory when no DB is configured).
+Express REST API for Holmplanet Briefs.
 
 ## Routes
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Health check |
-| GET | `/api/v1/stitches` | List stitches |
-| POST | `/api/v1/stitches` | Create stitch |
-| PATCH | `/api/v1/stitches/:id` | Update stitch |
+- `GET /health`
+- `GET/POST/PATCH /api/v1/stitches`
+- `GET /api/v1/briefs`, `GET /api/v1/briefs/:id`
+- `POST /api/v1/brief/generate`
 
-Types come from `@brief/shared`. Personal vertical logic lives in `src/personal/`.
+Types come from `@briefs/shared`. Personal vertical logic lives in `src/personal/`.
 
 ```bash
-npm run dev -w @brief/system
+npm run dev -w @briefs/system
 ```

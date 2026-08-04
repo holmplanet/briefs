@@ -2,16 +2,17 @@
 
 **Status:** accepted  
 **Date:** 2026-08-04  
-**Context:** Barebones Brief overhaul (`hard-reset` branch). Product name is **Brief**. Brand may lean underwear (boxer briefs); naming should support that voice.
+**Context:** Barebones Briefs overhaul (`hard-reset` branch). Product name is **Briefs**. Brand may lean underwear (boxer briefs); naming should support that voice.
 
 ## The distinction (like tweet vs Twitter)
 
 | Concept | Name | Who creates it | Purpose |
 |---------|------|----------------|---------|
+| Platform | **Briefs** | — | Product / repo |
 | Atomic captured item | **stitch** | User (or ingest) | Durable item woven into the graph |
 | Synthesized rundown | **brief** | AI on `brief me` | Point-in-time intelligence snapshot |
 
-**Brief** is the product *and* the generated artifact. **Stitches** are the atoms — textile metaphor: stitches make the brief (garment + document).
+**Briefs** is the platform. A **brief** is the generated artifact. **Stitches** are the atoms — textile metaphor: stitches make the brief (garment + document).
 
 Brand lines this enables:
 - "Fresh **briefs** every morning."
@@ -56,25 +57,21 @@ Brand lines this enables:
 
 ### Stitches (`stitch_nodes`)
 
-Implemented in `@brief/shared` + `@brief/system`.
+Implemented in `@briefs/shared` + `@briefs/system`.
 
 Core fields: `id`, `userId`, `label`, `status`, `dueAt`, `priority`, `description`, timestamps.
 
 API: `GET/POST/PATCH /api/v1/stitches`
 
-### Briefs table (to implement)
+### Briefs (`briefs`)
 
-| Field | Type | Notes |
-|-------|------|-------|
-| `id` | UUID | |
-| `user_id` | text | |
-| `kind` | text | `morning`, `on_demand`, `travel`, … |
-| `generated_at` | timestamptz | |
-| `greeting` | text | optional |
-| `headline` | text | optional |
-| `payload` | jsonb | bullets, sections, insights |
-| `related_stitch_ids` | text[] | stitches cited in this brief |
-| `created_at` | timestamptz | |
+Implemented in `@briefs/shared` + `@briefs/system`.
+
+Core fields: `id`, `userId`, `kind`, `generatedAt`, `greeting`, `headline`, `bullets`, `relatedStitchIds`, timestamps.
+
+API: `GET /api/v1/briefs`, `GET /api/v1/briefs/:id`, `POST /api/v1/brief/generate`
+
+Generator v0 synthesizes from open stitches (no LLM yet).
 
 ## API surface (target)
 
@@ -86,11 +83,12 @@ API: `GET/POST/PATCH /api/v1/stitches`
 
 ## Open questions
 
-- [ ] Implement `briefs` table + generator in `@brief/system`.
+- [x] Implement `briefs` table + generator in `@briefs/system` (v0: stitch-based, no LLM).
+- [ ] Wire LLM into `POST /api/v1/brief/generate`.
 - [ ] Does ingest create stitches, brief sections, or both?
 - [ ] Vertical extensions in `client/livestock`, `client/fishing`.
 
 ## References
 
-- Schema reference: `stitch.txt`
+- Schema reference: `stitch.txt`, `brief.txt`
 - Fort monorepo pattern: `bartonmalow/fort`

@@ -24,8 +24,8 @@ export function createApp(context: AppContext): Express {
   });
 
   mountApiRoutes(app, {
-    stitches: context.stitches,
-    briefs: context.briefs,
+    items: context.items,
+    actors: context.actors,
   });
 
   return app;
@@ -38,9 +38,8 @@ export async function startServer(): Promise<Express> {
   app.listen(context.config.port, context.config.host, () => {
     console.log(`Briefs API listening on http://${context.config.host}:${context.config.port}`);
     console.log(`Health: http://localhost:${context.config.port}/health`);
-    console.log(`Stitches: http://localhost:${context.config.port}/api/v1/stitches`);
-    console.log(`Briefs: http://localhost:${context.config.port}/api/v1/briefs`);
-    console.log(`Brief me: POST http://localhost:${context.config.port}/api/v1/brief/generate`);
+    console.log(`Items: http://localhost:${context.config.port}/api/v1/items`);
+    console.log(`Actors: http://localhost:${context.config.port}/api/v1/actors/me`);
     console.log(`Storage: ${context.config.databaseUrl ? "postgres" : "memory"}`);
   });
 

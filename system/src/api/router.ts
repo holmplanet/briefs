@@ -1,23 +1,21 @@
 import { Router } from "express";
 
-import type { BriefService } from "../brief/service.js";
-import type { StitchService } from "../stitch/service.js";
-import { createBriefGenerateRouter } from "./brief/generate-routes.js";
-import { createBriefsRouter } from "./brief/routes.js";
+import type { ActorService } from "../actor/service.js";
+import type { ItemService } from "../item/service.js";
+import { createActorRouter } from "./actor/routes.js";
+import { createItemRouter } from "./item/routes.js";
 import { apiErrorHandler, userMiddleware } from "./middleware.js";
-import { createStitchRouter } from "./stitch/routes.js";
 
 export type ApiServices = {
-  stitches: StitchService;
-  briefs: BriefService;
+  items: ItemService;
+  actors: ActorService;
 };
 
 export function mountApiRoutes(app: Router, services: ApiServices): void {
   const api = Router();
   api.use(userMiddleware);
-  api.use("/stitches", createStitchRouter(services.stitches));
-  api.use("/briefs", createBriefsRouter(services.briefs));
-  api.use("/brief", createBriefGenerateRouter(services.briefs));
+  api.use("/actors", createActorRouter(services.actors));
+  api.use("/items", createItemRouter(services.items));
   app.use("/api/v1", api);
   app.use(apiErrorHandler);
 }

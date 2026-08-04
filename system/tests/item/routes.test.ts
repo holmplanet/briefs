@@ -23,17 +23,18 @@ describe("item API", () => {
       const createResponse = await fetch(`${base}/api/v1/items`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ label: "Ship schema overhaul" }),
+        body: JSON.stringify({ name: "Ship schema overhaul" }),
       });
       expect(createResponse.status).toBe(201);
       const created = await createResponse.json();
       expect(created.item).toMatchObject({
-        schemaVersion: 3,
-        label: "Ship schema overhaul",
+        schemaVersion: 4,
+        name: "Ship schema overhaul",
         status: "open",
         userId: "test-user",
         context: "core",
-        archiveStatus: "active",
+        lifecycle: "active",
+        kind: "task",
       });
 
       const activitiesResponse = await fetch(
@@ -49,7 +50,7 @@ describe("item API", () => {
       });
       expect(activitiesBody.activities[0].result.created).toMatchObject({
         id: created.item.id,
-        label: "Ship schema overhaul",
+        name: "Ship schema overhaul",
       });
 
       const listResponse = await fetch(`${base}/api/v1/items`, { headers });
@@ -103,9 +104,9 @@ describe("item API", () => {
     };
 
     const body = {
-      label: "Standup",
-      itemType: "event",
-      publishedAt: "2026-08-04T09:00:00.000Z",
+      name: "Standup",
+      kind: "event",
+      occurredAt: "2026-08-04T09:00:00.000Z",
       source: { system: "google-calendar", externalId: "evt-123" },
       performer: {
         kind: "Service",

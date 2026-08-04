@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { ActivityType } from "@briefs/shared/activity";
 import {
   ITEM_DEFAULT_CONTEXT,
-  ItemArchiveStatus,
+  ItemLifecycle,
   ItemStatus,
   diffItems,
   type CreateItemInput,
@@ -56,30 +56,30 @@ export class ItemService {
     const owner = await this.actors.ensurePerson(userId);
     const performer = await this.actors.resolvePerformer(userId, input.performer);
     const recordedAt = new Date().toISOString();
-    const publishedAt = input.publishedAt ?? recordedAt;
+    const occurredAt = input.occurredAt ?? recordedAt;
     const ingestedAt = input.source ? (input.ingestedAt ?? recordedAt) : input.ingestedAt;
     const context = input.context ?? ITEM_DEFAULT_CONTEXT;
 
     const item: Item = {
-      schemaVersion: 3,
+      schemaVersion: 4,
       id: randomUUID(),
       userId,
-      label: input.label.trim(),
+      name: input.name.trim(),
       status: input.status ?? ItemStatus.OPEN,
       dueAt: input.dueAt,
       scheduledAt: input.scheduledAt,
       priority: input.priority,
       description: input.description,
-      itemType: input.itemType ?? "item",
-      attributedToActorId: owner.id,
+      kind: input.kind ?? "task",
+      ownerActorId: owner.id,
       context,
       originContext: input.originContext ?? context,
       tags: input.tags,
       refs: input.refs,
-      archiveStatus: ItemArchiveStatus.ACTIVE,
+      lifecycle: ItemLifecycle.ACTIVE,
       source: input.source,
       ingestedAt,
-      publishedAt,
+      occurredAt,
       createdAt: recordedAt,
       updatedAt: recordedAt,
     };
@@ -89,12 +89,12 @@ export class ItemService {
       type: ActivityType.CREATE,
       actorId: performer.id,
       itemId: item.id,
-      occurredAt: publishedAt,
+      occurredAt,
       result: {
         created: {
           id: item.id,
-          label: item.label,
-          itemType: item.itemType,
+          name: item.name,
+          kind: item.kind,
           source: item.source,
         },
       },
@@ -118,7 +118,7 @@ export class ItemService {
 
     const updated: Item = {
       ...existing,
-      label: input.label?.trim() || existing.label,
+      name: input.name?.trim() || existing.name,
       status: nextStatus,
       dueAt: input.dueAt === null ? undefined : (input.dueAt ?? existing.dueAt),
       scheduledAt:
@@ -130,7 +130,7 @@ export class ItemService {
       context: nextContext,
       tags: input.tags === null ? undefined : (input.tags ?? existing.tags),
       refs: input.refs === null ? undefined : (input.refs ?? existing.refs),
-      archiveStatus: input.archiveStatus ?? existing.archiveStatus,
+      lifecycle: input.lifecycle ?? existing.lifecycle,
       updatedAt: now,
     };
 
@@ -176,10 +176,7 @@ function resolveActivityType(
   before: Item,
   after: Item,
 ): typeof ActivityType.UPDATE | typeof ActivityType.MOVE | typeof ActivityType.DELETE {
-  if (
-    before.archiveStatus === ItemArchiveStatus.ACTIVE &&
-    after.archiveStatus === ItemArchiveStatus.ARCHIVED
-  ) {
+  if (before.lifecycle === ItemLifecycle.ACTIVE && after.lifecycle === ItemLifecycle.ARCHIVED) {
     return ActivityType.DELETE;
   }
   if (before.context !== after.context) {

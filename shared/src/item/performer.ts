@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { ActorType } from "../actor/constants.js";
 
-/** Who performed the write — distinct from item owner (attributedToActorId). */
+/** Who performed the write — distinct from item owner (ownerActorId). */
 export const itemPerformerSchema = z
   .object({
     kind: z.enum([ActorType.PERSON, ActorType.SERVICE, ActorType.APPLICATION]),

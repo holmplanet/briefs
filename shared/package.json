@@ -3,13 +3,25 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "main": "./src/index.ts",
+  "main": "./dist/index.js",
   "types": "./src/index.ts",
   "exports": {
-    ".": "./src/index.ts",
-    "./actor": "./src/actor/index.ts",
-    "./activity": "./src/activity/index.ts",
-    "./item": "./src/item/index.ts"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    },
+    "./actor": {
+      "types": "./src/actor/index.ts",
+      "default": "./dist/actor/index.js"
+    },
+    "./activity": {
+      "types": "./src/activity/index.ts",
+      "default": "./dist/activity/index.js"
+    },
+    "./item": {
+      "types": "./src/item/index.ts",
+      "default": "./dist/item/index.js"
+    }
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

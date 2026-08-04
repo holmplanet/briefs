@@ -5,6 +5,7 @@ import {
   ITEM_DEFAULT_CONTEXT,
   ItemArchiveStatus,
   ItemStatus,
+  diffItems,
   type CreateItemInput,
   type Item,
   type ItemStatus as ItemStatusType,
@@ -45,11 +46,22 @@ export class ItemService {
   }
 
   async create(userId: string, input: CreateItemInput): Promise<Item> {
-    const actor = await this.actors.ensurePerson(userId);
-    const now = new Date().toISOString();
+    if (input.source) {
+      const existing = await this.store.getBySource(userId, input.source);
+      if (existing) {
+        return existing;
+      }
+    }
+
+    const owner = await this.actors.ensurePerson(userId);
+    const performer = await this.actors.resolvePerformer(userId, input.performer);
+    const recordedAt = new Date().toISOString();
+    const publishedAt = input.publishedAt ?? recordedAt;
+    const ingestedAt = input.source ? (input.ingestedAt ?? recordedAt) : input.ingestedAt;
     const context = input.context ?? ITEM_DEFAULT_CONTEXT;
+
     const item: Item = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       id: randomUUID(),
       userId,
       label: input.label.trim(),
@@ -59,24 +71,33 @@ export class ItemService {
       priority: input.priority,
       description: input.description,
       itemType: input.itemType ?? "item",
-      attributedToActorId: actor.id,
+      attributedToActorId: owner.id,
       context,
       originContext: input.originContext ?? context,
       tags: input.tags,
       refs: input.refs,
       archiveStatus: ItemArchiveStatus.ACTIVE,
-      publishedAt: now,
-      createdAt: now,
-      updatedAt: now,
+      source: input.source,
+      ingestedAt,
+      publishedAt,
+      createdAt: recordedAt,
+      updatedAt: recordedAt,
     };
 
     await this.store.save(item);
     await this.activities.record({
       type: ActivityType.CREATE,
-      actorId: actor.id,
+      actorId: performer.id,
       itemId: item.id,
-      occurredAt: now,
-      result: { item },
+      occurredAt: publishedAt,
+      result: {
+        created: {
+          id: item.id,
+          label: item.label,
+          itemType: item.itemType,
+          source: item.source,
+        },
+      },
       clientKey: input.clientKey,
     });
 
@@ -89,7 +110,7 @@ export class ItemService {
       throw new Error(`Item not found: ${itemId}`);
     }
 
-    const actor = await this.actors.ensurePerson(userId);
+    const performer = await this.actors.resolvePerformer(userId, input.performer);
     const nextStatus = input.status ?? existing.status;
     const completedAt = resolveCompletedAt(existing, input, nextStatus);
     const now = new Date().toISOString();
@@ -113,13 +134,14 @@ export class ItemService {
       updatedAt: now,
     };
 
+    const changes = diffItems(existing, updated);
     const activityType = resolveActivityType(existing, updated);
     const activityInput = {
-      actorId: actor.id,
-      itemId: itemId,
+      actorId: performer.id,
+      itemId,
       summary: input.summary,
       clientKey: input.clientKey,
-      result: { before: existing, after: updated },
+      result: { changes },
     };
 
     if (activityType === ActivityType.MOVE) {

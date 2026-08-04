@@ -1,15 +1,15 @@
-export const ITEM_SCHEMA_VERSION = 3 as const;
+export const ITEM_SCHEMA_VERSION = 4 as const;
 
 /** Default vertical/system context for new items. */
 export const ITEM_DEFAULT_CONTEXT = "core" as const;
 
 /** Lifecycle on the item — distinct from workflow status. */
-export const ItemArchiveStatus = {
+export const ItemLifecycle = {
   ACTIVE: "active",
   ARCHIVED: "archived",
 } as const;
 
-export type ItemArchiveStatus = (typeof ItemArchiveStatus)[keyof typeof ItemArchiveStatus];
+export type ItemLifecycle = (typeof ItemLifecycle)[keyof typeof ItemLifecycle];
 
 /** Typed links between items. */
 export const ItemRefRel = {

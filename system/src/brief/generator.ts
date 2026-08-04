@@ -1,67 +1,13 @@
-import { randomUUID } from "node:crypto";
-
 import {
   BriefKind,
   StitchStatus,
   type Brief,
   type BriefBullet,
   type BriefKind as BriefKindType,
-  type BriefStore,
-  type GenerateBriefInput,
   type Stitch,
 } from "@briefs/shared";
 
-import type { PersonalStitchService } from "./service.js";
-
-export class PersonalBriefService {
-  constructor(
-    private readonly store: BriefStore,
-    private readonly stitches: PersonalStitchService,
-  ) {}
-
-  list(userId: string, limit?: number): Promise<Brief[]> {
-    return this.store.listForUser(userId, limit);
-  }
-
-  async get(userId: string, briefId: string): Promise<Brief> {
-    const brief = await this.store.get(briefId);
-    if (!brief || brief.userId !== userId) {
-      throw new Error(`Brief not found: ${briefId}`);
-    }
-    return brief;
-  }
-
-  async generate(userId: string, input: GenerateBriefInput = {}): Promise<Brief> {
-    const kind = input.kind ?? BriefKind.ON_DEMAND;
-    const allStitches = await this.stitches.list(userId);
-    const previousBrief = await this.store.getLatestForUser(userId);
-    const now = new Date().toISOString();
-
-    const { bullets, relatedStitchIds, headline, greeting } = buildBriefContent({
-      kind,
-      stitches: allStitches,
-      previousBrief,
-    });
-
-    const brief: Brief = {
-      schemaVersion: 1,
-      id: randomUUID(),
-      userId,
-      kind,
-      generatedAt: now,
-      greeting,
-      headline,
-      bullets,
-      relatedStitchIds,
-      createdAt: now,
-    };
-
-    await this.store.save(brief);
-    return brief;
-  }
-}
-
-function buildBriefContent(options: {
+export function buildBriefContent(options: {
   kind: BriefKindType;
   stitches: Stitch[];
   previousBrief?: Brief;

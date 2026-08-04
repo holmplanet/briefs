@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { bootstrap, createApp } from "../../src/index.js";
 
-describe("personal briefs API", () => {
+describe("brief API", () => {
   it("generates, lists, and fetches a brief from stitches", async () => {
     const context = await bootstrap();
     const app = createApp(context);

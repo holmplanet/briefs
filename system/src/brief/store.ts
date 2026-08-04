@@ -1,6 +1,6 @@
 import type { Pool } from "pg";
 
-import type { Brief, BriefBullet, BriefKind, BriefStore } from "@briefs/shared";
+import type { Brief, BriefBullet, BriefKind, BriefStore } from "@briefs/shared/brief";
 
 type BriefRow = {
   id: string;

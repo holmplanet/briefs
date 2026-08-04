@@ -1,11 +1,11 @@
 import { Router } from "express";
 
-import { generateBriefInputSchema } from "@briefs/shared";
+import { generateBriefInputSchema } from "@briefs/shared/brief";
 
-import type { PersonalBriefService } from "../../personal/brief-service.js";
+import type { BriefService } from "../../brief/service.js";
 import type { AuthedRequest } from "../middleware.js";
 
-export function createBriefGenerateRouter(service: PersonalBriefService): Router {
+export function createBriefGenerateRouter(service: BriefService): Router {
   const router = Router();
 
   router.post("/generate", async (req, res, next) => {

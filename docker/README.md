@@ -1,6 +1,6 @@
 # Docker
 
-Local Postgres + `@briefs/system` API. The image installs only `shared` and `system` workspaces (no Next.js).
+Local Postgres + `@briefs/system` API. The image installs only `shared` and `system` workspaces (no Next.js), compiles with `tsc`, and runs `node system/dist/index.js` (no `tsx` / `esbuild` in production).
 
 ```bash
 # From repo root

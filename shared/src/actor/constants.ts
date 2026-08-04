@@ -1,6 +1,6 @@
 export const ACTOR_SCHEMA_VERSION = 1 as const;
 
-/** ActivityPub-inspired actor kinds — people and software only; systems are not actors. */
+/** Actor kinds — people and software only; systems are values on items, not actors. */
 export const ActorType = {
   PERSON: "Person",
   SERVICE: "Service",

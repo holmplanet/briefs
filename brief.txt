@@ -40,7 +40,7 @@ API shape (camelCase JSON)
 Source of truth
 ---------------
 
-- Zod schema: shared/src/brief.ts  (@briefs/shared)
+- Zod schema: shared/src/brief/  (@briefs/shared)
 - SQL migration: db/migrations/003_briefs.sql
 - API: @briefs/system
   - GET /api/v1/briefs

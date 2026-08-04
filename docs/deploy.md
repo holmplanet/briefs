@@ -39,6 +39,10 @@ npm run docker:down
 | `npm run docker:down` | Stop all compose services |
 | `npm run docker:build` | Build Brief + web images without starting |
 | `npm run docker:logs` | Tail `brief` and `web` container logs |
+| `npm run docker:secrets` | Full stack with Infisical `dev` secrets injected |
+| `npm run bootstrap:secrets` | Seed Infisical secret slots for dev/prod |
+| `npm run deploy` | Manual production deploy to droplet |
+| `npm run remote:status` | Check production container status |
 | `npm run dev:web` | Next.js on host (hybrid dev; API in Docker or `npm run dev`) |
 
 ## Local dev vs container
@@ -96,6 +100,61 @@ For production (`BRIEF_ENV=production`), set `BRIEF_MCP_AUTH_DISABLED=false` (or
 3. `runtime` — non-root `web` user, `node server.js` on port 3000
 
 The web container proxies browser `/api/v1/*` requests to the `brief` service on the Docker network.
+
+## Infisical (optional for local dev)
+
+Brief follows the [mcp-oauth-stack](https://github.com/holmplanet/mcp-oauth-stack) secrets pattern. See [INFISICAL.md](../INFISICAL.md).
+
+```bash
+infisical login
+infisical init
+npm run bootstrap:secrets dev
+npm run docker:secrets   # inject dev secrets into compose
+```
+
+`npm run docker:up` still works without Infisical for quick local testing.
+
+## Production deploy
+
+Production uses `docker-compose.prod.yml`, Infisical `prod` secrets, and a manual deploy to a DigitalOcean droplet.
+
+### Prerequisites
+
+- Infisical `prod` secrets seeded (`npm run bootstrap:secrets prod`)
+- Deploy machine env from `.env.example.prod` (runtime config + deploy credentials)
+- Prebuilt images uploaded to the droplet
+
+### Build and export images
+
+```bash
+export BRIEF_IMAGE=brief-brief:prod
+export BRIEF_WEB_IMAGE=brief-web:prod
+docker compose build brief web
+docker tag brief-brief:latest "$BRIEF_IMAGE"
+docker tag brief-web:latest "$BRIEF_WEB_IMAGE"
+docker save "$BRIEF_IMAGE" | gzip > /tmp/brief-api.tar.gz
+docker save "$BRIEF_WEB_IMAGE" | gzip > /tmp/brief-web.tar.gz
+
+export BRIEF_IMAGE_ARCHIVE=/tmp/brief-api.tar.gz
+export BRIEF_WEB_IMAGE_ARCHIVE=/tmp/brief-web.tar.gz
+```
+
+### Deploy
+
+```bash
+# Set BRIEF_PUBLIC_URL, DROPLET_IP, Infisical deploy creds, SSH_KNOWN_HOSTS_FILE, etc.
+./deploy.sh
+```
+
+### Remote ops
+
+```bash
+npm run remote:status
+npm run remote:logs
+npm run remote:restart
+```
+
+Production services bind to loopback (`127.0.0.1`) — put Nginx + TLS in front (follow-up in #20).
 
 ## Troubleshooting
 

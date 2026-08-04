@@ -25,6 +25,7 @@ Early development. **Connector-agnostic orchestration** — Brief owns tasks and
 | [docs/actions.md](docs/actions.md) | Approval-gated action engine |
 | [docs/trust.md](docs/trust.md) | Auth, isolation, and trust principles |
 | [docs/deploy.md](docs/deploy.md) | Docker Compose deployment |
+| [INFISICAL.md](INFISICAL.md) | Secrets split (`.env` vs Infisical) |
 | [plugin/](plugin/) | Codex + Claude MCP plugin manifests |
 
 Canonical spec (2nd brain): `Developer/2nd-brain/knowledge/research/holmplanet-brief-spec.md`

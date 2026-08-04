@@ -7,7 +7,10 @@ const migrationsDir = join(process.cwd(), "db/migrations");
 
 let migrationPromise: Promise<void> | null = null;
 
-export function createPool(connectionString: string, poolConfig?: Omit<PoolConfig, "connectionString">): Pool {
+export function createPool(
+  connectionString: string,
+  poolConfig?: Omit<PoolConfig, "connectionString">,
+): Pool {
   return new Pool({ connectionString, ...poolConfig });
 }
 

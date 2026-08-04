@@ -1,11 +1,12 @@
 import { Router } from "express";
 
-import type { PersonalTaskService } from "../../../client/personal/service.js";
-import { TaskStatus } from "../../../client/personal/schema/task-node.js";
 import {
+  TaskStatus,
   createTaskNodeInputSchema,
   updateTaskNodeInputSchema,
-} from "../../../client/personal/schema/task-node.js";
+} from "@brief/shared";
+
+import type { PersonalTaskService } from "../../personal/service.js";
 import { ApiError } from "../errors.js";
 import type { AuthedRequest } from "../middleware.js";
 

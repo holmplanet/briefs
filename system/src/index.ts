@@ -4,11 +4,11 @@ import { fileURLToPath } from "node:url";
 
 import express, { type Express, type Request, type Response } from "express";
 
-import { PersonalTaskService } from "../client/personal/service.js";
-import { MemoryTaskNodeStore, PostgresTaskNodeStore } from "../client/personal/store.js";
 import { mountApiRoutes } from "./api/router.js";
 import { loadConfig, type BriefConfig } from "./config.js";
 import { closePool, createPool, runMigrations } from "./db.js";
+import { PersonalTaskService } from "./personal/service.js";
+import { MemoryTaskNodeStore, PostgresTaskNodeStore } from "./personal/store.js";
 
 export type AppContext = {
   config: BriefConfig;

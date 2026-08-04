@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import type { PersonalTaskService } from "../../client/personal/service.js";
+import type { PersonalTaskService } from "../personal/service.js";
 import { apiErrorHandler, userMiddleware } from "./middleware.js";
 import { createTasksRouter } from "./routes/tasks.js";
 

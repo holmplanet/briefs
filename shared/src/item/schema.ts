@@ -26,7 +26,7 @@ export type ItemRef = z.infer<typeof itemRefSchema>;
 /**
  * Item — the durable entity in Briefs.
  *
- * `label` / `description` map to ActivityPub `name` / `content`.
+ * `label` is the display title; `description` is the write-up body.
  * Workflow fields remain top-level for query convenience; they should only
  * change via Activities in the write path.
  */

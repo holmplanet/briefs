@@ -1,6 +1,6 @@
 # @briefs/core
 
-Next.js web app for **base Briefs users** — stitches, briefs, and the `brief me` flow.
+Next.js web app for **base Briefs users** — items, actors, and activities.
 
 ## Stack
 

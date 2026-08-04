@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Briefs",
-  description: "Stitches are what you capture. Briefs are what AI synthesizes.",
+  description: "Items, actors, and activities — a durable work spine.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

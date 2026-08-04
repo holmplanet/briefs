@@ -1,4 +1,4 @@
-import { ArrowRight, Layers, Sparkles } from "lucide-react";
+import { ArrowRight, History, Layers } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
@@ -44,11 +44,11 @@ export default async function HomePage() {
             Holmplanet Briefs
           </p>
           <h1 className="max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
-            Capture stitches. Synthesize briefs.
+            Items, actors, and activities.
           </h1>
           <p className="max-w-2xl text-lg text-muted-foreground">
-            The core web app for base users — manage open stitches, generate point-in-time briefs,
-            and stay oriented without drowning in tabs.
+            A passport-inspired spine for durable work — objects you capture, who acted on them,
+            and an append-only log of what changed.
           </p>
         </section>
 
@@ -58,20 +58,19 @@ export default async function HomePage() {
               <div className="mb-2 flex size-10 items-center justify-center rounded-lg border bg-muted">
                 <Layers className="size-5" />
               </div>
-              <CardTitle>Stitches</CardTitle>
+              <CardTitle>Items</CardTitle>
               <CardDescription>
-                Atomic items you capture — tasks, notes, commitments — woven into your graph.
+                Durable objects — tasks, notes, commitments — with stable identity.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                CRUD via <code className="rounded bg-muted px-1 py-0.5">/api/v1/stitches</code>.
-                Open and in-progress stitches feed the brief generator.
+                CRUD via <code className="rounded bg-muted px-1 py-0.5">/api/v1/items</code>.
               </p>
             </CardContent>
             <CardFooter>
               <Button className="w-full sm:w-auto" disabled>
-                Stitches UI
+                Items UI
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>
@@ -80,23 +79,25 @@ export default async function HomePage() {
           <Card>
             <CardHeader>
               <div className="mb-2 flex size-10 items-center justify-center rounded-lg border bg-muted">
-                <Sparkles className="size-5" />
+                <History className="size-5" />
               </div>
-              <CardTitle>Brief me</CardTitle>
+              <CardTitle>Activities</CardTitle>
               <CardDescription>
-                AI-generated snapshots from your stitches and brief history.
+                Append-only history — Create, Update, Move, Delete — per item.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Trigger via{" "}
-                <code className="rounded bg-muted px-1 py-0.5">POST /api/v1/brief/generate</code>.
-                v0 synthesizer ranks open stitches; LLM wiring comes next.
+                Read via{" "}
+                <code className="rounded bg-muted px-1 py-0.5">
+                  /api/v1/items/:id/activities
+                </code>
+                . Actors at <code className="rounded bg-muted px-1 py-0.5">/api/v1/actors/me</code>.
               </p>
             </CardContent>
             <CardFooter>
               <Button className="w-full sm:w-auto" variant="secondary" disabled>
-                Generate brief
+                Activity log UI
                 <ArrowRight className="size-4" />
               </Button>
             </CardFooter>

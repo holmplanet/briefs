@@ -12,6 +12,7 @@ Active posture from 2026-08-04 hardening after the Keyv/Cacheable/Shai-Hulud npm
 - Treat the machine as **hardened but not ecosystem-clear** — no local compromise evidence, but affected-package lists may still move.
 - Re-scan OX, Aikido, and Socket advisories when the list stabilizes or before large dependency changes.
 - `briefs` lockfile had **no exact affected package/version matches** at scan time; related packages (`keyv`, `flat-cache`, `file-entry-cache`) were non-affected versions.
+- Re-scan 2026-08-04 after eslint removal (`74d3f15`): **no keyv/cacheable/eslint packages** in lockfile. Install scripts: `esbuild@0.28.1`, `fsevents@2.3.3` (dev only). Docker API image uses `tsc` + `node` — no `tsx`/`esbuild` in production.
 
 ## Default behavior for agents
 

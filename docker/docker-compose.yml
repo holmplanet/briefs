@@ -18,7 +18,9 @@ services:
       retries: 10
 
   system:
-    build: .
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
     ports:
       - "${BRIEFS_PORT:-8000}:8000"
     environment:

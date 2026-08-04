@@ -19,10 +19,10 @@
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test -w @briefs/system",
-    "db:up": "docker compose up -d postgres",
-    "db:down": "docker compose down",
-    "docker:up": "docker compose up -d --build",
-    "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f system"
+    "db:up": "docker compose -f docker/docker-compose.yml up -d postgres",
+    "db:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d --build",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:logs": "docker compose -f docker/docker-compose.yml logs -f system"
   }
 }

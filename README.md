@@ -14,6 +14,7 @@ client/
     fishing/
   plugin/            assistant manifests (Cursor/Codex, skills)
 db/migrations/       Postgres schema
+docker/              Dockerfile + compose
 ```
 
 ## Product model
@@ -90,4 +91,4 @@ Source of truth: `shared/src/` (`@briefs/shared`).
 npm run docker:up
 ```
 
-Postgres + `@briefs/system` on port 8000.
+Postgres + `@briefs/system` on port 8000. See `docker/README.md`.

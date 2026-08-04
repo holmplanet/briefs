@@ -15,10 +15,13 @@
     "dogfood:tasks": "tsx scripts/try-tasks.ts",
     "db:up": "docker compose up -d postgres redis",
     "db:down": "docker compose down",
-    "docker:build": "docker compose build brief",
+    "docker:build": "docker compose build brief web",
     "docker:up": "docker compose up -d --build",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f brief"
+    "docker:logs": "docker compose logs -f brief web",
+    "dev:web": "npm run dev --prefix web",
+    "build:web": "npm run build --prefix web",
+    "typecheck:web": "npm run typecheck --prefix web"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",

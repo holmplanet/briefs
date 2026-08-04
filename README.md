@@ -33,7 +33,8 @@ Canonical spec (2nd brain): `Developer/2nd-brain/knowledge/research/holmplanet-b
 
 ```
 brief/
-├── src/                # core platform (TypeScript — repo root, not under apps/)
+├── src/                # core platform API + MCP (TypeScript)
+├── web/                # Next.js task inbox + brief UI
 ├── plugin/             # MCP + assistant manifests
 ├── apps/               # vertical packs (fishing, livestock, …)
 └── docs/
@@ -46,22 +47,34 @@ brief/
 ```bash
 git checkout dev
 git pull origin dev
-```
 npm install
 npm run db:up          # Postgres + Redis (optional but recommended)
 cp .env.example .env
 npm test
 npm run test:smoke   # v0 end-to-end loop only
-npm run dev
+npm run dev          # API on host (port 8000)
 ```
+
+**Web UI (Next.js):**
+
+```bash
+npm run db:up        # or npm run docker:up for API in Docker
+npm run dev:web      # Next.js on port 3100
+```
+
+Open [http://localhost:3100](http://localhost:3100). The web app proxies `/api/v1` to the Brief API on port 8000. See [web/README.md](web/README.md).
 
 **Docker (full stack):**
 
 ```bash
 cp .env.example .env   # optional overrides
-npm run docker:up      # postgres + redis + brief container
+npm run docker:up      # postgres + redis + brief + web
 curl http://localhost:8000/health
+open http://localhost:3100
 ```
+
+- API + MCP: `http://localhost:8000`
+- Web UI: `http://localhost:3100`
 
 See [docs/deploy.md](docs/deploy.md) for compose details.
 
@@ -84,6 +97,8 @@ Fixture-only (no calendar MCP): `npm run docker:up` then `npm run dogfood`
 Auth is disabled locally (`BRIEF_MCP_AUTH_DISABLED=true`). See [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md).
 
 - Health: `GET http://localhost:8000/health`
+- API: `http://localhost:8000/api/v1`
+- Web: `http://localhost:3100` (Next.js dev — `npm run dev:web`)
 - MCP: `http://localhost:8000/mcp` (streamable HTTP, stateless)
 - Graph persistence: **Postgres** when `BRIEF_DATABASE_URL` is set; in-memory otherwise
 - Snapshot cache: **Redis** when `BRIEF_REDIS_URL` is set

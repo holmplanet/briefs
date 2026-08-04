@@ -42,7 +42,7 @@ API shape (camelCase JSON)
 Source of truth
 ---------------
 
-- Zod schema: shared/src/stitch.ts  (@briefs/shared)
+- Zod schema: shared/src/stitch/  (@briefs/shared)
 - SQL migration: db/migrations/001_stitch_nodes.sql
 - API: @briefs/system — GET/POST/PATCH /api/v1/stitches
 

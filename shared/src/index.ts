@@ -1,2 +1,2 @@
-export * from "./brief.js";
-export * from "./stitch.js";
+export * from "./brief/index.js";
+export * from "./stitch/index.js";

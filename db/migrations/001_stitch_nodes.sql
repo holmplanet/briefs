@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS task_nodes (
+CREATE TABLE IF NOT EXISTS stitch_nodes (
   id           TEXT        PRIMARY KEY,
   user_id      TEXT        NOT NULL,
   label        TEXT        NOT NULL,
@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS task_nodes (
   updated_at   TIMESTAMPTZ NOT NULL
 );
 
-CREATE INDEX IF NOT EXISTS idx_task_nodes_user
-  ON task_nodes (user_id);
+CREATE INDEX IF NOT EXISTS idx_stitch_nodes_user
+  ON stitch_nodes (user_id);
 
-CREATE INDEX IF NOT EXISTS idx_task_nodes_user_status
-  ON task_nodes (user_id, status);
+CREATE INDEX IF NOT EXISTS idx_stitch_nodes_user_status
+  ON stitch_nodes (user_id, status);

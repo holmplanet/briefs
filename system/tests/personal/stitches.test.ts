@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import { bootstrap, createApp } from "../../src/index.js";
 
-describe("personal tasks API", () => {
-  it("creates, lists, and updates a task", async () => {
+describe("personal stitches API", () => {
+  it("creates, lists, and updates a stitch", async () => {
     const context = await bootstrap();
     const app = createApp(context);
     const server = app.listen(0);
@@ -20,34 +20,34 @@ describe("personal tasks API", () => {
     };
 
     try {
-      const createResponse = await fetch(`${base}/api/v1/tasks`, {
+      const createResponse = await fetch(`${base}/api/v1/stitches`, {
         method: "POST",
         headers,
         body: JSON.stringify({ label: "Ship schema overhaul" }),
       });
       expect(createResponse.status).toBe(201);
       const created = await createResponse.json();
-      expect(created.task).toMatchObject({
+      expect(created.stitch).toMatchObject({
         schemaVersion: 1,
         label: "Ship schema overhaul",
         status: "open",
         userId: "test-user",
       });
 
-      const listResponse = await fetch(`${base}/api/v1/tasks`, { headers });
+      const listResponse = await fetch(`${base}/api/v1/stitches`, { headers });
       expect(listResponse.status).toBe(200);
       const listed = await listResponse.json();
-      expect(listed.tasks).toHaveLength(1);
+      expect(listed.stitches).toHaveLength(1);
 
-      const patchResponse = await fetch(`${base}/api/v1/tasks/${created.task.id}`, {
+      const patchResponse = await fetch(`${base}/api/v1/stitches/${created.stitch.id}`, {
         method: "PATCH",
         headers,
         body: JSON.stringify({ status: "done" }),
       });
       expect(patchResponse.status).toBe(200);
       const updated = await patchResponse.json();
-      expect(updated.task.status).toBe("done");
-      expect(updated.task.completedAt).toBeTruthy();
+      expect(updated.stitch.status).toBe("done");
+      expect(updated.stitch.completedAt).toBeTruthy();
     } finally {
       await new Promise<void>((resolve, reject) => {
         server.close((error) => (error ? reject(error) : resolve()));

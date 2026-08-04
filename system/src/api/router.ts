@@ -1,13 +1,13 @@
 import { Router } from "express";
 
-import type { PersonalTaskService } from "../personal/service.js";
+import type { PersonalStitchService } from "../personal/service.js";
 import { apiErrorHandler, userMiddleware } from "./middleware.js";
-import { createTasksRouter } from "./routes/tasks.js";
+import { createStitchesRouter } from "./routes/stitches.js";
 
-export function mountApiRoutes(app: Router, service: PersonalTaskService): void {
+export function mountApiRoutes(app: Router, service: PersonalStitchService): void {
   const api = Router();
   api.use(userMiddleware);
-  api.use("/tasks", createTasksRouter(service));
+  api.use("/stitches", createStitchesRouter(service));
   app.use("/api/v1", api);
   app.use(apiErrorHandler);
 }

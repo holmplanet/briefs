@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { isoDateTimeSchema } from "../common/iso-datetime.js";
 import { ACTIVITY_SCHEMA_VERSION } from "./constants.js";
+import { activityResultSchema } from "./result.js";
 
 const activityVerbSchema = z
   .string()
@@ -23,7 +24,7 @@ export const activitySchema = z
     occurredAt: isoDateTimeSchema,
     /** When Briefs recorded it — set by the write path only. */
     recordedAt: isoDateTimeSchema,
-    result: z.record(z.unknown()).optional(),
+    result: activityResultSchema.optional(),
     clientKey: z.string().min(1).optional(),
   })
   .strict()

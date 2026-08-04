@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { isoDateTimeSchema } from "../common/iso-datetime.js";
 import { SUMMARY_REQUIRED_TYPES } from "./constants.js";
+import { activityResultSchema } from "./result.js";
 
 const activityVerbInputSchema = z
   .string()
@@ -17,7 +18,7 @@ export const recordActivityInputSchema = z
     target: z.string().min(1).optional(),
     summary: z.string().min(1).optional(),
     occurredAt: isoDateTimeSchema.optional(),
-    result: z.record(z.unknown()).optional(),
+    result: activityResultSchema.optional(),
     clientKey: z.string().min(1).optional(),
   })
   .superRefine((input, ctx) => {

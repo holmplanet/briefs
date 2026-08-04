@@ -9,7 +9,7 @@ src/
   common/          shared Zod helpers
   actor/           who acted
   activity/        append-only event log
-  item/            durable item + workflow projection
+  item/            durable item + ingest source + workflow projection
 ```
 
 ```ts

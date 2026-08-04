@@ -1,4 +1,4 @@
-export const ITEM_SCHEMA_VERSION = 2 as const;
+export const ITEM_SCHEMA_VERSION = 3 as const;
 
 /** Default vertical/system context for new items. */
 export const ITEM_DEFAULT_CONTEXT = "core" as const;

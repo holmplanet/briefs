@@ -1,7 +1,7 @@
 /**
- * Item — shared data contract for Briefs (passport Object).
+ * Item — shared data contract for Briefs.
  *
- * Items are durable Objects; Activities record every change.
+ * Items are durable; activities record every change.
  */
 
 export * from "./constants.js";

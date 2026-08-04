@@ -18,7 +18,7 @@ type ItemRow = {
   completed_at: Date | null;
   priority: ItemPriority | null;
   description: string | null;
-  object_type: string;
+  item_type: string;
   attributed_to_actor_id: string;
   context: string;
   origin_context: string;
@@ -43,7 +43,7 @@ function mapRow(row: ItemRow): Item {
     completedAt: row.completed_at?.toISOString(),
     priority: row.priority ?? undefined,
     description: row.description ?? undefined,
-    objectType: row.object_type,
+    itemType: row.item_type,
     attributedToActorId: row.attributed_to_actor_id,
     context: row.context,
     originContext: row.origin_context,
@@ -64,7 +64,7 @@ export class PostgresItemStore implements ItemStore {
     await this.pool.query(
       `INSERT INTO items (
          id, user_id, label, status, due_at, scheduled_at, completed_at,
-         priority, description, object_type, attributed_to_actor_id, context,
+         priority, description, item_type, attributed_to_actor_id, context,
          origin_context, tags, refs, archive_status, state, published_at,
          created_at, updated_at
        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)`,
@@ -78,7 +78,7 @@ export class PostgresItemStore implements ItemStore {
         item.completedAt ?? null,
         item.priority ?? null,
         item.description ?? null,
-        item.objectType,
+        item.itemType,
         item.attributedToActorId,
         item.context,
         item.originContext,
@@ -97,7 +97,7 @@ export class PostgresItemStore implements ItemStore {
   async get(itemId: string): Promise<Item | undefined> {
     const result = await this.pool.query<ItemRow>(
       `SELECT id, user_id, label, status, due_at, scheduled_at, completed_at,
-              priority, description, object_type, attributed_to_actor_id, context,
+              priority, description, item_type, attributed_to_actor_id, context,
               origin_context, tags, refs, archive_status, state, published_at,
               created_at, updated_at
        FROM items
@@ -112,7 +112,7 @@ export class PostgresItemStore implements ItemStore {
     const result = status
       ? await this.pool.query<ItemRow>(
           `SELECT id, user_id, label, status, due_at, scheduled_at, completed_at,
-                  priority, description, object_type, attributed_to_actor_id, context,
+                  priority, description, item_type, attributed_to_actor_id, context,
                   origin_context, tags, refs, archive_status, state, published_at,
                   created_at, updated_at
            FROM items
@@ -122,7 +122,7 @@ export class PostgresItemStore implements ItemStore {
         )
       : await this.pool.query<ItemRow>(
           `SELECT id, user_id, label, status, due_at, scheduled_at, completed_at,
-                  priority, description, object_type, attributed_to_actor_id, context,
+                  priority, description, item_type, attributed_to_actor_id, context,
                   origin_context, tags, refs, archive_status, state, published_at,
                   created_at, updated_at
            FROM items
@@ -144,7 +144,7 @@ export class PostgresItemStore implements ItemStore {
            completed_at = $6,
            priority = $7,
            description = $8,
-           object_type = $9,
+           item_type = $9,
            attributed_to_actor_id = $10,
            context = $11,
            origin_context = $12,
@@ -164,7 +164,7 @@ export class PostgresItemStore implements ItemStore {
         item.completedAt ?? null,
         item.priority ?? null,
         item.description ?? null,
-        item.objectType,
+        item.itemType,
         item.attributedToActorId,
         item.context,
         item.originContext,

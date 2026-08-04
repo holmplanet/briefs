@@ -14,8 +14,8 @@ export const activitySchema = z
     id: z.string().uuid(),
     type: activityVerbSchema,
     actorId: z.string().uuid(),
-    /** Item (Object) this activity applies to. */
-    objectId: z.string().uuid(),
+    /** Item this activity applies to. */
+    itemId: z.string().uuid(),
     origin: z.string().min(1).optional(),
     target: z.string().min(1).optional(),
     summary: z.string().min(1).optional(),

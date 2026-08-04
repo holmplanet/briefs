@@ -1,6 +1,6 @@
 # Holmplanet Briefs
 
-Schema-first platform for durable **items**, **actors**, and **activities** — passport-inspired, ActivityPub-referenced (not adopted).
+Schema-first platform for durable **items**, **actors**, and **activities**.
 
 
 ```
@@ -15,10 +15,11 @@ docker/              Dockerfile + compose
 
 ## Data model
 
+Three primitives:
 
-| Concept | Briefs name | Role |
-|---------|-------------|------|
-| **Object** | **item** | Durable thing — created once, identity never changes |
+| Concept | Name | Role |
+|---------|------|------|
+| Item | **item** | Durable thing — created once, identity never changes |
 | **Actor** | **actor** | Person or software that acted |
 | **Activity** | **activity** | Append-only record of what happened to an item |
 
@@ -45,7 +46,7 @@ curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/items/<item-id>/ac
 
 | Resource | Path | Notes |
 |----------|------|-------|
-| Items | `GET/POST/PATCH /api/v1/items` | Object CRUD |
+| Items | `GET/POST/PATCH /api/v1/items` | Item CRUD |
 | Activities | `GET /api/v1/items/:id/activities` | Append-only event log per item |
 | Actors | `GET /api/v1/actors/me`, `GET /api/v1/actors/:id` | Person actors for auth users |
 
@@ -69,7 +70,7 @@ Source of truth: `shared/src/` (`@briefs/shared`).
 |--------|--------|-----------|-------|
 | Actor | `shared/src/actor/` | `004_actors.sql` | `actors` |
 | Activity | `shared/src/activity/` | `005_activities.sql` | `activities` |
-| Item | `shared/src/item/` | `001`–`006`, `007_rename_stitches_to_items.sql` | `items` |
+| Item | `shared/src/item/` | `001`–`006`, `007`, `009_rename_object_columns_to_item.sql` | `items` |
 
 ## Docker
 

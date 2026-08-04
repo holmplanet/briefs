@@ -40,7 +40,7 @@ export class ItemService {
       if (!item) {
         throw new Error(`Item not found: ${itemId}`);
       }
-      return this.activities.listForObject(itemId);
+      return this.activities.listForItem(itemId);
     });
   }
 
@@ -58,7 +58,7 @@ export class ItemService {
       scheduledAt: input.scheduledAt,
       priority: input.priority,
       description: input.description,
-      objectType: input.objectType ?? "item",
+      itemType: input.itemType ?? "item",
       attributedToActorId: actor.id,
       context,
       originContext: input.originContext ?? context,
@@ -74,7 +74,7 @@ export class ItemService {
     await this.activities.record({
       type: ActivityType.CREATE,
       actorId: actor.id,
-      objectId: item.id,
+      itemId: item.id,
       occurredAt: now,
       result: { item },
       clientKey: input.clientKey,
@@ -116,7 +116,7 @@ export class ItemService {
     const activityType = resolveActivityType(existing, updated);
     const activityInput = {
       actorId: actor.id,
-      objectId: itemId,
+      itemId: itemId,
       summary: input.summary,
       clientKey: input.clientKey,
       result: { before: existing, after: updated },

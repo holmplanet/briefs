@@ -6,7 +6,7 @@ type ActivityRow = {
   id: string;
   type: string;
   actor_id: string;
-  object_id: string;
+  item_id: string;
   origin: string | null;
   target: string | null;
   summary: string | null;
@@ -22,7 +22,7 @@ function mapRow(row: ActivityRow): Activity {
     id: row.id,
     type: row.type,
     actorId: row.actor_id,
-    objectId: row.object_id,
+    itemId: row.item_id,
     origin: row.origin ?? undefined,
     target: row.target ?? undefined,
     summary: row.summary ?? undefined,
@@ -39,14 +39,14 @@ export class PostgresActivityStore implements ActivityStore {
   async append(activity: Activity): Promise<Activity> {
     await this.pool.query(
       `INSERT INTO activities (
-         id, type, actor_id, object_id, origin, target, summary,
+         id, type, actor_id, item_id, origin, target, summary,
          occurred_at, recorded_at, result, client_key
        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         activity.id,
         activity.type,
         activity.actorId,
-        activity.objectId,
+        activity.itemId,
         activity.origin ?? null,
         activity.target ?? null,
         activity.summary ?? null,
@@ -61,7 +61,7 @@ export class PostgresActivityStore implements ActivityStore {
 
   async get(activityId: string): Promise<Activity | undefined> {
     const result = await this.pool.query<ActivityRow>(
-      `SELECT id, type, actor_id, object_id, origin, target, summary,
+      `SELECT id, type, actor_id, item_id, origin, target, summary,
               occurred_at, recorded_at, result, client_key
        FROM activities
        WHERE id = $1`,
@@ -73,7 +73,7 @@ export class PostgresActivityStore implements ActivityStore {
 
   async getByClientKey(actorId: string, clientKey: string): Promise<Activity | undefined> {
     const result = await this.pool.query<ActivityRow>(
-      `SELECT id, type, actor_id, object_id, origin, target, summary,
+      `SELECT id, type, actor_id, item_id, origin, target, summary,
               occurred_at, recorded_at, result, client_key
        FROM activities
        WHERE actor_id = $1 AND client_key = $2`,
@@ -83,14 +83,14 @@ export class PostgresActivityStore implements ActivityStore {
     return row ? mapRow(row) : undefined;
   }
 
-  async listForObject(objectId: string): Promise<Activity[]> {
+  async listForItem(itemId: string): Promise<Activity[]> {
     const result = await this.pool.query<ActivityRow>(
-      `SELECT id, type, actor_id, object_id, origin, target, summary,
+      `SELECT id, type, actor_id, item_id, origin, target, summary,
               occurred_at, recorded_at, result, client_key
        FROM activities
-       WHERE object_id = $1
+       WHERE item_id = $1
        ORDER BY occurred_at ASC, recorded_at ASC`,
-      [objectId],
+      [itemId],
     );
     return result.rows.map(mapRow);
   }
@@ -118,9 +118,9 @@ export class MemoryActivityStore implements ActivityStore {
     );
   }
 
-  async listForObject(objectId: string): Promise<Activity[]> {
+  async listForItem(itemId: string): Promise<Activity[]> {
     return [...this.activities.values()]
-      .filter((activity) => activity.objectId === objectId)
+      .filter((activity) => activity.itemId === itemId)
       .sort((a, b) => {
         const byOccurred = a.occurredAt.localeCompare(b.occurredAt);
         return byOccurred !== 0 ? byOccurred : a.recordedAt.localeCompare(b.recordedAt);

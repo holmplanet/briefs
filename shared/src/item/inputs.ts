@@ -10,7 +10,7 @@ export const createItemInputSchema = z.object({
   scheduledAt: z.string().optional(),
   priority: z.nativeEnum(ItemPriority).optional(),
   description: z.string().optional(),
-  objectType: z.string().min(1).optional(),
+  itemType: z.string().min(1).optional(),
   context: z.string().min(1).optional(),
   originContext: z.string().min(1).optional(),
   tags: z.array(z.string().min(1)).optional(),

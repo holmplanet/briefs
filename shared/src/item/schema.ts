@@ -24,7 +24,7 @@ export const itemRefSchema = z.object({
 export type ItemRef = z.infer<typeof itemRefSchema>;
 
 /**
- * Item — the durable Object in Briefs (passport-inspired).
+ * Item — the durable entity in Briefs.
  *
  * `label` / `description` map to ActivityPub `name` / `content`.
  * Workflow fields remain top-level for query convenience; they should only
@@ -49,7 +49,7 @@ export const itemSchema = z
       .enum([ItemPriority.LOW, ItemPriority.NORMAL, ItemPriority.HIGH, ItemPriority.URGENT])
       .optional(),
     description: z.string().optional(),
-    objectType: z.string().min(1).default("item"),
+    itemType: z.string().min(1).default("item"),
     attributedToActorId: z.string().uuid(),
     context: z.string().min(1).default(ITEM_DEFAULT_CONTEXT),
     originContext: z.string().min(1).default(ITEM_DEFAULT_CONTEXT),

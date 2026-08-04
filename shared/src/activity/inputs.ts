@@ -12,7 +12,7 @@ export const recordActivityInputSchema = z
   .object({
     type: activityVerbInputSchema,
     actorId: z.string().uuid(),
-    objectId: z.string().uuid(),
+    itemId: z.string().uuid(),
     origin: z.string().min(1).optional(),
     target: z.string().min(1).optional(),
     summary: z.string().min(1).optional(),

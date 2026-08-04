@@ -195,6 +195,19 @@ const briefOutputSchema = z.object({
       priority: z.number(),
     }),
   ),
+  sections: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      pack: z.string(),
+      bullets: z.array(
+        z.object({
+          text: z.string(),
+          priority: z.number(),
+        }),
+      ),
+    }),
+  ),
 });
 
 export function registerMcpTools(server: McpServer, deps: McpToolDeps): void {

@@ -14,6 +14,10 @@ export type Insight = {
   message: string;
   priority: number;
   relatedNodeIds: string[];
+  /** Vertical pack that produced this insight (optional). */
+  pack?: string;
+  /** Brief section id within the pack (optional). */
+  section?: string;
 };
 
 export type ChangeSet = {

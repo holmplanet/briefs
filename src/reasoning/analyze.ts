@@ -1,6 +1,7 @@
 import { InsightKind, type ChangeSet, type Insight } from "./types.js";
 import { buildReasoningContext } from "./context.js";
 import { defaultReasoningRuleRegistry } from "./rules/registry.js";
+import { getPackRegistry } from "../platform/runtime.js";
 import type { BuildReasoningContextOptions } from "./context.js";
 import type { GraphSnapshot } from "../graph/models.js";
 import type { ReasoningContext } from "./rules/types.js";
@@ -34,8 +35,10 @@ export function runReasoningRules(context: ReasoningContext): Insight[] {
     return [emptyGraphInsight()];
   }
 
-  const ruleInsights = defaultReasoningRuleRegistry
-    .list()
+  const ruleInsights = [
+    ...defaultReasoningRuleRegistry.list(),
+    ...getPackRegistry().listReasoningRules(),
+  ]
     .flatMap((rule) => rule.analyze(context));
 
   const merged = mergeInsights(ruleInsights);

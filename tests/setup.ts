@@ -13,6 +13,8 @@ import { InMemoryGraphStore } from "../src/graph/memory-store.js";
 import { resetGraphStore, setGraphStore } from "../src/graph/runtime.js";
 import { InMemoryBriefTaskStore } from "../src/tasks/memory-store.js";
 import { resetBriefTaskRuntime, setBriefTaskStore } from "../src/tasks/runtime.js";
+import { resetPackRegistry } from "../src/platform/runtime.js";
+import { initializePlatform } from "../src/platform/bootstrap.js";
 
 beforeEach(() => {
   process.env.BRIEF_MCP_AUTH_DISABLED = "true";
@@ -23,6 +25,7 @@ beforeEach(() => {
   resetActionRuntime();
   resetMcpApiTokenStore();
   resetBriefTaskRuntime();
+  resetPackRegistry();
   connectorStatusStore.clear();
 
   const store = new InMemoryGraphStore();
@@ -39,4 +42,6 @@ beforeEach(() => {
   const registry = createConnectorRegistry(new ConnectorRunner(store));
   registry.register(new BriefTasksConnector());
   setConnectorRegistry(registry);
+
+  initializePlatform();
 });

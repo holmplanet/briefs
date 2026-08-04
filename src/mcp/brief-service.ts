@@ -7,6 +7,7 @@ import type { ConnectorSyncReport } from "../connectors/types.js";
 import { buildReasoningContext } from "../reasoning/context.js";
 import { diffInsights } from "../reasoning/diff.js";
 import { InsightKind, reasoningEngine, type ChangeSet } from "../reasoning/engine.js";
+import { getPackRegistry } from "../platform/runtime.js";
 
 /** Sync Brief-owned connectors only (brief-native tasks). */
 export async function syncBriefOwnedConnectors(userId: string): Promise<ConnectorSyncReport[]> {
@@ -30,7 +31,12 @@ export async function generateBrief(
 
   const snapshot = await getGraphStore().getSnapshot(userId);
   const changes = reasoningEngine.analyze(snapshot);
-  const brief = briefGenerator.generate(userId, kind, changes);
+  const brief = briefGenerator.generate(
+    userId,
+    kind,
+    changes,
+    getPackRegistry().listBriefSections(),
+  );
   briefStore.save(brief, changes);
   return brief;
 }
@@ -82,7 +88,12 @@ export async function generateDeltaBrief(
       ? { ...currentChangeSet, insights }
       : noDeltaInsight(userId);
 
-  const brief = briefGenerator.generate(userId, BriefKind.DELTA, changes);
+  const brief = briefGenerator.generate(
+    userId,
+    BriefKind.DELTA,
+    changes,
+    getPackRegistry().listBriefSections(),
+  );
   briefStore.save(brief, currentChangeSet);
 
   return {

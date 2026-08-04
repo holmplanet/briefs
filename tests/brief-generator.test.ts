@@ -16,5 +16,6 @@ describe("brief generator", () => {
     expect(brief.greeting).toBe("Here's your brief.");
     expect(brief.bullets).toHaveLength(1);
     expect(brief.bullets[0]?.text).toContain("ingest_context");
+    expect(brief.sections).toEqual([]);
   });
 });

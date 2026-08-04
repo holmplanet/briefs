@@ -7,10 +7,11 @@
 shared/              Stitch + Brief schemas — single source of truth
 system/              Express REST backend
 client/
-  personal/          personal client (UI placeholder)
-  livestock/         placeholder
-  fishing/           placeholder
-plugin/              assistant manifests (unchanged)
+  web/               human-facing vertical UIs
+    personal/
+    livestock/
+    fishing/
+  plugin/            assistant manifests (Cursor/Codex, skills)
 db/migrations/       Postgres schema
 ```
 
@@ -36,10 +37,12 @@ curl -X POST -H "X-Briefs-User-Id: demo" -H "Content-Type: application/json" \
 | Package | Role |
 |---------|------|
 | `@briefs/shared` | Stitch + Brief Zod schemas + store interfaces |
-| `@briefs/system` | REST API, Postgres stores, personal services |
-| `@briefs/personal` | Personal client (re-exports shared; UI TBD) |
-| `@briefs/livestock` | Placeholder |
-| `@briefs/fishing` | Placeholder |
+| `@briefs/system` | REST API, Postgres stores, domain services |
+| `@briefs/personal` | Personal web client (re-exports shared; UI TBD) |
+| `@briefs/livestock` | Livestock web client (placeholder) |
+| `@briefs/fishing` | Fishing web client (placeholder) |
+
+`client/plugin/` is not an npm workspace — Codex/Cursor assistant integration only.
 
 ## Schema
 

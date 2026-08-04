@@ -86,7 +86,7 @@ Generator v0 synthesizes from open stitches (no LLM yet).
 - [x] Implement `briefs` table + generator in `@briefs/system` (v0: stitch-based, no LLM).
 - [ ] Wire LLM into `POST /api/v1/brief/generate`.
 - [ ] Does ingest create stitches, brief sections, or both?
-- [ ] Vertical extensions in `client/livestock`, `client/fishing`.
+- [ ] Vertical extensions in `client/web/livestock`, `client/web/fishing`.
 
 ## References
 

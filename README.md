@@ -15,6 +15,26 @@ client/
 db/migrations/       Postgres schema
 ```
 
+## Product model
+
+| Concept | Name | Who creates it | Purpose |
+|---------|------|----------------|---------|
+| Platform | **Briefs** | — | Product / repo |
+| Atomic item | **stitch** | User (or ingest) | Durable item woven into the graph |
+| Snapshot | **brief** | AI on `brief me` | Point-in-time intelligence rundown |
+
+**Briefs** is the platform. A **brief** is the generated artifact. Stitches are the atoms — textile metaphor: stitches make the brief (garment + document).
+
+### `brief me` flow
+
+1. Load context — user's stitches + recent briefs (+ optional ingested context)
+2. Reason — what changed, what matters, what conflicts
+3. Write brief — headline, bullets; link related stitch IDs
+4. Persist — store brief row
+5. Return — API response to the client
+
+Generator v0 synthesizes from open stitches (no LLM yet).
+
 ## Quick start
 
 ```bash
@@ -32,6 +52,16 @@ curl -X POST -H "X-Briefs-User-Id: demo" -H "Content-Type: application/json" \
   http://localhost:8000/api/v1/brief/generate -d '{"kind":"morning"}'
 ```
 
+## API
+
+| Resource | Path | Notes |
+|----------|------|-------|
+| Stitches | `GET/POST/PATCH /api/v1/stitches` | CRUD |
+| Briefs | `GET /api/v1/briefs`, `GET /api/v1/briefs/:id` | List + get |
+| Brief me | `POST /api/v1/brief/generate` | Synthesize + persist |
+
+Auth: `X-Briefs-User-Id` header (or `BRIEFS_DEFAULT_USER_ID` env).
+
 ## Workspaces
 
 | Package | Role |
@@ -46,7 +76,12 @@ curl -X POST -H "X-Briefs-User-Id: demo" -H "Content-Type: application/json" \
 
 ## Schema
 
-See [stitch.txt](stitch.txt), [brief.txt](brief.txt), and `shared/src/`. Product model: [docs/decisions/units-and-briefs.md](docs/decisions/units-and-briefs.md).
+Source of truth: `shared/src/` (`@briefs/shared`).
+
+| Entity | Shared | Migration | Table |
+|--------|--------|-----------|-------|
+| Stitch | `shared/src/stitch/` | `db/migrations/001_stitch_nodes.sql` | `stitch_nodes` |
+| Brief | `shared/src/brief/` | `db/migrations/003_briefs.sql` | `briefs` |
 
 ## Docker
 

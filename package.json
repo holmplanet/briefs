@@ -2,7 +2,7 @@
   "name": "briefs",
   "private": true,
   "version": "0.3.0",
-  "description": "Holmplanet Briefs — stitches and briefs",
+  "description": "Holmplanet Briefs — items, actors, and activities",
   "engines": {
     "node": ">=22"
   },

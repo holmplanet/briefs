@@ -1,41 +1,30 @@
 # Holmplanet Briefs
 
-Schema-first coordination platform. npm workspaces monorepo (modeled after [bartonmalow/fort](https://github.com/bartonmalow/fort)).
+Schema-first platform for durable **items**, **actors**, and **activities** — passport-inspired, ActivityPub-referenced (not adopted).
 
-**Stitches** are what you capture. **Briefs** are what AI synthesizes on `brief me`.
+npm workspaces monorepo (modeled after [bartonmalow/fort](https://github.com/bartonmalow/fort)).
 
 ```
-shared/              Stitch + Brief schemas — single source of truth
+shared/              Item + Actor + Activity schemas — single source of truth
 system/              Express REST backend
 client/
   web/               human-facing vertical UIs
-    core/              base users (Next.js + shadcn)
-    livestock/
-    fishing/
   plugin/            assistant manifests (Cursor/Codex, skills)
 db/migrations/       Postgres schema
 docker/              Dockerfile + compose
 ```
 
-## Product model
+## Data model
 
-| Concept | Name | Who creates it | Purpose |
-|---------|------|----------------|---------|
-| Platform | **Briefs** | — | Product / repo |
-| Atomic item | **stitch** | User (or ingest) | Durable item woven into the graph |
-| Snapshot | **brief** | AI on `brief me` | Point-in-time intelligence rundown |
+From [passport](https://github.com/bartonmalow/passport) — three primitives:
 
-**Briefs** is the platform. A **brief** is the generated artifact. Stitches are the atoms — textile metaphor: stitches make the brief (garment + document).
+| Concept | Briefs name | Role |
+|---------|-------------|------|
+| **Object** | **item** | Durable thing — created once, identity never changes |
+| **Actor** | **actor** | Person or software that acted |
+| **Activity** | **activity** | Append-only record of what happened to an item |
 
-### `brief me` flow
-
-1. Load context — user's stitches + recent briefs (+ optional ingested context)
-2. Reason — what changed, what matters, what conflicts
-3. Write brief — headline, bullets; link related stitch IDs
-4. Persist — store brief row
-5. Return — API response to the client
-
-Generator v0 synthesizes from open stitches (no LLM yet).
+**Invariant:** item state changes only via activities in the write path.
 
 ## Quick start
 
@@ -49,19 +38,18 @@ npm run dev:core    # http://localhost:3000
 
 ```bash
 curl http://localhost:8000/health
-curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/stitches
-curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/briefs
-curl -X POST -H "X-Briefs-User-Id: demo" -H "Content-Type: application/json" \
-  http://localhost:8000/api/v1/brief/generate -d '{"kind":"morning"}'
+curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/items
+curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/actors/me
+curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/items/<item-id>/activities
 ```
 
 ## API
 
 | Resource | Path | Notes |
 |----------|------|-------|
-| Stitches | `GET/POST/PATCH /api/v1/stitches` | CRUD |
-| Briefs | `GET /api/v1/briefs`, `GET /api/v1/briefs/:id` | List + get |
-| Brief me | `POST /api/v1/brief/generate` | Synthesize + persist |
+| Items | `GET/POST/PATCH /api/v1/items` | Object CRUD |
+| Activities | `GET /api/v1/items/:id/activities` | Append-only event log per item |
+| Actors | `GET /api/v1/actors/me`, `GET /api/v1/actors/:id` | Person actors for auth users |
 
 Auth: `X-Briefs-User-Id` header (or `BRIEFS_DEFAULT_USER_ID` env).
 
@@ -69,13 +57,11 @@ Auth: `X-Briefs-User-Id` header (or `BRIEFS_DEFAULT_USER_ID` env).
 
 | Package | Role |
 |---------|------|
-| `@briefs/shared` | Stitch + Brief Zod schemas + store interfaces |
+| `@briefs/shared` | Item + Actor + Activity schemas |
 | `@briefs/system` | REST API, Postgres stores, domain services |
 | `@briefs/core` | Base web client (Next.js + shadcn) |
 | `@briefs/livestock` | Livestock web client (placeholder) |
 | `@briefs/fishing` | Fishing web client (placeholder) |
-
-`client/plugin/` is not an npm workspace — Codex/Cursor assistant integration only.
 
 ## Schema
 
@@ -83,8 +69,9 @@ Source of truth: `shared/src/` (`@briefs/shared`).
 
 | Entity | Shared | Migration | Table |
 |--------|--------|-----------|-------|
-| Stitch | `shared/src/stitch/` | `db/migrations/001_stitch_nodes.sql` | `stitch_nodes` |
-| Brief | `shared/src/brief/` | `db/migrations/003_briefs.sql` | `briefs` |
+| Actor | `shared/src/actor/` | `004_actors.sql` | `actors` |
+| Activity | `shared/src/activity/` | `005_activities.sql` | `activities` |
+| Item | `shared/src/item/` | `001`–`006`, `007_rename_stitches_to_items.sql` | `items` |
 
 ## Docker
 

@@ -5,10 +5,9 @@ WORKDIR /repo
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY shared/package.json shared/
 COPY system/package.json system/
-COPY client/web/core/package.json client/web/core/
-COPY client/web/livestock/package.json client/web/livestock/
-COPY client/web/fishing/package.json client/web/fishing/
-RUN npm ci
+
+# API image only — omit @briefs/core (Next.js) from production install.
+RUN npm ci -w @briefs/system -w @briefs/shared --include-workspace-root
 
 FROM node:22-alpine AS runtime
 
@@ -21,7 +20,6 @@ COPY --from=deps /repo/node_modules ./node_modules
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY shared shared
 COPY system system
-COPY client client
 COPY db db
 
 USER briefs

@@ -1,38 +1,33 @@
 {
-  "name": "holmplanet-brief",
-  "version": "0.1.0",
+  "name": "briefs",
   "private": true,
-  "type": "module",
-  "description": "Holmplanet Brief — AI coordination platform",
+  "version": "0.3.0",
+  "description": "Holmplanet Briefs — stitches and briefs",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "shared",
+    "system",
+    "client/web/core",
+    "client/web/livestock",
+    "client/web/fishing"
+  ],
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/index.js",
-    "test": "vitest run",
-    "test:smoke": "vitest run tests/smoke",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
-    "dogfood": "tsx scripts/dogfood.ts",
-    "dogfood:tasks": "tsx scripts/try-tasks.ts",
-    "db:up": "docker compose up -d postgres redis",
-    "db:down": "docker compose down",
-    "docker:build": "docker compose build brief",
-    "docker:up": "docker compose up -d --build",
-    "docker:down": "docker compose down"
+    "dev": "npm run dev:system",
+    "dev:system": "npm run dev -w @briefs/system",
+    "dev:core": "npm run dev -w @briefs/core",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test -w @briefs/system",
+    "db:up": "docker compose -f docker/docker-compose.yml up -d postgres",
+    "db:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d --build",
+    "docker:down": "docker compose -f docker/docker-compose.yml down",
+    "docker:logs": "docker compose -f docker/docker-compose.yml logs -f system"
   },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.28.0",
-    "dotenv": "^16.6.1",
-    "express": "^5.2.1",
-    "pg": "^8.16.3",
-    "redis": "^5.8.2",
-    "zod": "^3.25.76"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node": "^22.15.30",
-    "@types/pg": "^8.15.5",
-    "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
-    "vitest": "^3.2.4"
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "unrs-resolver@1.12.2": true
   }
 }

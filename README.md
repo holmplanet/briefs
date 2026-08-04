@@ -1,98 +1,94 @@
-# Holmplanet Brief
+# Holmplanet Briefs
 
-> Your AI coordinator. Connect your tools. Understand your day. Brief you on what matters.
 
-Holmplanet Brief is a **standalone, backend-first** coordination platform. It builds a persistent **Event Graph** from your existing tools and generates intelligent briefs on demand — morning, travel, project, or whenever you say "Brief me."
-
-AI assistants (ChatGPT, Claude, Cursor, Codex) reach Brief through a **hosted MCP server**. Plugin manifests wrap that server for discovery and install — the platform is not embedded inside any one assistant.
-
-## Status
-
-Early development. **Connector-agnostic orchestration** — Brief owns tasks and briefs; users bring their own MCPs for calendar, email, GitHub, etc. Vertical apps under `apps/` are placeholders.
-
-## Docs
-
-| Doc | Purpose |
-|-----|---------|
-| [VISION.md](VISION.md) | Product vision and principles |
-| [docs/architecture.md](docs/architecture.md) | Monorepo layout and core components |
-| [docs/plugin-compliance.md](docs/plugin-compliance.md) | ChatGPT/Codex + Claude integration rules |
-| [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md) | Brief-native task inbox + MCP tools |
-| [docs/ingest-context.md](docs/ingest-context.md) | Agent-mediated context upload (`ingest_context`) |
-| [docs/decisions/connector-agnostic-orchestration.md](docs/decisions/connector-agnostic-orchestration.md) | Why Brief orchestrates user MCPs instead of OAuth |
-| [docs/smoke-test.md](docs/smoke-test.md) | Automated + manual v0 smoke test |
-| [docs/actions.md](docs/actions.md) | Approval-gated action engine |
-| [docs/trust.md](docs/trust.md) | Auth, isolation, and trust principles |
-| [docs/deploy.md](docs/deploy.md) | Docker Compose deployment |
-| [plugin/](plugin/) | Codex + Claude MCP plugin manifests |
-
-Canonical spec (2nd brain): `Developer/2nd-brain/knowledge/research/holmplanet-brief-spec.md`
-
-## Monorepo layout
+**Stitches** are what you capture. **Briefs** are what AI synthesizes on `brief me`.
 
 ```
-brief/
-├── src/                # core platform (TypeScript — repo root, not under apps/)
-├── plugin/             # MCP + assistant manifests
-├── apps/               # vertical packs (fishing, livestock, …)
-└── docs/
+shared/              Stitch + Brief schemas — single source of truth
+system/              Express REST backend
+client/
+  web/               human-facing vertical UIs
+    core/              base users (Next.js + shadcn)
+    livestock/
+    fishing/
+  plugin/            assistant manifests (Cursor/Codex, skills)
+db/migrations/       Postgres schema
+docker/              Dockerfile + compose
 ```
 
-## Development
+## Product model
 
-**Branching:** `dev` is the default integration branch. Create feature branches off `dev` (`feat/<issue>-<description>`) and open PRs into `dev`. `main` is production — only release and hotfix branches merge there.
+| Concept | Name | Who creates it | Purpose |
+|---------|------|----------------|---------|
+| Platform | **Briefs** | — | Product / repo |
+| Atomic item | **stitch** | User (or ingest) | Durable item woven into the graph |
+| Snapshot | **brief** | AI on `brief me` | Point-in-time intelligence rundown |
+
+**Briefs** is the platform. A **brief** is the generated artifact. Stitches are the atoms — textile metaphor: stitches make the brief (garment + document).
+
+### `brief me` flow
+
+1. Load context — user's stitches + recent briefs (+ optional ingested context)
+2. Reason — what changed, what matters, what conflicts
+3. Write brief — headline, bullets; link related stitch IDs
+4. Persist — store brief row
+5. Return — API response to the client
+
+Generator v0 synthesizes from open stitches (no LLM yet).
+
+## Quick start
 
 ```bash
-git checkout dev
-git pull origin dev
-```
 npm install
-npm run db:up          # Postgres + Redis (optional but recommended)
+npm run db:up
 cp .env.example .env
-npm test
-npm run test:smoke   # v0 end-to-end loop only
-npm run dev
+npm run dev:system
+npm run dev:core    # http://localhost:3000
 ```
 
-**Docker (full stack):**
-
 ```bash
-cp .env.example .env   # optional overrides
-npm run docker:up      # postgres + redis + brief container
 curl http://localhost:8000/health
+curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/stitches
+curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/briefs
+curl -X POST -H "X-Briefs-User-Id: demo" -H "Content-Type: application/json" \
+  http://localhost:8000/api/v1/brief/generate -d '{"kind":"morning"}'
 ```
 
-See [docs/deploy.md](docs/deploy.md) for compose details.
+## API
 
-### Cursor MCP (local dogfood)
+| Resource | Path | Notes |
+|----------|------|-------|
+| Stitches | `GET/POST/PATCH /api/v1/stitches` | CRUD |
+| Briefs | `GET /api/v1/briefs`, `GET /api/v1/briefs/:id` | List + get |
+| Brief me | `POST /api/v1/brief/generate` | Synthesize + persist |
 
-1. Start the server: `npm run db:up` then `npm run dev`
-2. Open this repo in Cursor — `.cursor/mcp.json` points at `http://localhost:8000/mcp`
-3. **Customize** sidebar → enable **holmplanet-brief**
-4. **New chat** → gather context with your calendar/GitHub MCPs, then try:
+Auth: `X-Briefs-User-Id` header (or `BRIEFS_DEFAULT_USER_ID` env).
 
-```
-Ingest my calendar events via ingest_context, then brief me.
-```
+## Workspaces
 
-Or Brief-only: *"Create a task called 'Review PR' due tomorrow, then brief me."*
+| Package | Role |
+|---------|------|
+| `@briefs/shared` | Stitch + Brief Zod schemas + store interfaces |
+| `@briefs/system` | REST API, Postgres stores, domain services |
+| `@briefs/core` | Base web client (Next.js + shadcn) |
+| `@briefs/livestock` | Livestock web client (placeholder) |
+| `@briefs/fishing` | Fishing web client (placeholder) |
 
-Auth is disabled locally (`BRIEF_MCP_AUTH_DISABLED=true`). See [docs/connectors/brief-tasks.md](docs/connectors/brief-tasks.md).
+`client/plugin/` is not an npm workspace — Codex/Cursor assistant integration only.
 
-- Health: `GET http://localhost:8000/health`
-- MCP: `http://localhost:8000/mcp` (streamable HTTP, stateless)
-- Graph persistence: **Postgres** when `BRIEF_DATABASE_URL` is set; in-memory otherwise
-- Snapshot cache: **Redis** when `BRIEF_REDIS_URL` is set
+## Schema
 
-See [GitHub Issues](https://github.com/holmplanet/brief/issues) for backlog.
+Source of truth: `shared/src/` (`@briefs/shared`).
 
-**Dogfood scripts** (server must be running: `npm run dev`):
+| Entity | Shared | Migration | Table |
+|--------|--------|-----------|-------|
+| Stitch | `shared/src/stitch/` | `db/migrations/001_stitch_nodes.sql` | `stitch_nodes` |
+| Brief | `shared/src/brief/` | `db/migrations/003_briefs.sql` | `briefs` |
+
+## Docker
 
 ```bash
-npm run dogfood        # ingest fixture calendar/weather → brief_me
-npm run dogfood:tasks  # create_task → brief_me
+npm run docker:up
 ```
 
-## Motto
-
-Connect everything. Understand everything. Brief only what matters.
+Postgres + `@briefs/system` on port 8000. See `docker/README.md`.

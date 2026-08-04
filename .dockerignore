@@ -1,13 +1,7 @@
-node_modules
-dist
-.git
+node_modules/
+dist/
 .env
 .env.*
 !.env.example
-coverage
-*.md
-!docs/deploy.md
-tests
-scripts
-plugin
-apps
+*.tsbuildinfo
+coverage/

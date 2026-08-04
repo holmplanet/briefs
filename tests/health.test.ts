@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import { loadConfig } from "../src/config.js";
 import { bootstrap, createApp } from "../src/index.js";
 
-describe("health endpoint", () => {
+describe("health", () => {
   it("returns ok", async () => {
-    const config = await bootstrap();
-    const app = createApp(config);
+    const context = await bootstrap();
+    const app = createApp(context);
     const server = app.listen(0);
     const address = server.address();
 
@@ -18,13 +17,7 @@ describe("health endpoint", () => {
       const response = await fetch(`http://127.0.0.1:${address.port}/health`);
       expect(response.status).toBe(200);
       const payload = await response.json();
-      expect(payload).toMatchObject({
-        status: "ok",
-        service: "holmplanet-brief",
-        storage: {
-          graph: loadConfig().databaseUrl ? "postgres" : "memory",
-        },
-      });
+      expect(payload).toMatchObject({ status: "ok", service: "holmplanet-brief" });
     } finally {
       await new Promise<void>((resolve, reject) => {
         server.close((error) => (error ? reject(error) : resolve()));

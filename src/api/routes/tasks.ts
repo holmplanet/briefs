@@ -1,51 +1,31 @@
 import { Router } from "express";
-import { z } from "zod";
 
-import { TaskPriority, TaskStatus } from "../../graph/tasks/protocol.js";
+import type { PersonalTaskService } from "../../../client/personal/service.js";
+import { TaskStatus } from "../../../client/personal/schema/task-node.js";
 import {
-  createBriefTask,
-  listBriefTasks,
-  updateBriefTask,
-} from "../../tasks/service.js";
+  createTaskNodeInputSchema,
+  updateTaskNodeInputSchema,
+} from "../../../client/personal/schema/task-node.js";
 import { ApiError } from "../errors.js";
-import type { AuthedRequest } from "../middleware/user.js";
+import type { AuthedRequest } from "../middleware.js";
 
-const createTaskBody = z.object({
-  label: z.string().min(1),
-  status: z.nativeEnum(TaskStatus).optional(),
-  dueAt: z.string().optional(),
-  scheduledAt: z.string().optional(),
-  priority: z.nativeEnum(TaskPriority).optional(),
-  description: z.string().optional(),
-});
-
-const updateTaskBody = z.object({
-  label: z.string().min(1).optional(),
-  status: z.nativeEnum(TaskStatus).optional(),
-  dueAt: z.string().nullable().optional(),
-  scheduledAt: z.string().nullable().optional(),
-  completedAt: z.string().nullable().optional(),
-  priority: z.nativeEnum(TaskPriority).nullable().optional(),
-  description: z.string().nullable().optional(),
-});
-
-export function createTasksRouter(): Router {
+export function createTasksRouter(service: PersonalTaskService): Router {
   const router = Router();
 
   router.get("/", async (req, res, next) => {
     try {
-      const userId = (req as unknown as AuthedRequest).briefUserId;
+      const userId = (req as AuthedRequest).userId;
       const statusParam = req.query.status;
       const status =
         typeof statusParam === "string" && statusParam.length > 0
-          ? (statusParam as TaskStatus)
+          ? (statusParam as (typeof TaskStatus)[keyof typeof TaskStatus])
           : undefined;
 
       if (status && !Object.values(TaskStatus).includes(status)) {
         throw new ApiError(400, `Invalid status: ${statusParam}`);
       }
 
-      const tasks = await listBriefTasks(userId, status);
+      const tasks = await service.list(userId, status);
       res.json({ tasks });
     } catch (error) {
       next(error);
@@ -54,12 +34,9 @@ export function createTasksRouter(): Router {
 
   router.post("/", async (req, res, next) => {
     try {
-      const userId = (req as unknown as AuthedRequest).briefUserId;
-      const body = createTaskBody.parse(req.body);
-      const task = await createBriefTask({
-        userId,
-        ...body,
-      });
+      const userId = (req as AuthedRequest).userId;
+      const body = createTaskNodeInputSchema.parse(req.body);
+      const task = await service.create(userId, body);
       res.status(201).json({ task });
     } catch (error) {
       next(error);
@@ -68,9 +45,9 @@ export function createTasksRouter(): Router {
 
   router.patch("/:taskId", async (req, res, next) => {
     try {
-      const userId = (req as unknown as AuthedRequest).briefUserId;
-      const body = updateTaskBody.parse(req.body);
-      const task = await updateBriefTask(userId, req.params.taskId, body);
+      const userId = (req as unknown as AuthedRequest).userId;
+      const body = updateTaskNodeInputSchema.parse(req.body);
+      const task = await service.update(userId, req.params.taskId, body);
       res.json({ task });
     } catch (error) {
       next(error);

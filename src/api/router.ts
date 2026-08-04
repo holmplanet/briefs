@@ -1,17 +1,13 @@
-import { Router, type Express } from "express";
+import { Router } from "express";
 
-import type { BriefEnv } from "../config.js";
-import { createApiUserMiddleware } from "./middleware/user.js";
-import { createBriefRouter } from "./routes/brief.js";
+import type { PersonalTaskService } from "../../client/personal/service.js";
+import { apiErrorHandler, userMiddleware } from "./middleware.js";
 import { createTasksRouter } from "./routes/tasks.js";
 
-export function mountApiRoutes(app: Express, config: BriefEnv): void {
+export function mountApiRoutes(app: Router, service: PersonalTaskService): void {
   const api = Router();
-  const requireUser = createApiUserMiddleware(config);
-
-  api.use(requireUser);
-  api.use("/tasks", createTasksRouter());
-  api.use("/brief", createBriefRouter());
-
+  api.use(userMiddleware);
+  api.use("/tasks", createTasksRouter(service));
   app.use("/api/v1", api);
+  app.use(apiErrorHandler);
 }

@@ -13,6 +13,8 @@ src/
 ```
 
 ```ts
-import { Item, itemSchema } from "@briefs/shared";
+import { Item, itemSchema, itemCreateInputSchema } from "@briefs/shared";
 import { ActivityType } from "@briefs/shared/activity";
 ```
+
+Schema exports use entity-first names: `itemSchema`, `itemCreateInputSchema`, `activityRecordInputSchema`.

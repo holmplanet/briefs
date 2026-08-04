@@ -6,11 +6,11 @@ import {
   ItemLifecycle,
   ItemStatus,
   diffItems,
-  type CreateItemInput,
+  type ItemCreateInput,
   type Item,
   type ItemStatus as ItemStatusType,
   type ItemStore,
-  type UpdateItemInput,
+  type ItemUpdateInput,
 } from "@briefs/shared/item";
 
 import type { ActivityService } from "../activity/service.js";
@@ -45,7 +45,7 @@ export class ItemService {
     });
   }
 
-  async create(userId: string, input: CreateItemInput): Promise<Item> {
+  async create(userId: string, input: ItemCreateInput): Promise<Item> {
     if (input.source) {
       const existing = await this.store.getBySource(userId, input.source);
       if (existing) {
@@ -104,7 +104,7 @@ export class ItemService {
     return item;
   }
 
-  async update(userId: string, itemId: string, input: UpdateItemInput): Promise<Item> {
+  async update(userId: string, itemId: string, input: ItemUpdateInput): Promise<Item> {
     const existing = await this.store.get(itemId);
     if (!existing || existing.userId !== userId) {
       throw new Error(`Item not found: ${itemId}`);
@@ -187,7 +187,7 @@ function resolveActivityType(
 
 function resolveCompletedAt(
   existing: Item,
-  input: UpdateItemInput,
+  input: ItemUpdateInput,
   nextStatus: ItemStatusType,
 ): string | undefined {
   if (input.completedAt === null) {

@@ -1,10 +1,10 @@
-# Holmplanet Brief
+# Holmplanet Briefs
 
 
 **Stitches** are what you capture. **Briefs** are what AI synthesizes on `brief me`.
 
 ```
-shared/              Stitch schema + types — single source of truth
+shared/              Stitch + Brief schemas — single source of truth
 system/              Express REST backend
 client/
   personal/          personal client (UI placeholder)
@@ -25,22 +25,25 @@ npm run dev:system
 
 ```bash
 curl http://localhost:8000/health
-curl -H "X-Brief-User-Id: demo" http://localhost:8000/api/v1/stitches
+curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/stitches
+curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/briefs
+curl -X POST -H "X-Briefs-User-Id: demo" -H "Content-Type: application/json" \
+  http://localhost:8000/api/v1/brief/generate -d '{"kind":"morning"}'
 ```
 
 ## Workspaces
 
 | Package | Role |
 |---------|------|
-| `@brief/shared` | Stitch Zod schema + `StitchStore` interface |
-| `@brief/system` | REST API, Postgres store, personal service |
-| `@brief/personal` | Personal client (re-exports shared; UI TBD) |
-| `@brief/livestock` | Placeholder |
-| `@brief/fishing` | Placeholder |
+| `@briefs/shared` | Stitch + Brief Zod schemas + store interfaces |
+| `@briefs/system` | REST API, Postgres stores, personal services |
+| `@briefs/personal` | Personal client (re-exports shared; UI TBD) |
+| `@briefs/livestock` | Placeholder |
+| `@briefs/fishing` | Placeholder |
 
 ## Schema
 
-See [stitch.txt](stitch.txt) and `shared/src/stitch.ts`. Product model: [docs/decisions/units-and-briefs.md](docs/decisions/units-and-briefs.md).
+See [stitch.txt](stitch.txt), [brief.txt](brief.txt), and `shared/src/`. Product model: [docs/decisions/units-and-briefs.md](docs/decisions/units-and-briefs.md).
 
 ## Docker
 
@@ -48,4 +51,4 @@ See [stitch.txt](stitch.txt) and `shared/src/stitch.ts`. Product model: [docs/de
 npm run docker:up
 ```
 
-Postgres + `@brief/system` on port 8000.
+Postgres + `@briefs/system` on port 8000.

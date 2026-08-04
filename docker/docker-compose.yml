@@ -1,0 +1,46 @@
+name: briefs
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: briefs
+      POSTGRES_PASSWORD: briefs
+      POSTGRES_DB: briefs
+    ports:
+      - "5432:5432"
+    volumes:
+      - briefs-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U briefs -d briefs"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  system:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "${BRIEFS_PORT:-8000}:8000"
+    environment:
+      BRIEFS_ENV: development
+      BRIEFS_HOST: 0.0.0.0
+      BRIEFS_PORT: 8000
+      BRIEFS_DATABASE_URL: postgresql://briefs:briefs@postgres:5432/briefs
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "node -e \"fetch('http://127.0.0.1:8000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+volumes:
+  briefs-postgres:

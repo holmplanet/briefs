@@ -6,6 +6,8 @@ Briefs is the system of record for things that matter — tasks, notes, ingest f
 
 npm workspaces monorepo (modeled after [bartonmalow/fort](https://github.com/bartonmalow/fort)).
 
+**Branching:** trunk-based — `main` only. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ```
 shared/              Item + Actor + Activity schemas — single source of truth
 system/              Express REST API + Postgres stores

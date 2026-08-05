@@ -2,14 +2,16 @@
 
 Schema-first platform for durable **items**, **actors**, and **activities**.
 
+Briefs is the system of record for things that matter — tasks, notes, ingest from assistants, vertical workflows — with an append-only activity log for every change. Schemas live in `@briefs/shared`; the Express API and Postgres stores enforce them at write time.
+
 npm workspaces monorepo (modeled after [bartonmalow/fort](https://github.com/bartonmalow/fort)).
 
 ```
 shared/              Item + Actor + Activity schemas — single source of truth
-system/              Express REST backend
+system/              Express REST API + Postgres stores
 client/
   web/               human-facing vertical UIs
-  plugin/            assistant manifests (Cursor/Codex, skills)
+  plugin/            assistant manifests (Cursor/Codex skills)
 db/migrations/       Postgres schema
 docker/              Dockerfile + compose
 ```
@@ -20,48 +22,82 @@ Three primitives:
 
 | Concept | Name | Role |
 |---------|------|------|
-| Item | **item** | Durable thing — created once, identity never changes |
-| **Actor** | **actor** | Person or software that acted |
-| **Activity** | **activity** | Append-only record of what happened to an item |
+| **Item** | `item` | Durable thing — created once, identity never changes |
+| **Actor** | `actor` | Person or software that acted |
+| **Activity** | `activity` | Append-only record of what happened to an item |
 
 **Write path:** item projection updates and activity records happen together. Activity `result` uses structured deltas (`changes`) on update and a compact `created` payload on create.
+
+**Item schema (v4)** — key fields: `name`, `kind`, `status`, `ownerActorId`, `lifecycle`, `occurredAt`, optional `source` for ingest dedupe (`system` + `externalId`).
+
+## Prerequisites
+
+- Node.js **22+**
+- Docker (for Postgres and optional full stack)
 
 ## Quick start
 
 ```bash
-npm install
-npm run db:up
+npm ci
 cp .env.example .env
-npm run dev:system
-npm run dev:core    # http://localhost:3000
+npm run db:up
+npm run dev:system    # API http://localhost:8000
+npm run dev:core      # web http://localhost:3000
 ```
 
 ```bash
 curl http://localhost:8000/health
+
 curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/items
+
 curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/actors/me
-curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/items/<item-id>/activities
+
+curl -H "X-Briefs-User-Id: demo" \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Ship items API","kind":"task"}' \
+  http://localhost:8000/api/v1/items
+
+curl -H "X-Briefs-User-Id: demo" \
+  http://localhost:8000/api/v1/items/<item-id>/activities
 ```
+
+Use `npm ci` (lockfile-driven installs). See `.cursor/rules/npm-security.mdc` for dependency policy.
 
 ## API
 
 | Resource | Path | Notes |
 |----------|------|-------|
-| Items | `GET/POST/PATCH /api/v1/items` | Item CRUD |
+| Items | `GET/POST/PATCH /api/v1/items` | List, create, update |
 | Activities | `GET /api/v1/items/:id/activities` | Append-only event log per item |
 | Actors | `GET /api/v1/actors/me`, `GET /api/v1/actors/:id` | Person actors for auth users |
 
-Auth: `X-Briefs-User-Id` header (or `BRIEFS_DEFAULT_USER_ID` env).
+Auth: `X-Briefs-User-Id` header (falls back to `BRIEFS_DEFAULT_USER_ID` in `.env`).
+
+Ingested items can pass `source: { "system": "github", "externalId": "issue-18" }` on create; the DB enforces uniqueness per user.
+
+## Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev:system` | API with hot reload (`tsx watch`) |
+| `npm run dev:core` | Next.js web client |
+| `npm run test` | System integration tests (vitest) |
+| `npm run build` | Compile all workspaces |
+| `npm run typecheck` | Typecheck all workspaces |
+| `npm run db:up` / `db:down` | Postgres only |
+| `npm run docker:up` / `docker:down` | Postgres + API image |
 
 ## Workspaces
 
 | Package | Role |
 |---------|------|
-| `@briefs/shared` | Item + Actor + Activity schemas |
+| `@briefs/shared` | Item + Actor + Activity Zod schemas |
 | `@briefs/system` | REST API, Postgres stores, domain services |
 | `@briefs/core` | Base web client (Next.js + shadcn) |
-| `@briefs/livestock` | Livestock web client (placeholder, not in workspaces yet) |
-| `@briefs/fishing` | Fishing web client (placeholder, not in workspaces yet) |
+| `@briefs/livestock` | Livestock web client (placeholder — not in workspaces) |
+| `@briefs/fishing` | Fishing web client (placeholder — not in workspaces) |
+
+`client/plugin/` is not an npm workspace — static Cursor/Codex manifests and skills. See `client/plugin/README.md`.
 
 ## Schema
 
@@ -73,10 +109,19 @@ Source of truth: `shared/src/` (`@briefs/shared`).
 | Activity | `shared/src/activity/` | `db/migrations/001_initial.sql` | `activities` |
 | Item | `shared/src/item/` | `db/migrations/001_initial.sql` | `items` |
 
+Schema exports use entity-first names: `itemSchema`, `itemCreateInputSchema`, `activityRecordInputSchema`.
+
 ## Docker
 
 ```bash
 npm run docker:up
 ```
 
-Postgres + `@briefs/system` on port 8000. See `docker/README.md`.
+Postgres + `@briefs/system` on port 8000. The production image compiles `shared` and `system` with `tsc` and runs `node system/dist/index.js` (no Next.js, no `tsx` in runtime). See `docker/README.md`.
+
+## Package docs
+
+- `shared/README.md` — schema layout and imports
+- `system/README.md` — API layout
+- `client/web/core/README.md` — web client dev
+- `client/plugin/README.md` — assistant integration

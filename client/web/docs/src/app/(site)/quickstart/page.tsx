@@ -35,7 +35,7 @@ export default function QuickstartPage() {
 npm ci
 cp .env.example .env
 npm run db:up
-npm run dev:system    # API — default http://localhost:8000
+npm run dev:system    # API — default http://localhost:8001
 npm run dev:daily     # Briefs Daily — http://localhost:3000
 npm run dev:docs      # SDK docs — http://localhost:3001`}
           />
@@ -53,9 +53,11 @@ NEXT_PUBLIC_BRIEFS_USER_ID=demo
 NEXT_PUBLIC_BRIEFS_DOCS_URL=http://localhost:3001`}
           />
           <p>
-            If port 8000 is taken, start the API with{" "}
-            <code className="text-foreground">BRIEFS_PORT=8001 npm run dev:system</code> and point{" "}
-            <code className="text-foreground">NEXT_PUBLIC_BRIEFS_API_URL</code> at that port.
+            The API defaults to port <code className="text-foreground">8001</code> so it does not
+            conflict with the Brief MCP server on <code className="text-foreground">8000</code>.
+            Override with <code className="text-foreground">BRIEFS_PORT</code> in the repo root{" "}
+            <code className="text-foreground">.env</code> and match{" "}
+            <code className="text-foreground">NEXT_PUBLIC_BRIEFS_API_URL</code> in your web client.
           </p>
         </DocSection>
 

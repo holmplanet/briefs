@@ -5,7 +5,8 @@ Human-facing vertical UIs. Each package imports from `@briefs/shared`, `@briefs/
 ```
 client/web/
   shared/     @briefs/web-shared — UI primitives, layout, theme (all verticals)
-  core/       @briefs/core — base Briefs users
+  docs/       @briefs/docs — SDK documentation
+  daily/      @briefs/daily — Briefs Daily (default daily driver)
   livestock/  @briefs/livestock (placeholder)
   fishing/    @briefs/fishing (placeholder)
 ```
@@ -13,6 +14,7 @@ client/web/
 | Package | Vertical |
 |---------|----------|
 | `@briefs/web-shared` | Shared UI + theme for all web verticals |
-| `@briefs/core` | Base users (Next.js + shadcn) |
+| `@briefs/docs` | SDK documentation site |
+| `@briefs/daily` | Default Briefs web client (daily driver) |
 | `@briefs/livestock` | Livestock (placeholder — add to root `workspaces` when active) |
 | `@briefs/fishing` | Fishing (placeholder — add to root `workspaces` when active) |

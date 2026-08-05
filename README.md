@@ -11,6 +11,7 @@ Briefs is the system of record for things that matter — tasks, notes, ingest f
 shared/              Item + Actor + Activity schemas — single source of truth
 system/              Express REST API + Postgres stores
 client/
+  cli/               @briefs/cli — terminal client + smoke tests (planned)
   web/               human-facing vertical UIs
   plugin/            assistant manifests (Cursor/Codex skills)
 db/migrations/       Postgres schema
@@ -82,7 +83,9 @@ Ingested items can pass `source: { "system": "github", "externalId": "issue-18" 
 | Command | Description |
 |---------|-------------|
 | `npm run dev:system` | API with hot reload (`tsx watch`) |
-| `npm run dev:core` | Next.js web client |
+| `npm run dev:daily` | Briefs Daily web client |
+| `npm run briefs` | Briefs CLI (`@briefs/cli`) |
+| `npm run briefs:smoke` | API smoke test via CLI |
 | `npm run test` | System integration tests (vitest) |
 | `npm run build` | Compile all workspaces |
 | `npm run typecheck` | Typecheck all workspaces |
@@ -98,6 +101,7 @@ Ingested items can pass `source: { "system": "github", "externalId": "issue-18" 
 | `@briefs/web-shared` | Shared web UI primitives and theme |
 | `@briefs/docs` | SDK documentation site (Next.js) |
 | `@briefs/daily` | Briefs Daily — default web client |
+| `@briefs/cli` | Terminal client + smoke tests |
 | `@briefs/livestock` | Livestock web client (placeholder — not in workspaces) |
 | `@briefs/fishing` | Fishing web client (placeholder — not in workspaces) |
 

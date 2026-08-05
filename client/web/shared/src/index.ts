@@ -1,4 +1,12 @@
-export { AppShell, type AppShellProps, type WebNavItem } from "./components/app-shell";
+export { AppShell, type AppShellProps } from "./components/app-shell";
+export {
+  ApiStatusBadge,
+  defaultHeaderActions,
+  GitHubLink,
+  HeaderLink,
+} from "./components/header-actions";
+export { HeaderNav, type WebNavItem } from "./components/header-nav";
+export { SiteHeader, SiteHeaderBrand, type SiteHeaderProps } from "./components/site-header";
 export { SkyBackground } from "./components/sky-background";
 export { cn } from "./lib/utils";
 

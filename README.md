@@ -5,6 +5,8 @@ Schema-first platform for durable **items**, **actors**, and **activities**.
 Briefs is the system of record for things that matter — tasks, notes, ingest from assistants, vertical workflows — with an append-only activity log for every change. Schemas live in `@briefs/shared`; the Express API and Postgres stores enforce them at write time.
 
 
+**Branching:** trunk-based — `main` only. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+
 ```
 shared/              Item + Actor + Activity schemas — single source of truth
 system/              Express REST API + Postgres stores

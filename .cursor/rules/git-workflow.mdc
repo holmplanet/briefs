@@ -1,0 +1,31 @@
+---
+description: Briefs trunk-based git workflow — main only, no dev branch
+alwaysApply: true
+---
+
+# Briefs Git Workflow
+
+Briefs uses **trunk-based development**. `main` is the sole long-lived branch.
+
+## Rules
+
+- Branch **from `main`**, merge **into `main`**.
+- Do **not** create, use, or reference a `dev` branch for this repo.
+- Before starting work: `git checkout main` then `git pull origin main`.
+- Feature branches: `<type>/<issue-number>-<short-description>` (e.g. `feat/18-daily-brief-dogfood`).
+- Commits: Conventional Commits with `Refs #XXX` (never `Closes #XXX`).
+- PRs target `main`. Delete feature branches after merge.
+
+## Git commands
+
+Use `git -C /path/to/briefs` instead of `cd && git`.
+
+```bash
+git -C /Users/carterholmes/Developer/briefs checkout main
+git -C /Users/carterholmes/Developer/briefs pull origin main
+git -C /Users/carterholmes/Developer/briefs checkout -b feat/18-my-feature
+```
+
+## Overrides team default
+
+The DNA team Gitflow (`dev` + `main`) does **not** apply to `holmplanet/briefs`. This rule takes precedence for all Briefs work.

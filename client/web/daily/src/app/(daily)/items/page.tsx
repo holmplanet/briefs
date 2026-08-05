@@ -46,16 +46,19 @@ export default async function ItemsPage() {
             <p className="mt-1">{loadError}</p>
             <p className="mt-3">
               Start the API with{" "}
-              <code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:system</code> and
-              set{" "}
+              <code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:system</code>{" "}
+              and set{" "}
               <code className="rounded-full bg-background/60 px-2 py-0.5">
                 NEXT_PUBLIC_BRIEFS_API_URL
               </code>{" "}
               in{" "}
               <code className="rounded-full bg-background/60 px-2 py-0.5">
-                client/web/core/.env.local
+                client/web/daily/.env.local
               </code>
-              .
+              . The default API port is{" "}
+              <code className="rounded-full bg-background/60 px-2 py-0.5">8001</code> — port{" "}
+              <code className="rounded-full bg-background/60 px-2 py-0.5">8000</code> is often used
+              by the Brief MCP server.
             </p>
           </div>
         ) : items.length === 0 ? (

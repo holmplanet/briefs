@@ -42,25 +42,25 @@ Three primitives:
 npm ci
 cp .env.example .env
 npm run db:up
-npm run dev:system    # API http://localhost:8000
+npm run dev:system    # API http://localhost:8001
 npm run dev:daily     # Briefs Daily http://localhost:3000
 npm run dev:docs      # SDK docs http://localhost:3001
 ```
 
 ```bash
-curl http://localhost:8000/health
+curl http://localhost:8001/health
 
-curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/items
+curl -H "X-Briefs-User-Id: demo" http://localhost:8001/api/v1/items
 
-curl -H "X-Briefs-User-Id: demo" http://localhost:8000/api/v1/actors/me
+curl -H "X-Briefs-User-Id: demo" http://localhost:8001/api/v1/actors/me
 
 curl -H "X-Briefs-User-Id: demo" \
   -H "Content-Type: application/json" \
   -d '{"name":"Ship items API","kind":"task"}' \
-  http://localhost:8000/api/v1/items
+  http://localhost:8001/api/v1/items
 
 curl -H "X-Briefs-User-Id: demo" \
-  http://localhost:8000/api/v1/items/<item-id>/activities
+  http://localhost:8001/api/v1/items/<item-id>/activities
 ```
 
 Use `npm ci` (lockfile-driven installs). See `.cursor/rules/npm-security.mdc` for dependency policy.

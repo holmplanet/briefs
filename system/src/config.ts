@@ -14,7 +14,7 @@ export function loadConfig(): BriefsConfig {
   return {
     env: process.env.BRIEFS_ENV ?? "development",
     host: process.env.BRIEFS_HOST ?? "0.0.0.0",
-    port: readPort(process.env.BRIEFS_PORT, 8000),
+    port: readPort(process.env.BRIEFS_PORT, 8001),
     databaseUrl: process.env.BRIEFS_DATABASE_URL,
   };
 }

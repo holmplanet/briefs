@@ -60,6 +60,7 @@ export default nextConfig;`}
           <CodeBlock
             title="globals.css"
             code={`@import "tailwindcss";
+@source "../../../shared/src/**/*.{js,ts,jsx,tsx}";
 @import "../../../shared/src/styles/theme.css";`}
           />
           <p>

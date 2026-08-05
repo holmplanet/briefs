@@ -9,6 +9,7 @@
   "workspaces": [
     "shared",
     "system",
+    "client/web/shared",
     "client/web/core"
   ],
   "scripts": {

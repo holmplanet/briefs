@@ -2,7 +2,7 @@ import type { Activity } from "@briefs/shared/activity";
 import type { Actor } from "@briefs/shared/actor";
 import type { Item, ItemCreateInput, ItemUpdateInput } from "@briefs/shared/item";
 
-const apiBase = process.env.NEXT_PUBLIC_BRIEFS_API_URL ?? "http://localhost:8000";
+const apiBase = process.env.NEXT_PUBLIC_BRIEFS_API_URL ?? "http://localhost:8001";
 const userId = process.env.NEXT_PUBLIC_BRIEFS_USER_ID ?? "demo";
 
 export function getBriefsApiBase(): string {

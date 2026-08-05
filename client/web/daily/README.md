@@ -10,7 +10,7 @@ From repo root:
 
 ```bash
 npm run dev:daily     # http://localhost:3000
-npm run dev:system    # API — http://localhost:8000
+npm run dev:system    # API — http://localhost:8001
 npm run dev:docs      # SDK docs — http://localhost:3001
 ```
 

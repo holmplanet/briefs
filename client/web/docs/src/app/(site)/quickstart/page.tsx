@@ -62,6 +62,12 @@ NEXT_PUBLIC_BRIEFS_DOCS_URL=http://localhost:3001`}
         </DocSection>
 
         <DocSection id="verify" title="Verify the API">
+          <p>
+            From the repo root, run the CLI smoke test (starts against your local API on port{" "}
+            <code className="text-foreground">8001</code>):
+          </p>
+          <CodeBlock title="Terminal" code="npm run briefs:smoke" />
+          <p>Or verify individual endpoints with curl:</p>
           <CodeBlock title="Health" code={curlHealth()} />
           <CodeBlock title="List items" code={curlListItems()} />
           <CodeBlock title="Create an item" code={curlCreateItem()} />

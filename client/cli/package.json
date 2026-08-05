@@ -1,0 +1,25 @@
+{
+  "name": "@briefs/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Command-line client for the Briefs system API",
+  "bin": {
+    "briefs": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "briefs": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build -w @briefs/shared && vitest run"
+  },
+  "dependencies": {
+    "@briefs/shared": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.30",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

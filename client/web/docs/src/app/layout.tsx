@@ -15,8 +15,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Briefs",
-  description: "Items, actors, and activities — a durable work spine.",
+  title: "Briefs SDK",
+  description: "Documentation and playground for building on Holmplanet Briefs.",
   themeColor: "#0a0a0e",
 };
 

@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "@briefs/web-shared/styles/theme.css";
+@import "../../../shared/src/styles/theme.css";
 
 @custom-variant dark (&:is(.dark *));
 

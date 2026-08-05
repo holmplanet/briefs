@@ -2,8 +2,6 @@ import { AppShell as SharedAppShell } from "@briefs/web-shared";
 
 import { fetchBriefsHealth } from "@/lib/briefs-api";
 
-const navItems = [{ href: "/items", label: "Items" }] as const;
-
 export async function AppShell({
   children,
   className,
@@ -20,7 +18,8 @@ export async function AppShell({
     <SharedAppShell
       variant={variant}
       className={className}
-      navItems={[...navItems]}
+      brandLabel="Briefs SDK"
+      navItems={[]}
       apiOnline={apiOnline}
     >
       {children}

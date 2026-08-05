@@ -23,11 +23,11 @@ In `next.config.ts`:
 transpilePackages: ["@briefs/shared", "@briefs/web-shared"],
 ```
 
-Import theme in the vertical's `globals.css`:
+Import theme in the vertical's `globals.css` (PostCSS resolves sibling workspace paths):
 
 ```css
 @import "tailwindcss";
-@import "@briefs/web-shared/styles/theme.css";
+@import "../../../shared/src/styles/theme.css";
 ```
 
 ```tsx

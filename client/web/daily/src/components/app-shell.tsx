@@ -1,4 +1,9 @@
-import { AppShell as SharedAppShell } from "@briefs/web-shared";
+import {
+  AppShell as SharedAppShell,
+  defaultHeaderActions,
+  HeaderLink,
+  HeaderNav,
+} from "@briefs/web-shared";
 
 import { fetchBriefsHealth } from "@/lib/briefs-api";
 
@@ -6,6 +11,8 @@ const navItems = [
   { href: "/", label: "Today" },
   { href: "/items", label: "Items" },
 ] as const;
+
+const docsUrl = process.env.NEXT_PUBLIC_BRIEFS_DOCS_URL ?? "http://localhost:3001";
 
 export async function AppShell({
   children,
@@ -25,8 +32,11 @@ export async function AppShell({
       className={className}
       brandLabel="Briefs Daily"
       brandInitial="D"
-      navItems={[...navItems]}
-      apiOnline={apiOnline}
+      nav={<HeaderNav items={[...navItems]} />}
+      actions={defaultHeaderActions({
+        apiOnline,
+        extra: <HeaderLink href={docsUrl} label="SDK docs" external />,
+      })}
     >
       {children}
     </SharedAppShell>

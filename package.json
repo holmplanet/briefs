@@ -10,12 +10,12 @@
     "shared",
     "system",
     "client/web/shared",
-    "client/web/core"
+    "client/web/docs"
   ],
   "scripts": {
     "dev": "npm run dev:system",
     "dev:system": "npm run dev -w @briefs/system",
-    "dev:core": "npm run dev -w @briefs/core",
+    "dev:docs": "npm run dev -w @briefs/docs",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test -w @briefs/system",

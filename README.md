@@ -43,7 +43,8 @@ npm ci
 cp .env.example .env
 npm run db:up
 npm run dev:system    # API http://localhost:8000
-npm run dev:core      # web http://localhost:3000
+npm run dev:daily     # Briefs Daily http://localhost:3000
+npm run dev:docs      # SDK docs http://localhost:3001
 ```
 
 ```bash
@@ -95,7 +96,8 @@ Ingested items can pass `source: { "system": "github", "externalId": "issue-18" 
 | `@briefs/shared` | Item + Actor + Activity Zod schemas |
 | `@briefs/system` | REST API, Postgres stores, domain services |
 | `@briefs/web-shared` | Shared web UI primitives and theme |
-| `@briefs/core` | Base web client (Next.js + shadcn) |
+| `@briefs/docs` | SDK documentation site (Next.js) |
+| `@briefs/daily` | Briefs Daily — default web client |
 | `@briefs/livestock` | Livestock web client (placeholder — not in workspaces) |
 | `@briefs/fishing` | Fishing web client (placeholder — not in workspaces) |
 
@@ -125,5 +127,6 @@ Postgres + `@briefs/system` on port 8000. The production image compiles `shared`
 
 - `shared/README.md` — schema layout and imports
 - `system/README.md` — API layout
-- `client/web/core/README.md` — web client dev
+- `client/web/docs/README.md` — SDK docs dev
+- `client/web/daily/README.md` — Briefs Daily dev
 - `client/plugin/README.md` — assistant integration

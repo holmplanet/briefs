@@ -144,5 +144,5 @@ Item fields: `name`, `kind`, `status`, `lifecycle` (`active` | `archived`), `occ
 
 - **Docker (recommended):** `npm run docker:up` → `http://localhost:8000/mcp` (see `.cursor/mcp.json`).
 - **Hybrid dev:** `npm run db:up && npm run dev` for hot reload on the host.
-- Full runbook: [docs/dogfood.md](https://github.com/holmplanet/brief/blob/dev/docs/dogfood.md).
+- Full runbook: [docs/dogfood.md](https://github.com/holmplanet/briefs/blob/main/docs/dogfood.md) (when present).
 - Re-ingesting the same `source` + `externalId` updates graph nodes in place.

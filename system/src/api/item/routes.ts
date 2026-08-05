@@ -29,6 +29,19 @@ export function createItemRouter(service: ItemService): Router {
     }
   });
 
+  router.get("/:itemId", async (req, res, next) => {
+    try {
+      const userId = (req as AuthedRequest).userId;
+      const item = await service.get(userId, req.params.itemId);
+      if (!item) {
+        throw new ApiError(404, `Item not found: ${req.params.itemId}`);
+      }
+      res.json({ item });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   router.post("/", async (req, res, next) => {
     try {
       const userId = (req as AuthedRequest).userId;

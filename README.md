@@ -94,6 +94,7 @@ Ingested items can pass `source: { "system": "github", "externalId": "issue-18" 
 |---------|------|
 | `@briefs/shared` | Item + Actor + Activity Zod schemas |
 | `@briefs/system` | REST API, Postgres stores, domain services |
+| `@briefs/web-shared` | Shared web UI primitives and theme |
 | `@briefs/core` | Base web client (Next.js + shadcn) |
 | `@briefs/livestock` | Livestock web client (placeholder — not in workspaces) |
 | `@briefs/fishing` | Fishing web client (placeholder — not in workspaces) |

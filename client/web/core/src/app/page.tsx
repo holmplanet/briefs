@@ -1,121 +1,108 @@
-import { ArrowRight, History, Layers } from "lucide-react";
 import Link from "next/link";
+import { ArrowRight, History, Layers } from "lucide-react";
 
-import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { fetchBriefsHealth } from "@/lib/briefs-api";
+import { AppShell } from "@/components/app-shell";
+import { CreateItemForm } from "@/components/items/create-item-form";
+import { fetchBriefsHealth, fetchItems } from "@/lib/briefs-api";
 
 export default async function HomePage() {
   const health = await fetchBriefsHealth();
   const apiOnline = health?.status === "ok";
+  let recentCount = 0;
+
+  if (apiOnline) {
+    try {
+      const items = await fetchItems();
+      recentCount = items.length;
+    } catch {
+      recentCount = 0;
+    }
+  }
 
   return (
-    <div className="flex min-h-full flex-col">
-      <header className="border-b">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-3">
-            <span className="text-lg font-semibold tracking-tight">Briefs</span>
-            <Badge variant={apiOnline ? "default" : "secondary"}>
-              {apiOnline ? "API online" : "API offline"}
-            </Badge>
+    <AppShell variant="hero" className="items-center pb-20">
+      <section className="flex w-full flex-col items-center text-center">
+        <p className="mb-3 text-sm font-medium tracking-[-0.01em] text-blue-300/80">
+          Holmplanet Briefs
+        </p>
+        <h1 className="text-glow max-w-3xl text-[clamp(2rem,6vw,3.25rem)] font-medium leading-[1.08] tracking-[-0.03em] text-foreground">
+          What&apos;s next?
+        </h1>
+        <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
+          Capture durable work — items you track, who acted on them, and an append-only log of
+          what changed.
+        </p>
+      </section>
+
+      <section className="mt-10 flex w-full justify-center px-1 sm:mt-12">
+        <CreateItemForm variant="hero" />
+      </section>
+
+      <section className="mt-10 flex w-full flex-wrap items-center justify-center gap-2">
+        <Link
+          href="/items"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/40 px-3 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-md transition hover:bg-card/70 hover:text-foreground"
+        >
+          <Layers className="size-3.5" />
+          {recentCount > 0 ? `${recentCount} items` : "Browse items"}
+        </Link>
+        <Link
+          href="/items"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/40 px-3 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-md transition hover:bg-card/70 hover:text-foreground"
+        >
+          <History className="size-3.5" />
+          Activity log
+        </Link>
+      </section>
+
+      <section className="mt-14 grid w-full max-w-3xl gap-4 sm:grid-cols-2">
+        <div className="glass-panel rounded-2xl p-5 sm:rounded-3xl">
+          <div className="mb-3 flex size-10 items-center justify-center rounded-full border border-border/70 bg-background/50">
+            <Layers className="size-4 text-blue-300" />
           </div>
+          <h2 className="font-semibold tracking-[-0.01em]">Items</h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+            Tasks, notes, commitments — stable identity, workflow fields, and context.
+          </p>
           <Link
-            href="https://github.com/holmplanet/briefs"
-            target="_blank"
-            rel="noreferrer"
-            className={buttonVariants({ variant: "outline", size: "sm" })}
+            href="/items"
+            className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-blue-300 transition hover:text-blue-200"
           >
-            GitHub
+            Open items
+            <ArrowRight className="size-3.5" />
           </Link>
         </div>
-      </header>
 
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-10 px-6 py-12">
-        <section className="space-y-4">
-          <p className="text-sm font-medium uppercase tracking-widest text-muted-foreground">
-            Holmplanet Briefs
+        <div className="glass-panel rounded-2xl p-5 sm:rounded-3xl">
+          <div className="mb-3 flex size-10 items-center justify-center rounded-full border border-border/70 bg-background/50">
+            <History className="size-4 text-violet-300" />
+          </div>
+          <h2 className="font-semibold tracking-[-0.01em]">Activities</h2>
+          <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+            Every change is recorded — create, update, move — with structured deltas.
           </p>
-          <h1 className="max-w-2xl text-4xl font-semibold tracking-tight sm:text-5xl">
-            Items, actors, and activities.
-          </h1>
-          <p className="max-w-2xl text-lg text-muted-foreground">
-            A durable spine for work — items you capture, who acted on them,
-            and an append-only log of what changed.
+          <Link
+            href="/items"
+            className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-violet-300 transition hover:text-violet-200"
+          >
+            View history
+            <ArrowRight className="size-3.5" />
+          </Link>
+        </div>
+      </section>
+
+      {!apiOnline ? (
+        <div className="glass-panel mt-10 w-full max-w-2xl rounded-2xl border-dashed p-5 text-center text-sm text-muted-foreground sm:rounded-3xl">
+          <p className="font-medium text-foreground">Start the API</p>
+          <p className="mt-2">
+            Run <code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:system</code>{" "}
+            from the repo root. If port 8000 is taken, use{" "}
+            <code className="rounded-full bg-background/60 px-2 py-0.5">BRIEFS_PORT=8001</code> and
+            set <code className="rounded-full bg-background/60 px-2 py-0.5">NEXT_PUBLIC_BRIEFS_API_URL</code>{" "}
+            in <code className="rounded-full bg-background/60 px-2 py-0.5">.env.local</code>.
           </p>
-        </section>
-
-        <section className="grid gap-6 sm:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <div className="mb-2 flex size-10 items-center justify-center rounded-lg border bg-muted">
-                <Layers className="size-5" />
-              </div>
-              <CardTitle>Items</CardTitle>
-              <CardDescription>
-                Durable items — tasks, notes, commitments — with stable identity.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                CRUD via <code className="rounded bg-muted px-1 py-0.5">/api/v1/items</code>.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full sm:w-auto" disabled>
-                Items UI
-                <ArrowRight className="size-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="mb-2 flex size-10 items-center justify-center rounded-lg border bg-muted">
-                <History className="size-5" />
-              </div>
-              <CardTitle>Activities</CardTitle>
-              <CardDescription>
-                Append-only history — Create, Update, Move, Delete — per item.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Read via{" "}
-                <code className="rounded bg-muted px-1 py-0.5">
-                  /api/v1/items/:id/activities
-                </code>
-                . Actors at <code className="rounded bg-muted px-1 py-0.5">/api/v1/actors/me</code>.
-              </p>
-            </CardContent>
-            <CardFooter>
-              <Button className="w-full sm:w-auto" variant="secondary" disabled>
-                Activity log UI
-                <ArrowRight className="size-4" />
-              </Button>
-            </CardFooter>
-          </Card>
-        </section>
-
-        {!apiOnline ? (
-          <Card className="border-dashed">
-            <CardHeader>
-              <CardTitle className="text-base">Start the API</CardTitle>
-              <CardDescription>
-                From the repo root: <code className="rounded bg-muted px-1">npm run dev:system</code>{" "}
-                or <code className="rounded bg-muted px-1">npm run docker:up</code>
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        ) : null}
-      </main>
-    </div>
+        </div>
+      ) : null}
+    </AppShell>
   );
 }

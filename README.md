@@ -103,7 +103,7 @@ Ingested items can pass `source: { "system": "github", "externalId": "issue-18" 
 | `@briefs/docs` | SDK documentation site (Next.js) |
 | `@briefs/daily` | Briefs Daily — default web client |
 | `@briefs/cli` | Terminal client + smoke tests |
-| `@briefs/mcp` | MCP tools for items (OAuth via mcp-oauth-stack) |
+| `@briefs/mcp` | MCP tools + standalone dev server |
 | `@briefs/livestock` | Livestock web client (placeholder — not in workspaces) |
 | `@briefs/fishing` | Fishing web client (placeholder — not in workspaces) |
 

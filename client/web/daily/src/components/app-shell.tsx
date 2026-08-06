@@ -5,11 +5,13 @@ import {
   HeaderNav,
 } from "@briefs/web-shared";
 
+import { UserMenu } from "@/components/auth/user-menu";
 import { fetchBriefsHealth } from "@/lib/briefs-api";
 
 const navItems = [
   { href: "/", label: "Today" },
   { href: "/items", label: "Items" },
+  { href: "/connect", label: "Connect" },
 ] as const;
 
 const docsUrl = process.env.NEXT_PUBLIC_BRIEFS_DOCS_URL ?? "http://localhost:3001";
@@ -35,7 +37,12 @@ export async function AppShell({
       nav={<HeaderNav items={[...navItems]} />}
       actions={defaultHeaderActions({
         apiOnline,
-        extra: <HeaderLink href={docsUrl} label="SDK docs" external />,
+        extra: (
+          <>
+            <UserMenu />
+            <HeaderLink href={docsUrl} label="SDK docs" external />
+          </>
+        ),
       })}
     >
       {children}

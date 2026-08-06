@@ -16,7 +16,7 @@ const jetbrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: "Briefs Daily",
-  description: "Capture items, track status, and read your activity log.",
+  description: "View your Briefs items and activity log. Create and update work through MCP.",
   themeColor: "#0a0a0e",
 };
 

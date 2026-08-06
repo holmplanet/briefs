@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { ActivityTimeline } from "@/components/items/activity-timeline";
 import { ItemStatusBadge } from "@/components/items/item-status-badge";
-import { ItemStatusPicker } from "@/components/items/item-status-picker";
+import { McpHint } from "@/components/mcp/connect-panel";
 import { buttonVariants, cn } from "@briefs/web-shared";
 
 import { fetchItem, fetchItemActivities } from "@/lib/briefs-api";
@@ -51,13 +51,9 @@ export default async function ItemDetailPage({
               {item.description}
             </p>
           ) : null}
+          <McpHint className="text-sm text-muted-foreground" />
         </div>
       </div>
-
-      <section className="glass-panel space-y-3 rounded-2xl p-5 sm:rounded-3xl">
-        <h2 className="text-sm font-medium tracking-[-0.01em] text-muted-foreground">Status</h2>
-        <ItemStatusPicker itemId={item.id} currentStatus={item.status} />
-      </section>
 
       <section className="glass-panel grid gap-4 rounded-2xl p-5 sm:grid-cols-2 sm:rounded-3xl">
         <div>
@@ -81,7 +77,9 @@ export default async function ItemDetailPage({
       <section className="space-y-4">
         <div>
           <h2 className="text-lg font-medium tracking-[-0.01em]">Activity log</h2>
-          <p className="text-sm text-muted-foreground">Append-only history for this item.</p>
+          <p className="text-sm text-muted-foreground">
+            Append-only history — each MCP write appears here.
+          </p>
         </div>
         <ActivityTimeline activities={activities} />
       </section>

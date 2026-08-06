@@ -1,58 +1,72 @@
+import type { Item } from "@briefs/shared/item";
 import Link from "next/link";
-import { BookOpen, History, Layers } from "lucide-react";
+import { ArrowRight, BookOpen, Layers } from "lucide-react";
 
-import { CreateItemForm } from "@/components/items/create-item-form";
+import { McpConnectPanel } from "@/components/mcp/connect-panel";
 import { fetchBriefsHealth, fetchItems } from "@/lib/briefs-api";
+import { getSession, loadAuthConfig } from "@/lib/auth";
 
 const docsUrl = process.env.NEXT_PUBLIC_BRIEFS_DOCS_URL ?? "http://localhost:3001";
 
 export default async function DailyHomePage() {
+  const config = loadAuthConfig();
+  const session = await getSession(config);
   const health = await fetchBriefsHealth();
   const apiOnline = health?.status === "ok";
-  let recentCount = 0;
+  let items: Item[] = [];
 
-  if (apiOnline) {
+  if (apiOnline && session) {
     try {
-      const items = await fetchItems();
-      recentCount = items.length;
+      items = await fetchItems();
     } catch {
-      recentCount = 0;
+      items = [];
     }
   }
 
+  const openItems = items.filter((item) => item.status !== "done" && item.status !== "cancelled");
+
   return (
-    <div className="flex flex-col items-center pb-20 pt-4">
-      <section className="flex w-full flex-col items-center text-center">
-        <p className="mb-3 text-sm font-medium tracking-[-0.01em] text-blue-300/80">
-          Briefs Daily
-        </p>
-        <h1 className="text-glow max-w-3xl text-[clamp(2rem,6vw,3.25rem)] font-medium leading-[1.08] tracking-[-0.03em] text-foreground">
-          What&apos;s next?
+    <div className="flex flex-col gap-10 pb-16 pt-4">
+      <section className="space-y-3">
+        <p className="text-sm font-medium text-blue-300/80">Briefs Daily</p>
+        <h1 className="text-glow text-3xl font-medium tracking-[-0.03em] sm:text-4xl">
+          {session?.email ? `Welcome back` : "Your tasks"}
         </h1>
-        <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
-          Capture durable work — items you track, who acted on them, and an append-only log of
-          what changed.
+        <p className="max-w-2xl text-muted-foreground">
+          A read-only view of your durable work. Capture and update items from your assistant via
+          MCP — this app shows what changed and who acted on it.
         </p>
       </section>
 
-      <section className="mt-10 flex w-full justify-center px-1 sm:mt-12">
-        <CreateItemForm variant="hero" />
+      <section className="grid gap-4 sm:grid-cols-3">
+        <div className="glass-panel rounded-3xl p-5">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Open items</p>
+          <p className="mt-2 text-3xl font-medium">{openItems.length}</p>
+        </div>
+        <div className="glass-panel rounded-3xl p-5">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Total items</p>
+          <p className="mt-2 text-3xl font-medium">{items.length}</p>
+        </div>
+        <div className="glass-panel rounded-3xl p-5">
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">API</p>
+          <p className="mt-2 text-lg font-medium">{apiOnline ? "Online" : "Offline"}</p>
+        </div>
       </section>
 
-      <section className="mt-10 flex w-full flex-wrap items-center justify-center gap-2">
+      <section className="flex flex-wrap gap-2">
         <Link
           href="/items"
           className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/40 px-3 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-md transition hover:bg-card/70 hover:text-foreground"
         >
           <Layers className="size-3.5" />
-          {recentCount > 0 ? `${recentCount} items` : "All items"}
+          View all items
+          <ArrowRight className="size-3.5" />
         </Link>
         <Link
-          href="/items"
+          href="/connect"
           className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/40 px-3 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-md transition hover:bg-card/70 hover:text-foreground"
         >
-          <History className="size-3.5" />
-          Activity log
+          Connect MCP
         </Link>
         <a
           href={docsUrl}
@@ -65,16 +79,14 @@ export default async function DailyHomePage() {
         </a>
       </section>
 
+      <McpConnectPanel />
+
       {!apiOnline ? (
-        <div className="glass-panel mt-10 w-full max-w-2xl rounded-2xl border-dashed p-5 text-center text-sm text-muted-foreground sm:rounded-3xl">
+        <div className="glass-panel rounded-3xl border-dashed p-5 text-sm text-muted-foreground">
           <p className="font-medium text-foreground">Start the API</p>
           <p className="mt-2">
             Run <code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:system</code>{" "}
-            from the repo root. See{" "}
-            <a href={docsUrl} className="text-blue-300 hover:text-blue-200">
-              SDK docs
-            </a>{" "}
-            for setup.
+            from the repo root.
           </p>
         </div>
       ) : null}

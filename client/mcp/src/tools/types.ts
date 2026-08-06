@@ -4,7 +4,7 @@ export type BriefsMcpAuth = {
   token: string;
 };
 
-/** Matches mcp-oauth-stack ToolDeps so tools plug into registerTools hooks. */
+/** Matches the requireAccessToken tool-deps pattern (see mcp-oauth-stack for reference). */
 export type BriefsToolDeps = {
   requireAccessToken: (extra: unknown) => Promise<BriefsMcpAuth>;
 };

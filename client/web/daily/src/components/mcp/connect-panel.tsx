@@ -23,23 +23,28 @@ export function McpConnectPanel({ className }: { className?: string }) {
             <h2 className="text-lg font-medium tracking-[-0.01em]">Work through MCP</h2>
             <p className="text-sm text-muted-foreground">
               Briefs Daily is read-only. Create tasks, update status, and capture work from your
-              assistant via the Briefs MCP server — authenticated with the same OAuth identity as
-              this app.
+              assistant via <code className="text-foreground">@briefs/mcp</code> — then view changes
+              here.
             </p>
           </div>
         </div>
 
         <ol className="space-y-3 text-sm text-muted-foreground">
           <li>
-            <span className="font-medium text-foreground">1. Connect in Cursor</span> — add the MCP
-            server URL below. OAuth will prompt for email OTP (mcp-oauth-stack).
+            <span className="font-medium text-foreground">1. Start the MCP server</span> —{" "}
+            <code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:mcp</code> from
+            the repo root.
           </li>
           <li>
-            <span className="font-medium text-foreground">2. Ask your assistant</span> — e.g.
+            <span className="font-medium text-foreground">2. Connect in Cursor</span> — add the MCP
+            server URL below.
+          </li>
+          <li>
+            <span className="font-medium text-foreground">3. Ask your assistant</span> — e.g.
             &quot;create a task to ship the auth flow&quot; or &quot;mark my open items done.&quot;
           </li>
           <li>
-            <span className="font-medium text-foreground">3. Refresh Daily</span> — changes appear
+            <span className="font-medium text-foreground">4. Refresh Daily</span> — changes appear
             here with the full activity log.
           </li>
         </ol>
@@ -57,16 +62,7 @@ export function McpConnectPanel({ className }: { className?: string }) {
         <p className="text-xs text-muted-foreground">
           MCP URL:{" "}
           <code className="rounded-full bg-background/60 px-2 py-0.5 text-foreground">{mcpUrl}</code>
-          . See{" "}
-          <a
-            href="https://github.com/holmplanet/mcp-oauth-stack"
-            className="text-blue-300 hover:text-blue-200"
-            target="_blank"
-            rel="noreferrer"
-          >
-            mcp-oauth-stack
-          </a>{" "}
-          for local OAuth setup.
+          . Run <code className="text-foreground">npm run dev:mcp</code> from the briefs repo root.
         </p>
       </div>
     </section>

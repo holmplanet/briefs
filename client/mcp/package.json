@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Briefs MCP tools — register with mcp-oauth-stack or run standalone for local dev",
+  "description": "Briefs MCP tools and standalone dev server",
   "exports": {
     ".": {
       "types": "./src/index.ts",

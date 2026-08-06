@@ -36,7 +36,7 @@ export default async function LoginPage({
             OAuth is not configured. Daily is using the dev user{" "}
             <code className="rounded-full bg-background/60 px-2 py-0.5">{config.devUserId}</code>.
             Set <code className="rounded-full bg-background/60 px-2 py-0.5">BRIEFS_OAUTH_ISSUER</code>{" "}
-            to your mcp-oauth-stack URL to enable sign-in.
+            to an OAuth issuer URL to enable sign-in (see mcp-oauth-stack for reference patterns).
           </p>
           <a
             href={params.next ?? "/"}
@@ -106,7 +106,16 @@ export default async function LoginPage({
         </form>
 
         <p className="text-xs text-muted-foreground">
-          Uses the Holmplanet MCP OAuth stack (OTP email login, OAuth 2.1 + PKCE).
+          Uses OAuth 2.1 + PKCE with email OTP — same patterns as{" "}
+          <a
+            href="https://github.com/holmplanet/mcp-oauth-stack"
+            className="text-blue-300 hover:text-blue-200"
+            target="_blank"
+            rel="noreferrer"
+          >
+            mcp-oauth-stack
+          </a>{" "}
+          (reference only).
         </p>
       </div>
     </main>

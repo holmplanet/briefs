@@ -1,5 +1,5 @@
 export type AuthConfig = {
-  /** OAuth issuer / MCP public URL (e.g. mcp-oauth-stack MCP_PUBLIC_URL). */
+  /** OAuth issuer URL (reference patterns: mcp-oauth-stack MCP_PUBLIC_URL). */
   issuer: string | null;
   clientId: string;
   clientSecret: string | null;

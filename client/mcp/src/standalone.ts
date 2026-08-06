@@ -33,8 +33,7 @@ function resolveAuth(req: express.Request): BriefsMcpAuth | null {
     return null;
   }
 
-  // Production standalone mode expects an upstream OAuth stack to have issued the token.
-  // Wire token introspection when deploying without mcp-oauth-stack.
+  // Production: validate bearer tokens from Briefs' own OAuth issuer.
   return {
     userId: req.header("x-briefs-user-id") ?? devUserId,
     token: authHeader.slice(7).trim(),

@@ -1,0 +1,32 @@
+{
+  "name": "@briefs/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Briefs MCP tools — register with mcp-oauth-stack or run standalone for local dev",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/standalone.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run build -w @briefs/shared && vitest run"
+  },
+  "dependencies": {
+    "@briefs/shared": "*",
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "express": "^5.2.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.15.30",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

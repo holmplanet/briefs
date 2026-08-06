@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Plug, Terminal } from "lucide-react";
 
-const mcpUrl = process.env.NEXT_PUBLIC_BRIEFS_MCP_URL ?? "http://localhost:3333/mcp";
+const mcpUrl = process.env.NEXT_PUBLIC_BRIEFS_MCP_URL ?? "http://localhost:3334/mcp";
 
 export function McpConnectPanel({ className }: { className?: string }) {
   const cursorConfig = `{

@@ -4,7 +4,8 @@ Everything that consumes `@briefs/system`.
 
 ```
 client/
-  cli/       @briefs/cli — terminal client + smoke tests (spec; see cli/SPEC.md)
+  cli/       @briefs/cli — terminal client + smoke tests
+  mcp/       @briefs/mcp — MCP tools for items (mcp-oauth-stack compatible)
   web/       human-facing vertical apps
   plugin/    assistant integration (Cursor/Codex skills, MCP config)
 ```

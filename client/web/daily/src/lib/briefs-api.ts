@@ -1,16 +1,22 @@
 import type { Activity } from "@briefs/shared/activity";
 import type { Actor } from "@briefs/shared/actor";
-import type { Item, ItemCreateInput, ItemUpdateInput } from "@briefs/shared/item";
+import type { Item } from "@briefs/shared/item";
+
+import { getSession, loadAuthConfig } from "@/lib/auth";
 
 const apiBase = process.env.NEXT_PUBLIC_BRIEFS_API_URL ?? "http://localhost:8001";
-const userId = process.env.NEXT_PUBLIC_BRIEFS_USER_ID ?? "demo";
 
 export function getBriefsApiBase(): string {
   return apiBase.replace(/\/$/, "");
 }
 
-export function getBriefsUserId(): string {
-  return userId;
+export async function getBriefsUserId(): Promise<string> {
+  const config = loadAuthConfig();
+  const session = await getSession(config);
+  if (!session) {
+    throw new Error("Not authenticated");
+  }
+  return session.userId;
 }
 
 type FetchOptions = RequestInit & {
@@ -18,10 +24,11 @@ type FetchOptions = RequestInit & {
 };
 
 async function briefsFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
+  const userId = await getBriefsUserId();
   const response = await fetch(`${getBriefsApiBase()}${path}`, {
     ...options,
     headers: {
-      "X-Briefs-User-Id": getBriefsUserId(),
+      "X-Briefs-User-Id": userId,
       "Content-Type": "application/json",
       ...options.headers,
     },
@@ -66,22 +73,6 @@ export async function fetchItem(itemId: string): Promise<Item | null> {
   } catch {
     return null;
   }
-}
-
-export async function createItem(input: ItemCreateInput): Promise<Item> {
-  const data = await briefsFetch<{ item: Item }>("/api/v1/items", {
-    method: "POST",
-    body: JSON.stringify(input),
-  });
-  return data.item;
-}
-
-export async function updateItem(itemId: string, input: ItemUpdateInput): Promise<Item> {
-  const data = await briefsFetch<{ item: Item }>(`/api/v1/items/${itemId}`, {
-    method: "PATCH",
-    body: JSON.stringify(input),
-  });
-  return data.item;
 }
 
 export async function fetchItemActivities(itemId: string): Promise<Activity[]> {

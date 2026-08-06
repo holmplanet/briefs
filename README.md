@@ -85,6 +85,7 @@ Ingested items can pass `source: { "system": "github", "externalId": "issue-18" 
 |---------|-------------|
 | `npm run dev:system` | API with hot reload (`tsx watch`) |
 | `npm run dev:daily` | Briefs Daily web client |
+| `npm run dev:mcp` | Briefs MCP dev server (`:3334/mcp`) |
 | `npm run briefs` | Briefs CLI (`@briefs/cli`) |
 | `npm run briefs:smoke` | API smoke test via CLI |
 | `npm run test` | System integration tests (vitest) |
@@ -103,6 +104,7 @@ Ingested items can pass `source: { "system": "github", "externalId": "issue-18" 
 | `@briefs/docs` | SDK documentation site (Next.js) |
 | `@briefs/daily` | Briefs Daily — default web client |
 | `@briefs/cli` | Terminal client + smoke tests |
+| `@briefs/mcp` | MCP tools for items (OAuth via mcp-oauth-stack) |
 | `@briefs/livestock` | Livestock web client (placeholder — not in workspaces) |
 | `@briefs/fishing` | Fishing web client (placeholder — not in workspaces) |
 

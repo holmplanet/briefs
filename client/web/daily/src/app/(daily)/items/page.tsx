@@ -2,7 +2,7 @@ import type { Item } from "@briefs/shared/item";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { CreateItemForm } from "@/components/items/create-item-form";
+import { McpHint } from "@/components/mcp/connect-panel";
 import { ItemStatusBadge } from "@/components/items/item-status-badge";
 import { buttonVariants, cn } from "@briefs/web-shared";
 
@@ -28,9 +28,8 @@ export default async function ItemsPage() {
           Your durable work — tasks, notes, commitments — with stable identity and an append-only
           activity log.
         </p>
+        <McpHint className="text-sm text-muted-foreground" />
       </section>
-
-      <CreateItemForm />
 
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
@@ -47,23 +46,16 @@ export default async function ItemsPage() {
             <p className="mt-3">
               Start the API with{" "}
               <code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:system</code>{" "}
-              and set{" "}
-              <code className="rounded-full bg-background/60 px-2 py-0.5">
-                NEXT_PUBLIC_BRIEFS_API_URL
-              </code>{" "}
-              in{" "}
-              <code className="rounded-full bg-background/60 px-2 py-0.5">
-                client/web/daily/.env.local
-              </code>
-              . The default API port is{" "}
-              <code className="rounded-full bg-background/60 px-2 py-0.5">8001</code> — port{" "}
-              <code className="rounded-full bg-background/60 px-2 py-0.5">8000</code> is often used
-              by the Brief MCP server.
+              and sign in with the same user id your MCP client uses.
             </p>
           </div>
         ) : items.length === 0 ? (
           <div className="glass-panel rounded-2xl border-dashed p-6 text-sm text-muted-foreground sm:rounded-3xl">
-            No items yet. Capture one above to get started.
+            No items yet. Create your first task through MCP — see{" "}
+            <Link href="/connect" className="text-blue-300 hover:text-blue-200">
+              Connect
+            </Link>
+            .
           </div>
         ) : (
           <ul className="glass-panel divide-y divide-border/60 overflow-hidden rounded-2xl sm:rounded-3xl">

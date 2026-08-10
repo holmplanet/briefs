@@ -1,7 +1,7 @@
 import { defineTool } from "eve/tools";
 import { z } from "zod";
 
-import { listItems } from "../lib/system-client.js";
+import { createBrief, listItems } from "../lib/system-client.js";
 
 export default defineTool({
   description: "Create a concise items-only daily brief from the authenticated user’s current Briefs work. Do not claim calendar or email context was included.",
@@ -17,7 +17,18 @@ export default defineTool({
       return (priority[left.priority ?? "medium"] ?? 2) - (priority[right.priority ?? "medium"] ?? 2);
     });
 
+    const summary = prioritized.length === 0
+      ? "No active work items are currently on the plate."
+      : prioritized.map((item) => `${item.priority ? `${item.priority} ` : ""}${item.name}${item.dueAt ? ` (due ${item.dueAt})` : ""}`).join("; ");
+    const brief = await createBrief({
+      kind,
+      headline: kind === "morning" ? "Your morning Brief" : "Your current Brief",
+      summary,
+      itemIds: prioritized.map((item) => item.id),
+    });
+
     return {
+      brief,
       kind,
       source: "briefs-items-only",
       note: "Calendar and email context were not included.",

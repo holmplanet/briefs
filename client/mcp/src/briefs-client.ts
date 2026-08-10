@@ -16,6 +16,7 @@ export class BriefsApiClient {
   constructor(
     private readonly apiUrl: string,
     private readonly userId: string,
+    private readonly accessToken?: string,
   ) {}
 
   async listItems(status?: string): Promise<Item[]> {
@@ -60,6 +61,9 @@ export class BriefsApiClient {
   private async fetchJson<T>(path: string, init: RequestInit = {}): Promise<T> {
     const headers = new Headers(init.headers);
     headers.set("X-Briefs-User-Id", this.userId);
+    if (this.accessToken) {
+      headers.set("Authorization", `Bearer ${this.accessToken}`);
+    }
     if (init.body) {
       headers.set("Content-Type", "application/json");
     }
@@ -78,7 +82,7 @@ export class BriefsApiClient {
   }
 }
 
-export function createBriefsApiClient(userId: string, apiUrl?: string): BriefsApiClient {
+export function createBriefsApiClient(userId: string, apiUrl?: string, accessToken?: string): BriefsApiClient {
   const base = (apiUrl ?? process.env.BRIEFS_API_URL ?? "http://localhost:8001").replace(/\/$/, "");
-  return new BriefsApiClient(base, userId);
+  return new BriefsApiClient(base, userId, accessToken);
 }

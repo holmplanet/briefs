@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { verifyAccessToken } from "@briefs/shared/auth";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import express from "express";
@@ -19,7 +20,7 @@ type Session = {
 
 const sessions = new Map<string, Session>();
 
-function resolveAuth(req: express.Request): BriefsMcpAuth | null {
+async function resolveAuth(req: express.Request): Promise<BriefsMcpAuth | null> {
   if (devSkipAuth && process.env.NODE_ENV !== "production") {
     return {
       userId: devUserId,
@@ -33,9 +34,17 @@ function resolveAuth(req: express.Request): BriefsMcpAuth | null {
     return null;
   }
 
-  // Production: validate bearer tokens from Briefs' own OAuth issuer.
+  const issuer = (process.env.BRIEFS_OAUTH_ISSUER ?? "http://localhost:8001/oauth").replace(/\/$/, "");
+  const claims = await verifyAccessToken(
+    authHeader.slice(7).trim(),
+    process.env.BRIEFS_AUTH_SECRET ?? "dev-briefs-auth-secret",
+    issuer,
+  );
+  if (!claims) return null;
+
   return {
-    userId: req.header("x-briefs-user-id") ?? devUserId,
+    userId: claims.sub,
+    email: claims.email,
     token: authHeader.slice(7).trim(),
   };
 }
@@ -70,7 +79,7 @@ app.get("/health", (_req, res) => {
 });
 
 app.post("/mcp", express.json(), async (req, res) => {
-  const user = resolveAuth(req);
+  const user = await resolveAuth(req);
   if (!user) {
     res.status(401).json({ error: "unauthorized", error_description: "Bearer token required" });
     return;

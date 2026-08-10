@@ -45,6 +45,7 @@ export async function GET(request: Request) {
     await setSession(config, {
       userId: user.userId,
       email: user.email,
+      accessToken: user.accessToken,
     });
   } catch (callbackError) {
     const message =

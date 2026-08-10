@@ -25,7 +25,7 @@ export function registerItemsGetTool(
     async (args, extra) => {
       const auth = await deps.requireAccessToken(extra);
       try {
-        const client = createBriefsApiClient(auth.userId, config.apiUrl);
+        const client = createBriefsApiClient(auth.userId, config.apiUrl, auth.token);
         const item = await client.getItem(args.item_id);
         return formatToolResult({ item });
       } catch (error) {

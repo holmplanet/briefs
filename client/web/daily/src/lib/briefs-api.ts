@@ -25,14 +25,23 @@ type FetchOptions = RequestInit & {
 };
 
 async function briefsFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
-  const userId = await getBriefsUserId();
+  const config = loadAuthConfig();
+  const session = await getSession(config);
+  if (!session) {
+    throw new Error("Not authenticated");
+  }
+
+  const requestHeaders = new Headers(options.headers);
+  requestHeaders.set("Content-Type", "application/json");
+  if (session.accessToken) {
+    requestHeaders.set("Authorization", `Bearer ${session.accessToken}`);
+  } else {
+    requestHeaders.set("X-Briefs-User-Id", session.userId);
+  }
+
   const response = await fetch(`${getBriefsApiBase()}${path}`, {
     ...options,
-    headers: {
-      "X-Briefs-User-Id": userId,
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
+    headers: requestHeaders,
   });
 
   if (!response.ok) {

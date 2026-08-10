@@ -23,6 +23,7 @@
     "dev:mcp": "npm run dev -w @briefs/mcp",
     "briefs": "npm run briefs -w @briefs/cli --",
     "briefs:smoke": "npm run briefs -w @briefs/cli -- smoke",
+    "briefs:e2e-smoke": "npm run e2e:smoke -w @briefs/mcp",
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test -w @briefs/system",

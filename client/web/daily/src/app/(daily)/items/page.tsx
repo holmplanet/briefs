@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { McpHint } from "@/components/mcp/connect-panel";
-import { ItemStatusBadge } from "@/components/items/item-status-badge";
+import { ItemLifecycleBadge, ItemStatusBadge } from "@/components/items/item-status-badge";
 import { buttonVariants, cn } from "@briefs/web-shared";
 
 import { fetchItems } from "@/lib/briefs-api";
@@ -77,6 +77,7 @@ export default async function ItemsPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium tracking-[-0.01em]">{item.name}</p>
                       <ItemStatusBadge status={item.status} />
+                      <ItemLifecycleBadge lifecycle={item.lifecycle} />
                       <span className="rounded-full bg-background/50 px-2 py-0.5 text-xs text-muted-foreground">
                         {item.kind}
                       </span>

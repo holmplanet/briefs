@@ -23,7 +23,9 @@ export default async function DailyHomePage() {
     }
   }
 
-  const openItems = items.filter((item) => item.status !== "done" && item.status !== "cancelled");
+  const openItems = items.filter(
+    (item) => item.lifecycle === "active" && item.status !== "done" && item.status !== "cancelled",
+  );
 
   return (
     <div className="flex flex-col gap-10 pb-16 pt-4">

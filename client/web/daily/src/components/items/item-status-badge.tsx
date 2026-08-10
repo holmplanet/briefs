@@ -1,4 +1,4 @@
-import type { ItemStatus } from "@briefs/shared/item";
+import type { ItemLifecycle, ItemStatus } from "@briefs/shared/item";
 
 import { Badge, cn } from "@briefs/web-shared";
 
@@ -18,6 +18,24 @@ export function ItemStatusBadge({ status }: { status: ItemStatus }) {
       className={cn("rounded-full border px-2.5 capitalize", statusStyles[status])}
     >
       {formatStatusLabel(status)}
+    </Badge>
+  );
+}
+
+const lifecycleStyles: Record<ItemLifecycle, string> = {
+  active: "border-border/70 bg-card/50 text-muted-foreground",
+  archived: "border-amber-500/30 bg-amber-500/10 text-amber-200",
+};
+
+export function ItemLifecycleBadge({ lifecycle }: { lifecycle: ItemLifecycle }) {
+  if (lifecycle === "active") return null;
+
+  return (
+    <Badge
+      variant="outline"
+      className={cn("rounded-full border px-2.5 capitalize", lifecycleStyles[lifecycle])}
+    >
+      {lifecycle}
     </Badge>
   );
 }

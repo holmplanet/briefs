@@ -34,9 +34,17 @@ export default async function ItemsPage() {
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-medium tracking-[-0.01em]">All items</h2>
-          <span className="rounded-full border border-border/70 bg-card/40 px-2.5 py-0.5 text-xs text-muted-foreground">
-            {items.length} total
-          </span>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/briefs/new"
+              className="rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:bg-primary/80"
+            >
+              Create a brief
+            </Link>
+            <span className="rounded-full border border-border/70 bg-card/40 px-2.5 py-0.5 text-xs text-muted-foreground">
+              {items.length} total
+            </span>
+          </div>
         </div>
 
         {loadError ? (

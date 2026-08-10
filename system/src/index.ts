@@ -30,6 +30,7 @@ export function createApp(context: AppContext): Express {
   mountApiRoutes(app, {
     items: context.items,
     actors: context.actors,
+    briefs: context.briefs,
   });
 
   return app;

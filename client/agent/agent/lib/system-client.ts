@@ -1,3 +1,4 @@
+import type { Brief, BriefCreateInput } from "@briefs/shared/brief";
 import type { Item, ItemCreateInput } from "@briefs/shared/item";
 
 function systemUrl(): string {
@@ -30,4 +31,8 @@ export async function listItems(status?: string): Promise<Item[]> {
 
 export async function createItem(input: ItemCreateInput): Promise<Item> {
   return (await request<{ item: Item }>("/api/v1/items", { method: "POST", body: JSON.stringify(input) })).item;
+}
+
+export async function createBrief(input: BriefCreateInput): Promise<Brief> {
+  return (await request<{ brief: Brief }>("/api/v1/briefs", { method: "POST", body: JSON.stringify(input) })).brief;
 }

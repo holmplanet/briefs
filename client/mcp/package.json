@@ -13,6 +13,7 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsx src/standalone.ts",
+    "e2e:smoke": "tsx src/e2e-smoke.ts",
     "typecheck": "tsc --noEmit",
     "test": "npm run build -w @briefs/shared && vitest run"
   },

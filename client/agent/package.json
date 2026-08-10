@@ -1,0 +1,23 @@
+{
+  "name": "@briefs/agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Eve agent for Briefs items and daily briefs",
+  "engines": { "node": ">=24" },
+  "scripts": {
+    "dev": "eve dev",
+    "info": "eve info",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@briefs/shared": "*",
+    "eve": "0.29.5",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.7"
+  }
+}

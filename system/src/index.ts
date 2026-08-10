@@ -25,7 +25,7 @@ export function createApp(context: AppContext): Express {
     });
   });
 
-  app.use("/oauth", createOAuthRouter(context.config));
+  app.use("/oauth", createOAuthRouter(context.config, context.auth, context.mailer));
 
   mountApiRoutes(app, {
     items: context.items,

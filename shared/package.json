@@ -25,6 +25,10 @@
     "./question-flow": {
       "types": "./src/question-flow.ts",
       "default": "./dist/question-flow.js"
+    },
+    "./auth": {
+      "types": "./src/auth.ts",
+      "default": "./dist/auth.js"
     }
   },
   "scripts": {

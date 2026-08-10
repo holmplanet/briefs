@@ -14,7 +14,8 @@ Auth and tool patterns follow the same shape as [mcp-oauth-stack](https://github
 | `items_update` | Patch item fields / status / lifecycle |
 | `items_list_activities` | Append-only activity log for an item |
 
-All tools call `@briefs/system` with `X-Briefs-User-Id` from the authenticated MCP user (`auth.userId`).
+All tools call `@briefs/system` with the authenticated user's bearer token. The identity header is
+sent only as a development fallback and is ignored by the API in production.
 
 ## Local dev server
 
@@ -44,6 +45,9 @@ The smoke command expects all three local services to be running. Set
 | `BRIEFS_MCP_PORT` | `3334` |
 | `BRIEFS_DEV_USER_ID` | `demo` |
 | `BRIEFS_MCP_DEV_SKIP_AUTH` | `true` in dev |
+| `BRIEFS_OAUTH_ISSUER` | `http://localhost:8001/oauth` |
+| `BRIEFS_AUTH_SECRET` | `dev-briefs-auth-secret` |
+| `BRIEFS_API_DEV_BYPASS` | `true` outside production |
 
 ## Tool registration contract
 
@@ -61,4 +65,7 @@ Cursor / Codex  ──MCP──►  @briefs/mcp (:3334/mcp)
 Briefs Daily (:3000) ──session──┘  (read-only)
 ```
 
-Daily sign-in uses OAuth 2.1 + PKCE against a configurable issuer (`BRIEFS_OAUTH_ISSUER`). mcp-oauth-stack documents one compatible deployment pattern — Briefs does not fork or patch that repo.
+Daily sign-in uses OAuth 2.1 + PKCE against a configurable issuer (`BRIEFS_OAUTH_ISSUER`). The
+system package now includes a local development issuer at `/oauth`; its email field is a local
+identity stub, not production OTP delivery. Connect a real email provider before production.
+mcp-oauth-stack documents one compatible deployment pattern — Briefs does not fork or patch that repo.

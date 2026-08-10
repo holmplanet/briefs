@@ -2,6 +2,16 @@
 
 Express REST API — items, actors, and activities.
 
+## Authentication
+
+API requests in production require `Authorization: Bearer <token>`. Tokens are issued by the
+local OAuth 2.1 + PKCE issuer at `/oauth` during development and are signed with
+`BRIEFS_AUTH_SECRET`. The development-only `BRIEFS_API_DEV_BYPASS` permits the legacy
+`X-Briefs-User-Id` header for local smoke tests; it is ignored when `BRIEFS_ENV=production`.
+
+The local issuer accepts an email as a development identity stub. Email OTP delivery and durable
+OAuth storage are intentionally still deployment work.
+
 ## Layout
 
 ```

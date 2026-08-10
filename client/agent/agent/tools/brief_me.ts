@@ -8,8 +8,8 @@ export default defineTool({
   inputSchema: z.object({
     kind: z.enum(["morning", "on_demand"]).default("on_demand"),
   }),
-  async execute({ kind }) {
-    const items = (await listItems()).filter((item) => item.lifecycle !== "archived");
+  async execute({ kind }, ctx) {
+    const items = (await listItems(undefined, ctx)).filter((item) => item.lifecycle !== "archived");
     const open = items.filter((item) => item.status === "open");
     const inProgress = items.filter((item) => item.status === "in_progress");
     const prioritized = [...open, ...inProgress].sort((left, right) => {
@@ -25,7 +25,7 @@ export default defineTool({
       headline: kind === "morning" ? "Your morning Brief" : "Your current Brief",
       summary,
       itemIds: prioritized.map((item) => item.id),
-    });
+    }, ctx);
 
     return {
       brief,

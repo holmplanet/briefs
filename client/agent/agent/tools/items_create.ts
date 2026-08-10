@@ -11,7 +11,7 @@ export default defineTool({
     description: z.string().optional(),
     status: z.enum(["open", "in_progress", "done", "cancelled"]).optional(),
   }),
-  async execute(input) {
-    return { item: await createItem(input) };
+  async execute(input, ctx) {
+    return { item: await createItem(input, ctx) };
   },
 });

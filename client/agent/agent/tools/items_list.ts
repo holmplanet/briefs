@@ -8,7 +8,7 @@ export default defineTool({
   inputSchema: z.object({
     status: z.string().optional().describe("Optional item status filter, such as open or done."),
   }),
-  async execute({ status }) {
-    return { items: await listItems(status) };
+  async execute({ status }, ctx) {
+    return { items: await listItems(status, ctx) };
   },
 });

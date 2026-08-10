@@ -11,6 +11,7 @@ import { fetchBriefsHealth } from "@/lib/briefs-api";
 const navItems = [
   { href: "/", label: "Today" },
   { href: "/items", label: "Items" },
+  { href: "/chat", label: "Eve" },
   { href: "/connect", label: "Connect" },
 ] as const;
 

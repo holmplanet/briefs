@@ -21,7 +21,7 @@ production; local development may use the explicit System dev bypass.
 
 - `items_list` — list the authenticated user’s durable items
 - `items_create` — create a durable item
-- `brief_me` — produce an items-only daily brief from current System state
+- `brief_me` — produce and persist an items-only daily brief from current System state
 
-`brief_me` is deliberately a read-only composition tool for this first slice. Persisted brief
-records and calendar/email connections come after the item loop is proven.
+`brief_me` persists a compact brief record. Calendar and email connections come after the item
+loop is proven.

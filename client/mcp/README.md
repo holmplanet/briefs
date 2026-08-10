@@ -21,7 +21,12 @@ All tools call `@briefs/system` with `X-Briefs-User-Id` from the authenticated M
 ```bash
 npm run dev:system   # API on :8001
 npm run dev:mcp      # MCP on :3334/mcp (dev auth bypass)
+npm run dev:daily     # Daily on :3000
+npm run briefs:e2e-smoke # MCP → API → Daily smoke (archives its test item)
 ```
+
+The smoke command expects all three local services to be running. Set
+`BRIEFS_E2E_KEEP=true` to keep the generated item for inspection.
 
 ```json
 {

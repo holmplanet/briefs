@@ -48,6 +48,9 @@ The smoke command expects all three local services to be running. Set
 | `BRIEFS_OAUTH_ISSUER` | `http://localhost:8001/oauth` |
 | `BRIEFS_AUTH_SECRET` | `dev-briefs-auth-secret` |
 | `BRIEFS_API_DEV_BYPASS` | `true` outside production |
+| `BRIEFS_OTP_MAILER` | `console` locally; `resend` in production |
+| `BRIEFS_RESEND_API_KEY` | Required for Resend delivery |
+| `BRIEFS_EMAIL_FROM` | Verified sender address for Resend |
 
 ## Tool registration contract
 

@@ -5,7 +5,7 @@ import { SESSION_COOKIE, decodeSessionValue } from "@/lib/auth/session";
 
 const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/logout"];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
@@ -18,7 +18,7 @@ export function middleware(request: NextRequest) {
 
   const config = loadAuthConfig();
   const raw = request.cookies.get(SESSION_COOKIE)?.value;
-  const session = decodeSessionValue(raw, config.sessionSecret);
+  const session = await decodeSessionValue(raw, config.sessionSecret);
 
   if (session) {
     return NextResponse.next();

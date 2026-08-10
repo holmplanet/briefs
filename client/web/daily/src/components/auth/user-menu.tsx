@@ -21,7 +21,7 @@ export async function UserMenu() {
       <form action="/auth/logout" method="post">
         <button
           type="submit"
-          className="rounded-full border border-border bg-card/40 px-2.5 py-1 text-xs font-medium text-muted-foreground backdrop-blur-sm transition hover:bg-card/70 hover:text-foreground"
+          className="rounded-full border border-border bg-card/80 px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:bg-card hover:text-foreground"
         >
           Sign out
         </button>

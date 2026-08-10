@@ -21,6 +21,10 @@
     "./item": {
       "types": "./src/item/index.ts",
       "default": "./dist/item/index.js"
+    },
+    "./question-flow": {
+      "types": "./src/question-flow.ts",
+      "default": "./dist/question-flow.js"
     }
   },
   "scripts": {

@@ -1,4 +1,3 @@
-import { createHmac, timingSafeEqual } from "node:crypto";
 import { cookies } from "next/headers";
 
 import type { AuthConfig } from "./config";
@@ -13,16 +12,51 @@ export type DailySession = {
   devBypass?: boolean;
 };
 
-function sign(payload: string, secret: string): string {
-  return createHmac("sha256", secret).update(payload).digest("base64url");
+const textEncoder = new TextEncoder();
+const textDecoder = new TextDecoder();
+
+function encodeBase64Url(bytes: Uint8Array): string {
+  let binary = "";
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
-function encodeSession(session: DailySession, secret: string): string {
-  const payload = Buffer.from(JSON.stringify(session), "utf8").toString("base64url");
-  return `${payload}.${sign(payload, secret)}`;
+function decodeBase64Url(value: string): Uint8Array {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+  const binary = atob(padded);
+  return Uint8Array.from(binary, (character) => character.charCodeAt(0));
 }
 
-function decodeSession(raw: string | undefined, secret: string): DailySession | null {
+async function sign(payload: string, secret: string): Promise<string> {
+  const key = await crypto.subtle.importKey(
+    "raw",
+    textEncoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign("HMAC", key, textEncoder.encode(payload));
+  return encodeBase64Url(new Uint8Array(signature));
+}
+
+function constantTimeEqual(a: string, b: string): boolean {
+  if (a.length !== b.length) return false;
+
+  let difference = 0;
+  for (let index = 0; index < a.length; index += 1) {
+    difference |= a.charCodeAt(index) ^ b.charCodeAt(index);
+  }
+  return difference === 0;
+}
+
+async function encodeSession(session: DailySession, secret: string): Promise<string> {
+  const payload = encodeBase64Url(textEncoder.encode(JSON.stringify(session)));
+  return payload + "." + (await sign(payload, secret));
+}
+
+async function decodeSession(raw: string | undefined, secret: string): Promise<DailySession | null> {
   if (!raw) {
     return null;
   }
@@ -34,12 +68,10 @@ function decodeSession(raw: string | undefined, secret: string): DailySession | 
 
   const payload = raw.slice(0, idx);
   const signature = raw.slice(idx + 1);
-  const expected = sign(payload, secret);
+  const expected = await sign(payload, secret);
 
   try {
-    const a = Buffer.from(signature, "base64url");
-    const b = Buffer.from(expected, "base64url");
-    if (a.length !== b.length || !timingSafeEqual(a, b)) {
+    if (!constantTimeEqual(signature, expected)) {
       return null;
     }
   } catch {
@@ -47,7 +79,7 @@ function decodeSession(raw: string | undefined, secret: string): DailySession | 
   }
 
   try {
-    const session = JSON.parse(Buffer.from(payload, "base64url").toString("utf8")) as DailySession;
+    const session = JSON.parse(textDecoder.decode(decodeBase64Url(payload))) as DailySession;
     if (!session.userId || session.expiresAt <= Date.now()) {
       return null;
     }
@@ -60,7 +92,7 @@ function decodeSession(raw: string | undefined, secret: string): DailySession | 
 export async function getSession(config: AuthConfig): Promise<DailySession | null> {
   const cookieStore = await cookies();
   const raw = cookieStore.get(SESSION_COOKIE)?.value;
-  const session = decodeSession(raw, config.sessionSecret);
+  const session = await decodeSession(raw, config.sessionSecret);
 
   if (session) {
     return session;
@@ -80,7 +112,7 @@ export async function getSession(config: AuthConfig): Promise<DailySession | nul
 
 export async function setSession(config: AuthConfig, session: Omit<DailySession, "expiresAt">): Promise<void> {
   const cookieStore = await cookies();
-  const value = encodeSession(
+  const value = await encodeSession(
     {
       ...session,
       expiresAt: Date.now() + SESSION_TTL_MS,
@@ -102,6 +134,6 @@ export async function clearSession(): Promise<void> {
   cookieStore.delete(SESSION_COOKIE);
 }
 
-export function decodeSessionValue(raw: string | undefined, secret: string): DailySession | null {
+export async function decodeSessionValue(raw: string | undefined, secret: string): Promise<DailySession | null> {
   return decodeSession(raw, secret);
 }

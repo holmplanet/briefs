@@ -8,6 +8,7 @@ const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 export type DailySession = {
   userId: string;
   email?: string;
+  accessToken?: string;
   expiresAt: number;
   devBypass?: boolean;
 };

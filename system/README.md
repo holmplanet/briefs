@@ -10,7 +10,10 @@ local OAuth 2.1 + PKCE issuer at `/oauth` during development and are signed with
 `X-Briefs-User-Id` header for local smoke tests; it is ignored when `BRIEFS_ENV=production`.
 
 The local issuer accepts an email as a development identity stub. Email OTP delivery and durable
-OAuth storage are intentionally still deployment work.
+OAuth storage are now backed by the database. For production, configure
+`BRIEFS_OTP_MAILER=resend`, `BRIEFS_RESEND_API_KEY`, and `BRIEFS_EMAIL_FROM`; the process fails
+closed if those settings are missing. Local development defaults to a console mailer and supports
+`BRIEFS_DEV_OTP_CODE` for deterministic tests.
 
 ## Layout
 

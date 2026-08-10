@@ -26,6 +26,10 @@
       "types": "./src/question-flow.ts",
       "default": "./dist/question-flow.js"
     },
+    "./brief": {
+      "types": "./src/brief/index.ts",
+      "default": "./dist/brief/index.js"
+    },
     "./auth": {
       "types": "./src/auth.ts",
       "default": "./dist/auth.js"

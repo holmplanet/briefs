@@ -6,6 +6,7 @@ import { createPool, runMigrations } from "./db.js";
 import { ItemService, MemoryItemStore, PostgresItemStore } from "./item/index.js";
 import { MemoryAuthStore, PostgresAuthStore, type AuthStore } from "./auth/store.js";
 import { ConsoleOtpMailer, ResendOtpMailer, type OtpMailer } from "./auth/mailer.js";
+import { BriefService, MemoryBriefStore, PostgresBriefStore } from "./brief/index.js";
 
 export type AppContext = {
   config: BriefsConfig;
@@ -14,6 +15,7 @@ export type AppContext = {
   activities: ActivityService;
   auth: AuthStore;
   mailer: OtpMailer;
+  briefs: BriefService;
 };
 
 export async function bootstrap(): Promise<AppContext> {
@@ -40,10 +42,11 @@ export async function bootstrap(): Promise<AppContext> {
     const itemStore = new PostgresItemStore(pool);
     const items = new ItemService(itemStore, actors, activities);
     const auth = new PostgresAuthStore(pool);
+    const briefs = new BriefService(new PostgresBriefStore(pool));
     const mailer = config.otpMailer === "resend" && config.resendApiKey && config.emailFrom
       ? new ResendOtpMailer(config.resendApiKey, config.emailFrom)
       : new ConsoleOtpMailer();
-    return { config, actors, activities, items, auth, mailer };
+    return { config, actors, activities, items, auth, mailer, briefs };
   }
 
   const actors = new ActorService(new MemoryActorStore());
@@ -53,5 +56,5 @@ export async function bootstrap(): Promise<AppContext> {
   const mailer = config.otpMailer === "resend" && config.resendApiKey && config.emailFrom
     ? new ResendOtpMailer(config.resendApiKey, config.emailFrom)
     : new ConsoleOtpMailer();
-  return { config, actors, activities, items, auth: new MemoryAuthStore(), mailer };
+  return { config, actors, activities, items, auth: new MemoryAuthStore(), mailer, briefs: new BriefService(new MemoryBriefStore()) };
 }

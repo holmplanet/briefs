@@ -64,7 +64,7 @@ export async function exchangeCodeForUser(
   config: AuthConfig,
   code: string,
   verifier: string,
-): Promise<{ userId: string; email?: string }> {
+): Promise<{ userId: string; email?: string; accessToken: string }> {
   if (!config.issuer) {
     throw new Error("OAuth issuer is not configured");
   }
@@ -112,5 +112,6 @@ export async function exchangeCodeForUser(
   return {
     userId: profile.sub,
     email: profile.email,
+    accessToken: tokens.access_token,
   };
 }

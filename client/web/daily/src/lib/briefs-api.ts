@@ -1,6 +1,7 @@
 import type { Activity } from "@briefs/shared/activity";
 import type { Actor } from "@briefs/shared/actor";
 import type { Item } from "@briefs/shared/item";
+import type { ItemCreateInput } from "@briefs/shared/item";
 
 import { getSession, loadAuthConfig } from "@/lib/auth";
 
@@ -88,4 +89,12 @@ export async function fetchActorMe(): Promise<Actor> {
     next: { tags: ["actor-me"] },
   });
   return data.actor;
+}
+
+export async function createItem(input: ItemCreateInput): Promise<Item> {
+  const data = await briefsFetch<{ item: Item }>("/api/v1/items", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+  return data.item;
 }

@@ -55,8 +55,15 @@ export default async function DailyHomePage() {
 
       <section className="flex flex-wrap gap-2">
         <Link
+          href="/briefs/new"
+          className="inline-flex items-center gap-1.5 rounded-full border border-blue-300/30 bg-blue-400/20 px-3 py-1.5 text-sm font-medium text-blue-200 transition hover:bg-blue-400/30"
+        >
+          Start a brief
+          <ArrowRight className="size-3.5" />
+        </Link>
+        <Link
           href="/items"
-          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/40 px-3 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-md transition hover:bg-card/70 hover:text-foreground"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/80 px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-card hover:text-foreground"
         >
           <Layers className="size-3.5" />
           View all items
@@ -64,7 +71,7 @@ export default async function DailyHomePage() {
         </Link>
         <Link
           href="/connect"
-          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/40 px-3 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-md transition hover:bg-card/70 hover:text-foreground"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/80 px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-card hover:text-foreground"
         >
           Connect MCP
         </Link>
@@ -72,7 +79,7 @@ export default async function DailyHomePage() {
           href={docsUrl}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/40 px-3 py-1.5 text-sm font-medium text-muted-foreground backdrop-blur-md transition hover:bg-card/70 hover:text-foreground"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/80 px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-card hover:text-foreground"
         >
           <BookOpen className="size-3.5" />
           SDK docs

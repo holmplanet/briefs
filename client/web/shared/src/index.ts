@@ -8,6 +8,7 @@ export {
 export { HeaderNav, type WebNavItem } from "./components/header-nav";
 export { SiteHeader, SiteHeaderBrand, type SiteHeaderProps } from "./components/site-header";
 export { SkyBackground } from "./components/sky-background";
+export { Questionnaire, type QuestionnaireProps } from "./components/questionnaire";
 export { cn } from "./lib/utils";
 
 export { Badge, badgeVariants } from "./components/ui/badge";

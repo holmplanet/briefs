@@ -34,7 +34,7 @@ export function GitHubLink({
       rel="noreferrer"
       className={cn(
         buttonVariants({ variant: "outline", size: "sm" }),
-        "rounded-full border-border bg-card/40 backdrop-blur-sm hover:bg-card/70",
+        "rounded-full border-border bg-card/80 hover:bg-card",
       )}
     >
       {label}
@@ -55,7 +55,7 @@ export function HeaderLink({
 }) {
   const linkClassName = cn(
     buttonVariants({ variant: "outline", size: "sm" }),
-    "rounded-full border-border bg-card/40 backdrop-blur-sm hover:bg-card/70",
+    "rounded-full border-border bg-card/80 hover:bg-card",
     className,
   );
 

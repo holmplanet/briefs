@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { ActivityTimeline } from "@/components/items/activity-timeline";
-import { ItemStatusBadge } from "@/components/items/item-status-badge";
+import { ItemLifecycleBadge, ItemStatusBadge } from "@/components/items/item-status-badge";
 import { McpHint } from "@/components/mcp/connect-panel";
 import { buttonVariants, cn } from "@briefs/web-shared";
 
@@ -42,6 +42,7 @@ export default async function ItemDetailPage({
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-3xl font-medium tracking-[-0.03em] sm:text-4xl">{item.name}</h1>
             <ItemStatusBadge status={item.status} />
+            <ItemLifecycleBadge lifecycle={item.lifecycle} />
           </div>
           <p className="text-sm text-muted-foreground">
             {item.kind} · {item.context}

@@ -11,7 +11,7 @@ export function createItemRouter(service: ItemService): Router {
 
   router.get("/", async (req, res, next) => {
     try {
-      const userId = (req as AuthedRequest).userId;
+      const userId = (req as unknown as AuthedRequest).userId;
       const statusParam = req.query.status;
       const status =
         typeof statusParam === "string" && statusParam.length > 0
@@ -31,7 +31,7 @@ export function createItemRouter(service: ItemService): Router {
 
   router.get("/:itemId", async (req, res, next) => {
     try {
-      const userId = (req as AuthedRequest).userId;
+      const userId = (req as unknown as AuthedRequest).userId;
       const item = await service.get(userId, req.params.itemId);
       if (!item) {
         throw new ApiError(404, `Item not found: ${req.params.itemId}`);

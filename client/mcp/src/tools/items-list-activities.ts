@@ -25,7 +25,7 @@ export function registerItemsListActivitiesTool(
     async (args, extra) => {
       const auth = await deps.requireAccessToken(extra);
       try {
-        const client = createBriefsApiClient(auth.userId, config.apiUrl);
+        const client = createBriefsApiClient(auth.userId, config.apiUrl, auth.token);
         const activities = await client.listItemActivities(args.item_id);
         return formatToolResult({ activities, count: activities.length });
       } catch (error) {

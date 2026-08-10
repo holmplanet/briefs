@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import express, { type Express, type Request, type Response } from "express";
 
 import { mountApiRoutes } from "./api/router.js";
+import { createOAuthRouter } from "./auth/oauth.js";
 import { bootstrap, type AppContext } from "./bootstrap.js";
 import { closePool, createPool } from "./db.js";
 
@@ -14,6 +15,7 @@ export { bootstrap };
 export function createApp(context: AppContext): Express {
   const app = express();
   app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
 
   app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json({
@@ -22,6 +24,8 @@ export function createApp(context: AppContext): Express {
       storage: context.config.databaseUrl ? "postgres" : "memory",
     });
   });
+
+  app.use("/oauth", createOAuthRouter(context.config));
 
   mountApiRoutes(app, {
     items: context.items,

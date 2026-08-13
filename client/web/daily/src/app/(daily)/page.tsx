@@ -35,7 +35,7 @@ export default async function DailyHomePage() {
           {session?.email ? `Welcome back` : "Your tasks"}
         </h1>
         <p className="max-w-2xl text-muted-foreground">
-          A read-only view of your durable work. Capture and update items from your assistant via
+          A read-focused view of your durable work. Capture and update items from your assistant via
           MCP — this app shows what changed and who acted on it.
         </p>
       </section>

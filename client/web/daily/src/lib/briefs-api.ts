@@ -11,6 +11,10 @@ export function getBriefsApiBase(): string {
   return apiBase.replace(/\/$/, "");
 }
 
+export function getBriefsMcpUrl(): string {
+  return (process.env.NEXT_PUBLIC_BRIEFS_MCP_URL ?? "http://localhost:3334/mcp").replace(/\/$/, "");
+}
+
 export async function getBriefsUserId(): Promise<string> {
   const config = loadAuthConfig();
   const session = await getSession(config);
@@ -60,6 +64,22 @@ export async function fetchBriefsHealth(): Promise<{ status: string; service: st
     if (!response.ok) {
       return null;
     }
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchMcpHealth(): Promise<{
+  status: string;
+  service: string;
+  devSkipAuth?: boolean;
+} | null> {
+  try {
+    const response = await fetch(new URL("/health", getBriefsMcpUrl()).toString(), {
+      next: { revalidate: 30 },
+    });
+    if (!response.ok) return null;
     return response.json();
   } catch {
     return null;

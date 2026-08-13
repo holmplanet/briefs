@@ -49,10 +49,11 @@ services:
     ports:
       - "${BRIEFS_MCP_PORT:-3334}:3334"
     environment:
+      NODE_ENV: ${NODE_ENV:-development}
       BRIEFS_MCP_PORT: 3334
       BRIEFS_API_URL: http://system:8000
       BRIEFS_MCP_DEV_SKIP_AUTH: ${BRIEFS_MCP_DEV_SKIP_AUTH:-true}
-      BRIEFS_OAUTH_ISSUER: ${BRIEFS_OAUTH_ISSUER:-http://system:8000/oauth}
+      BRIEFS_OAUTH_ISSUER: ${BRIEFS_OAUTH_ISSUER-http://system:8000/oauth}
       BRIEFS_AUTH_SECRET: ${BRIEFS_AUTH_SECRET:-dev-briefs-auth-secret}
     depends_on:
       system:
@@ -69,7 +70,9 @@ services:
       - "${BRIEFS_DAILY_PORT:-3000}:3000"
     environment:
       BRIEFS_API_URL: http://system:8000
-      BRIEFS_OAUTH_ISSUER: ${BRIEFS_OAUTH_ISSUER:-http://localhost:8001/oauth}
+      BRIEFS_MCP_HEALTH_URL: http://mcp:3334/mcp
+      BRIEFS_OAUTH_ISSUER: ${BRIEFS_OAUTH_ISSUER-}
+      BRIEFS_AUTH_DEV_BYPASS: ${BRIEFS_AUTH_DEV_BYPASS:-true}
       BRIEFS_SESSION_SECRET: ${BRIEFS_SESSION_SECRET:-dev-briefs-daily-session-secret}
       BRIEFS_DEV_USER_ID: ${BRIEFS_DEV_USER_ID:-demo}
       BRIEFS_APP_URL: ${BRIEFS_APP_URL:-http://localhost:3000}

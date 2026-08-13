@@ -13,5 +13,6 @@ npm run docker:down
 Compose file: `docker/docker-compose.yml` (build context is repo root).
 
 Ports are `8001` (System), `3334` (MCP), and `3000` (Daily). Set `BRIEFS_ENV=production`, a real
-`BRIEFS_AUTH_SECRET`, `BRIEFS_MCP_DEV_SKIP_AUTH=false`, and the Resend/database settings before
-using this compose file beyond local development. The defaults are intentionally development-only.
+`BRIEFS_AUTH_SECRET`, `NODE_ENV=production`, `BRIEFS_MCP_DEV_SKIP_AUTH=false`, and the Resend/database settings before
+using this compose file beyond local development. Also set `BRIEFS_OAUTH_ISSUER` and
+`BRIEFS_AUTH_DEV_BYPASS=false` for Daily. The defaults are intentionally development-only.

@@ -8,7 +8,7 @@ export default function ConnectPage() {
         <h1 className="text-3xl font-medium tracking-[-0.03em] sm:text-4xl">Connect MCP</h1>
         <p className="max-w-2xl text-muted-foreground">
           Briefs Daily is your dashboard. Your assistant is your inbox — connect once, then create
-          and update tasks through MCP tools.
+          and update items through MCP tools.
         </p>
       </section>
 

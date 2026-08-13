@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { Plug, Terminal } from "lucide-react";
 
-const mcpUrl = process.env.NEXT_PUBLIC_BRIEFS_MCP_URL ?? "http://localhost:3334/mcp";
+import { fetchMcpHealth, getBriefsMcpUrl } from "@/lib/briefs-api";
 
-export function McpConnectPanel({ className }: { className?: string }) {
+export async function McpConnectPanel({ className }: { className?: string }) {
+  const mcpUrl = getBriefsMcpUrl();
+  const health = await fetchMcpHealth();
+  const mcpOnline = health?.status === "ok" && health.service === "briefs-mcp";
   const cursorConfig = `{
   "mcpServers": {
     "briefs": {
@@ -22,11 +25,21 @@ export function McpConnectPanel({ className }: { className?: string }) {
           <div className="space-y-1">
             <h2 className="text-lg font-medium tracking-[-0.01em]">Work through MCP</h2>
             <p className="text-sm text-muted-foreground">
-              Briefs Daily is read-only. Create tasks, update status, and capture work from your
+              Briefs Daily is read-focused. Create tasks, update status, and capture work from your
               assistant via <code className="text-foreground">@briefs/mcp</code> — then view changes
               here.
             </p>
           </div>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/30 px-4 py-3 text-sm">
+          <div>
+            <p className="font-medium text-foreground">MCP server</p>
+            <p className="text-xs text-muted-foreground">{mcpOnline ? "Ready for assistant connections" : "Not reachable from Daily"}</p>
+          </div>
+          <span className={`rounded-full border px-2.5 py-1 text-xs ${mcpOnline ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-200" : "border-amber-500/30 bg-amber-500/10 text-amber-200"}`}>
+            {mcpOnline ? "Online" : "Offline"}
+          </span>
         </div>
 
         <ol className="space-y-3 text-sm text-muted-foreground">

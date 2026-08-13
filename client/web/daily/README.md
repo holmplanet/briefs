@@ -1,6 +1,6 @@
 # @briefs/daily
 
-**Briefs Daily** — read-only dashboard for your Briefs items. Sign in with OAuth; create and update tasks through `@briefs/mcp`, not the web UI.
+**Briefs Daily** — read-focused dashboard for your Briefs items. Sign in with OAuth; create and update items through `@briefs/mcp`. The `/briefs/new` Questionnaire is the one deliberate human-intake exception and uses the same System item/activity contract.
 
 Daily auth follows the same OAuth 2.1 + PKCE + OTP patterns documented in [mcp-oauth-stack](https://github.com/holmplanet/mcp-oauth-stack) (reference only — Briefs does not modify that repo).
 
@@ -12,6 +12,8 @@ From repo root:
 npm run dev:daily     # http://localhost:3000
 npm run dev:system    # API — http://localhost:8001
 npm run dev:mcp       # MCP — http://localhost:3334/mcp
+npm run test -w @briefs/daily # intake contract tests
+npm run dev:agent     # Eve — http://localhost:2000 (Node 24)
 npm run dev:docs      # SDK docs — http://localhost:3001
 ```
 
@@ -26,6 +28,7 @@ Without `BRIEFS_OAUTH_ISSUER`, development uses a dev user bypass (`BRIEFS_DEV_U
 | `/` | Dashboard — open item counts, MCP overview |
 | `/items` | Read-only item list |
 | `/items/:id` | Detail + activity log |
+| `/chat` | Eve conversation and items-only brief generation |
 | `/connect` | MCP setup for Cursor |
 | `/login` | OAuth sign-in |
 
@@ -39,3 +42,5 @@ Without `BRIEFS_OAUTH_ISSUER`, development uses a dev user bypass (`BRIEFS_DEV_U
 | `BRIEFS_APP_URL` | Daily origin for OAuth redirect |
 
 API requests use `X-Briefs-User-Id` from the signed session — the same user id MCP tools use when authenticated.
+When a real OAuth session has an access token, Daily sends the bearer token to System and to the
+server-side Eve proxy. The browser never supplies user identity headers directly.

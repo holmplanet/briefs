@@ -5,10 +5,18 @@ import type { ItemCreateInput } from "@briefs/shared/item";
 
 import { getSession, loadAuthConfig } from "@/lib/auth";
 
-const apiBase = process.env.NEXT_PUBLIC_BRIEFS_API_URL ?? "http://localhost:8001";
-
 export function getBriefsApiBase(): string {
-  return apiBase.replace(/\/$/, "");
+  return (
+    process.env.BRIEFS_API_URL ?? process.env.NEXT_PUBLIC_BRIEFS_API_URL ?? "http://localhost:8001"
+  ).replace(/\/$/, "");
+}
+
+export function getBriefsMcpUrl(): string {
+  return (process.env.NEXT_PUBLIC_BRIEFS_MCP_URL ?? "http://localhost:3334/mcp").replace(/\/$/, "");
+}
+
+function getBriefsMcpHealthUrl(): string {
+  return (process.env.BRIEFS_MCP_HEALTH_URL ?? getBriefsMcpUrl()).replace(/\/$/, "");
 }
 
 export async function getBriefsUserId(): Promise<string> {
@@ -60,6 +68,22 @@ export async function fetchBriefsHealth(): Promise<{ status: string; service: st
     if (!response.ok) {
       return null;
     }
+    return response.json();
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchMcpHealth(): Promise<{
+  status: string;
+  service: string;
+  devSkipAuth?: boolean;
+} | null> {
+  try {
+    const response = await fetch(new URL("/health", getBriefsMcpHealthUrl()).toString(), {
+      next: { revalidate: 30 },
+    });
+    if (!response.ok) return null;
     return response.json();
   } catch {
     return null;

@@ -1,4 +1,4 @@
-import type { Item } from "@briefs/shared/item";
+import { ItemStatus, type Item, type ItemStatus as ItemStatusValue } from "@briefs/shared/item";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
@@ -9,12 +9,29 @@ import { buttonVariants, cn } from "@briefs/web-shared";
 import { fetchItems } from "@/lib/briefs-api";
 import { formatDateTime } from "@/lib/format";
 
-export default async function ItemsPage() {
+const statusFilters: Array<{ value?: ItemStatusValue; label: string }> = [
+  { label: "All" },
+  { value: ItemStatus.OPEN, label: "Open" },
+  { value: ItemStatus.IN_PROGRESS, label: "In progress" },
+  { value: ItemStatus.DONE, label: "Done" },
+  { value: ItemStatus.CANCELLED, label: "Cancelled" },
+];
+
+export default async function ItemsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ status?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const requestedStatus = Array.isArray(params.status) ? params.status[0] : params.status;
+  const status = statusFilters.some((filter) => filter.value === requestedStatus)
+    ? requestedStatus as ItemStatusValue
+    : undefined;
   let items: Item[] = [];
   let loadError: string | null = null;
 
   try {
-    items = await fetchItems();
+    items = await fetchItems(status);
   } catch (error) {
     loadError = error instanceof Error ? error.message : "Failed to load items.";
   }
@@ -34,7 +51,7 @@ export default async function ItemsPage() {
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           <h2 className="text-lg font-medium tracking-[-0.01em]">All items</h2>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-3">
             <Link
               href="/briefs/new"
               className="rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition hover:bg-primary/80"
@@ -46,6 +63,22 @@ export default async function ItemsPage() {
             </span>
           </div>
         </div>
+
+        <nav aria-label="Filter items" className="flex flex-wrap gap-2">
+          {statusFilters.map((filter) => {
+            const active = filter.value === status || (!filter.value && !status);
+            return (
+              <Link
+                key={filter.label}
+                href={filter.value ? `/items?status=${filter.value}` : "/items"}
+                className={`rounded-full border px-3 py-1.5 text-xs transition ${active ? "border-blue-300/40 bg-blue-400/15 text-blue-100" : "border-border/70 bg-card/40 text-muted-foreground hover:bg-card/80 hover:text-foreground"}`}
+                aria-current={active ? "page" : undefined}
+              >
+                {filter.label}
+              </Link>
+            );
+          })}
+        </nav>
 
         {loadError ? (
           <div className="glass-panel rounded-2xl border-dashed p-6 text-sm text-muted-foreground sm:rounded-3xl">
@@ -59,7 +92,7 @@ export default async function ItemsPage() {
           </div>
         ) : items.length === 0 ? (
           <div className="glass-panel rounded-2xl border-dashed p-6 text-sm text-muted-foreground sm:rounded-3xl">
-            No items yet. Create your first task through MCP — see{" "}
+            {status ? `No ${status.replace("_", " ")} items yet. ` : "No items yet. "}Create your first task through MCP — see{" "}
             <Link href="/connect" className="text-blue-300 hover:text-blue-200">
               Connect
             </Link>

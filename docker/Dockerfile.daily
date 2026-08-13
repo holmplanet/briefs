@@ -1,0 +1,59 @@
+FROM node:22-alpine AS deps
+
+WORKDIR /repo
+
+COPY package.json package-lock.json tsconfig.base.json ./
+COPY shared/package.json shared/tsconfig.json shared/
+COPY client/web/shared/package.json client/web/shared/tsconfig.json client/web/shared/
+COPY client/web/daily/package.json client/web/daily/tsconfig.json client/web/daily/
+
+RUN npm ci -w @briefs/daily -w @briefs/web-shared -w @briefs/shared --include-workspace-root
+
+FROM deps AS build
+
+ARG NEXT_PUBLIC_BRIEFS_API_URL=http://system:8000
+ARG NEXT_PUBLIC_BRIEFS_MCP_URL=http://localhost:3334/mcp
+ENV NEXT_PUBLIC_BRIEFS_API_URL=$NEXT_PUBLIC_BRIEFS_API_URL
+ENV NEXT_PUBLIC_BRIEFS_MCP_URL=$NEXT_PUBLIC_BRIEFS_MCP_URL
+
+COPY shared/src shared/src
+COPY client/web/shared/src client/web/shared/src
+COPY client/web/daily/src client/web/daily/src
+COPY client/web/daily/next.config.ts client/web/daily/
+COPY client/web/daily/postcss.config.mjs client/web/daily/
+COPY client/web/daily/components.json client/web/daily/
+COPY client/web/daily/next-env.d.ts client/web/daily/
+
+RUN npm run build -w @briefs/shared \
+  && npm run build -w @briefs/daily
+
+FROM node:22-alpine AS runtime
+
+WORKDIR /repo
+
+RUN addgroup -g 1001 -S briefs \
+  && adduser -S briefs -u 1001 -G briefs
+
+COPY --from=deps /repo/node_modules ./node_modules
+COPY package.json package-lock.json ./
+COPY shared/package.json shared/
+COPY --from=build /repo/shared/dist shared/dist
+COPY client/web/shared/package.json client/web/shared/
+COPY --from=build /repo/client/web/shared/src client/web/shared/src
+COPY client/web/daily/package.json client/web/daily/
+COPY --from=build /repo/client/web/daily/.next client/web/daily/.next
+COPY --from=build /repo/client/web/daily/next.config.ts client/web/daily/
+
+USER briefs
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV NEXT_PUBLIC_BRIEFS_API_URL=http://system:8000
+ENV NEXT_PUBLIC_BRIEFS_MCP_URL=http://localhost:3334/mcp
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:3000/').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["npm", "run", "start", "-w", "@briefs/daily"]

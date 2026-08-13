@@ -5,7 +5,7 @@ description: Use Holmplanet Brief MCP tools to ingest context, manage tasks, and
 
 # Holmplanet Brief
 
-Use the bundled `holmplanet-brief` MCP server. **Brief does not connect to the user's calendar or email** — you use their MCPs for that.
+Use the bundled Briefs MCP server. **Briefs does not connect to the user's calendar or email** — you use their MCPs for that, then pass normalized context to Briefs.
 
 ## Daily brief (do this when user says "Brief me")
 
@@ -28,11 +28,9 @@ For each event, build a node for `ingest_context`:
   "name": "<title>",
   "startsAt": "<ISO-8601 UTC>",
   "endsAt": "<ISO-8601 UTC>",
-  "data": {
-    "location": "<optional>",
-    "outdoor": true,
-    "htmlLink": "<optional>"
-  }
+  "location": "<optional>",
+  "outdoor": true,
+  "htmlLink": "<optional>"
 }
 ```
 
@@ -46,14 +44,12 @@ For each event, build a node for `ingest_context`:
 
 ```json
 {
-  "userId": "carter",
   "source": "cursor-google-calendar",
-  "nodes": [ "...mapped events..." ],
-  "edges": []
+  "nodes": [ "...mapped events..." ]
 }
 ```
 
-Omit `userId` only when MCP auth binds the session. For local dogfood, always pass `"userId": "carter"` unless the user specifies another id.
+The MCP session binds the user identity. Do not pass a user ID from the calendar payload.
 
 ### 4. Optional — weather for outdoor events
 
@@ -87,22 +83,20 @@ Show the greeting and bullets (priority order). Call out overdue tasks, upcoming
 
 | Trigger | Steps |
 |---------|-------|
-| **"What changed?"** | Re-ingest fresh calendar if needed → `what_changed` |
-| **"Add a task"** | `create_task` → optionally `brief_me` |
-| **"What's on my plate?"** | `list_tasks` or `brief_me({ syncFirst: true })` |
-| **Specific meeting** | Calendar MCP → `get_context` with `topic` |
+| **"What changed?"** | Re-ingest fresh calendar if needed → `items_list` / activity history |
+| **"Add a task"** | `items_create` → optionally `brief_me` |
+| **"What's on my plate?"** | `items_list` or `brief_me` |
+| **Specific meeting** | Calendar MCP → `items_get` after ingestion |
 
 ## Brief-owned tools
 
 | Tool | Use for |
 |------|---------|
 | `ingest_context` | Upload calendar, weather, GitHub, etc. from user's MCPs |
-| `create_task` / `list_tasks` / `update_task` | Brief-native work items |
-| `sync_connectors` | Sync Brief-owned data only (`brief-tasks`) |
+| `items_create` / `items_list` / `items_update` | Brief-native work items |
+| `ingest_context` | Upload normalized calendar, weather, GitHub, or other context |
 | `brief_me` | Generate brief after ingest |
-| `what_changed` | Delta since last brief |
-| `get_context` | Inspect graph for a topic |
-| `propose_action` / `list_actions` / `approve_action` | Approval-gated recommendations |
+| `items_list_activities` | Inspect the append-only history for an item |
 
 ## Items API (tasks, events, ingest)
 

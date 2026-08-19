@@ -42,7 +42,7 @@ async function requestOtp(request: Request, context: AppContext): Promise<Respon
   const email = normalizeEmail(String(form.get("email") ?? ""));
   if (!validAuthorization(values, context) || !isValidEmail(email)) return text("Invalid OAuth authorization request", 400);
   if (await context.auth.hasRecentOtp(email, new Date(Date.now() - 60_000))) return text("A sign-in code was already sent recently. Please wait a minute.", 429);
-  const code = String(process.env.BRIEFS_DEV_OTP_CODE ?? randomInt(100000, 1000000));
+  const code = String(process.env.DEV_OTP_CODE ?? randomInt(100000, 1000000));
   const challenge = await context.auth.createOtpChallenge({ email, codeHash: hash(code), expiresAt: new Date(Date.now() + context.config.otpTtlSeconds * 1000) });
   await context.mailer.sendOtp(email, code);
   return html(formPage("Enter your code", `<h1>Check your email</h1><p>Enter the six-digit code we sent to ${escapeHtml(email)}.</p><form method="post" action="${context.config.oauthIssuer}/authorize/verify">${hiddenFields(values)}<input type="hidden" name="challenge_id" value="${challenge.id}"><label>Code<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" required></label><button>Verify and continue</button></form>`));

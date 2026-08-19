@@ -29,7 +29,7 @@ npm run briefs:e2e-smoke # MCP → API → Daily smoke (archives its test item)
 ```
 
 The smoke command expects all three local services to be running. Set
-`BRIEFS_E2E_KEEP=true` to keep the generated item for inspection.
+`E2E_KEEP=true` to keep the generated item for inspection.
 
 ```json
 {
@@ -43,16 +43,16 @@ The smoke command expects all three local services to be running. Set
 
 | Variable | Default |
 |----------|---------|
-| `BRIEFS_API_URL` | `http://localhost:8001` |
-| `BRIEFS_MCP_PORT` | `3334` |
-| `BRIEFS_DEV_USER_ID` | `demo` |
-| `BRIEFS_MCP_DEV_SKIP_AUTH` | `true` in dev |
-| `BRIEFS_OAUTH_ISSUER` | `http://localhost:8001/oauth` |
-| `BRIEFS_AUTH_SECRET` | `dev-briefs-auth-secret` |
-| `BRIEFS_API_DEV_BYPASS` | `true` outside production |
-| `BRIEFS_OTP_MAILER` | `console` locally; `resend` in production |
-| `BRIEFS_RESEND_API_KEY` | Required for Resend delivery |
-| `BRIEFS_EMAIL_FROM` | Verified sender address for Resend |
+| `API_URL` | `http://localhost:8001` |
+| `MCP_PORT` | `3334` |
+| `DEV_USER_ID` | `demo` |
+| `MCP_DEV_SKIP_AUTH` | `true` in dev |
+| `OAUTH_ISSUER` | `http://localhost:8001/oauth` |
+| `AUTH_SECRET` | `dev-briefs-auth-secret` |
+| `API_DEV_BYPASS` | `true` outside production |
+| `OTP_MAILER` | `console` locally; `resend` in production |
+| `RESEND_API_KEY` | Required for Resend delivery |
+| `EMAIL_FROM` | Verified sender address for Resend |
 
 ## Tool registration contract
 
@@ -70,7 +70,7 @@ Cursor / Codex  ──MCP──►  @briefs/mcp (:3334/mcp)
 Briefs Daily (:3000) ──session──┘  (read-only)
 ```
 
-Daily sign-in uses OAuth 2.1 + PKCE against a configurable issuer (`BRIEFS_OAUTH_ISSUER`). The
+Daily sign-in uses OAuth 2.1 + PKCE against a configurable issuer (`OAUTH_ISSUER`). The
 system package now includes a local development issuer at `/oauth`; its email field is a local
 identity stub, not production OTP delivery. Connect a real email provider before production.
 mcp-oauth-stack documents one compatible deployment pattern — Briefs does not fork or patch that repo.

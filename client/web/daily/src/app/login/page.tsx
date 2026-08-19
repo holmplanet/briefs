@@ -35,7 +35,7 @@ export default async function LoginPage({
           <p className="text-sm text-muted-foreground">
             OAuth is not configured. Daily is using the dev user{" "}
             <code className="rounded-full bg-background/60 px-2 py-0.5">{config.devUserId}</code>.
-            Set <code className="rounded-full bg-background/60 px-2 py-0.5">BRIEFS_OAUTH_ISSUER</code>{" "}
+            Set <code className="rounded-full bg-background/60 px-2 py-0.5">OAUTH_ISSUER</code>{" "}
             to an OAuth issuer URL to enable sign-in (see mcp-oauth-stack for reference patterns).
           </p>
           <a

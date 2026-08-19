@@ -9,19 +9,19 @@ Create a separate preview Postgres database and configure these variables in the
 environment:
 
 ```text
-BRIEFS_ENV=development
-BRIEFS_DATABASE_URL=postgres://...
-BRIEFS_AUTH_SECRET=<preview-only-secret>
-BRIEFS_SESSION_SECRET=<preview-only-secret>
-BRIEFS_OAUTH_ISSUER=https://<preview-domain>/oauth
-BRIEFS_OAUTH_CLIENT_ID=briefs-daily
-BRIEFS_OAUTH_REDIRECT_URIS=https://<preview-domain>/auth/callback
-BRIEFS_OTP_MAILER=console
-BRIEFS_API_URL=https://<preview-domain>
-BRIEFS_MCP_DEV_SKIP_AUTH=true
+APP_ENV=development
+DATABASE_URL=postgres://...
+AUTH_SECRET=<preview-only-secret>
+SESSION_SECRET=<preview-only-secret>
+OAUTH_ISSUER=https://<preview-domain>/oauth
+OAUTH_CLIENT_ID=briefs-daily
+OAUTH_REDIRECT_URIS=https://<preview-domain>/auth/callback
+OTP_MAILER=console
+API_URL=https://<preview-domain>
+MCP_DEV_SKIP_AUTH=true
 ```
 
-Use `BRIEFS_OTP_MAILER=resend`, a preview-only Resend sender, and `BRIEFS_MCP_DEV_SKIP_AUTH=false`
+Use `OTP_MAILER=resend`, a preview-only Resend sender, and `MCP_DEV_SKIP_AUTH=false`
 only when testing the authenticated OAuth flow. Never point Preview at production Postgres.
 
 ## Project settings

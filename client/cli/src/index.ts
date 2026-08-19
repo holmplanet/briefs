@@ -16,8 +16,8 @@ Usage:
   briefs [global flags] <command> [subcommand] [options]
 
 Global flags:
-  --api-url <url>     API base URL (default: BRIEFS_API_URL or http://localhost:8001)
-  --user-id <id>      X-Briefs-User-Id header (default: BRIEFS_USER_ID or demo)
+  --api-url <url>     API base URL (default: API_URL or http://localhost:8001)
+  --user-id <id>      X-Briefs-User-Id header (default: USER_ID or demo)
   --json              Print JSON output
   --quiet             Suppress stderr messages
   -h, --help          Show help

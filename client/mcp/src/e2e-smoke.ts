@@ -8,11 +8,11 @@ type SmokeStep = {
   detail?: string;
 };
 
-const apiUrl = (process.env.BRIEFS_API_URL ?? "http://localhost:8001").replace(/\/$/, "");
-const mcpUrl = process.env.BRIEFS_MCP_URL ?? "http://localhost:3334/mcp";
-const dailyUrl = (process.env.BRIEFS_DAILY_URL ?? "http://localhost:3000").replace(/\/$/, "");
-const userId = process.env.BRIEFS_USER_ID ?? "demo";
-const keepItem = process.env.BRIEFS_E2E_KEEP === "true";
+const apiUrl = (process.env.API_URL ?? "http://localhost:8001").replace(/\/$/, "");
+const mcpUrl = process.env.MCP_URL ?? "http://localhost:3334/mcp";
+const dailyUrl = (process.env.DAILY_URL ?? "http://localhost:3000").replace(/\/$/, "");
+const userId = process.env.USER_ID ?? "demo";
+const keepItem = process.env.E2E_KEEP === "true";
 
 const steps: SmokeStep[] = [];
 

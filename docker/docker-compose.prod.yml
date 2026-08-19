@@ -21,17 +21,17 @@ services:
       retries: 5
 
   system:
-    image: ${BRIEFS_SYSTEM_IMAGE:?BRIEFS_SYSTEM_IMAGE is required}
+    image: ${SYSTEM_IMAGE:?SYSTEM_IMAGE is required}
     restart: unless-stopped
     env_file:
-      - ${BRIEFS_RUNTIME_ENV_FILE:-.env}
+      - ${RUNTIME_ENV_FILE:-.env}
     environment:
-      BRIEFS_DATABASE_URL_FILE: /run/secrets/database_url
-      BRIEFS_AUTH_SECRET_FILE: /run/secrets/auth_secret
-      BRIEFS_RESEND_API_KEY_FILE: /run/secrets/resend_api_key
-      BRIEFS_EMAIL_FROM_FILE: /run/secrets/email_from
+      DATABASE_URL_FILE: /run/secrets/database_url
+      AUTH_SECRET_FILE: /run/secrets/auth_secret
+      RESEND_API_KEY_FILE: /run/secrets/resend_api_key
+      EMAIL_FROM_FILE: /run/secrets/email_from
     ports:
-      - "127.0.0.1:${BRIEFS_PORT:-8001}:8000"
+      - "127.0.0.1:${APP_PORT:-8001}:8000"
     secrets:
       - database_url
       - auth_secret
@@ -49,15 +49,15 @@ services:
       retries: 3
 
   mcp:
-    image: ${BRIEFS_MCP_IMAGE:?BRIEFS_MCP_IMAGE is required}
+    image: ${MCP_IMAGE:?MCP_IMAGE is required}
     restart: unless-stopped
     env_file:
-      - ${BRIEFS_RUNTIME_ENV_FILE:-.env}
+      - ${RUNTIME_ENV_FILE:-.env}
     environment:
-      BRIEFS_API_URL: http://system:8000
-      BRIEFS_AUTH_SECRET_FILE: /run/secrets/auth_secret
+      API_URL: http://system:8000
+      AUTH_SECRET_FILE: /run/secrets/auth_secret
     ports:
-      - "127.0.0.1:${BRIEFS_MCP_PORT:-3334}:3334"
+      - "127.0.0.1:${MCP_PORT:-3334}:3334"
     secrets:
       - auth_secret
     networks:
@@ -72,16 +72,16 @@ services:
       retries: 3
 
   daily:
-    image: ${BRIEFS_DAILY_IMAGE:?BRIEFS_DAILY_IMAGE is required}
+    image: ${DAILY_IMAGE:?DAILY_IMAGE is required}
     restart: unless-stopped
     env_file:
-      - ${BRIEFS_RUNTIME_ENV_FILE:-.env}
+      - ${RUNTIME_ENV_FILE:-.env}
     environment:
-      BRIEFS_API_URL: http://system:8000
-      BRIEFS_MCP_HEALTH_URL: http://mcp:3334/mcp
-      BRIEFS_SESSION_SECRET_FILE: /run/secrets/session_secret
+      API_URL: http://system:8000
+      MCP_HEALTH_URL: http://mcp:3334/mcp
+      SESSION_SECRET_FILE: /run/secrets/session_secret
     ports:
-      - "127.0.0.1:${BRIEFS_DAILY_PORT:-3000}:3000"
+      - "127.0.0.1:${DAILY_PORT:-3000}:3000"
     secrets:
       - session_secret
     networks:
@@ -106,14 +106,14 @@ volumes:
 
 secrets:
   postgres_password:
-    file: ${BRIEFS_SECRETS_DIR:-./secrets}/postgres_password
+    file: ${SECRETS_DIR:-./secrets}/postgres_password
   database_url:
-    file: ${BRIEFS_SECRETS_DIR:-./secrets}/database_url
+    file: ${SECRETS_DIR:-./secrets}/database_url
   auth_secret:
-    file: ${BRIEFS_SECRETS_DIR:-./secrets}/auth_secret
+    file: ${SECRETS_DIR:-./secrets}/auth_secret
   session_secret:
-    file: ${BRIEFS_SECRETS_DIR:-./secrets}/session_secret
+    file: ${SECRETS_DIR:-./secrets}/session_secret
   resend_api_key:
-    file: ${BRIEFS_SECRETS_DIR:-./secrets}/resend_api_key
+    file: ${SECRETS_DIR:-./secrets}/resend_api_key
   email_from:
-    file: ${BRIEFS_SECRETS_DIR:-./secrets}/email_from
+    file: ${SECRETS_DIR:-./secrets}/email_from

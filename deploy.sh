@@ -11,7 +11,7 @@ INFISICAL_SITE_URL="${INFISICAL_SITE_URL:-https://app.infisical.com}"
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
 APP_DIR="${APP_DIR:-/opt/briefs}"
 
-for image in BRIEFS_SYSTEM_IMAGE BRIEFS_MCP_IMAGE BRIEFS_DAILY_IMAGE; do
+for image in SYSTEM_IMAGE MCP_IMAGE DAILY_IMAGE; do
   [[ -n "${!image:-}" ]] || { echo "ERROR: $image is required" >&2; exit 1; }
 done
 
@@ -36,35 +36,35 @@ secret() {
 }
 
 POSTGRES_PASSWORD=$(secret POSTGRES_PASSWORD)
-BRIEFS_AUTH_SECRET=$(secret BRIEFS_AUTH_SECRET)
-BRIEFS_SESSION_SECRET=$(secret BRIEFS_SESSION_SECRET)
-BRIEFS_RESEND_API_KEY=$(secret BRIEFS_RESEND_API_KEY)
+AUTH_SECRET=$(secret AUTH_SECRET)
+SESSION_SECRET=$(secret SESSION_SECRET)
+RESEND_API_KEY=$(secret RESEND_API_KEY)
 DATABASE_URL="postgresql://briefs:${POSTGRES_PASSWORD}@postgres:5432/briefs"
 
 tmp_dir=$(mktemp -d)
 trap 'rm -rf "$tmp_dir"' EXIT
 
 cat > "$tmp_dir/.env" <<EOF
-BRIEFS_ENV=production
+APP_ENV=production
 NODE_ENV=production
-BRIEFS_RUNTIME_ENV_FILE=$APP_DIR/.env
-BRIEFS_SECRETS_DIR=$APP_DIR/secrets
-BRIEFS_HOST=0.0.0.0
-BRIEFS_PORT=8000
-BRIEFS_MCP_PORT=3334
-BRIEFS_DAILY_PORT=3000
-BRIEFS_APP_URL=${BRIEFS_APP_URL:?BRIEFS_APP_URL is required}
-BRIEFS_OAUTH_ISSUER=${BRIEFS_OAUTH_ISSUER:?BRIEFS_OAUTH_ISSUER is required}
-BRIEFS_OAUTH_CLIENT_ID=${BRIEFS_OAUTH_CLIENT_ID:-briefs-daily}
-BRIEFS_OAUTH_REDIRECT_URIS=${BRIEFS_OAUTH_REDIRECT_URIS:?BRIEFS_OAUTH_REDIRECT_URIS is required}
-BRIEFS_OTP_MAILER=resend
-BRIEFS_EMAIL_FROM=${BRIEFS_EMAIL_FROM:?BRIEFS_EMAIL_FROM is required}
-BRIEFS_MCP_DEV_SKIP_AUTH=false
-BRIEFS_API_DEV_BYPASS=false
-BRIEFS_AUTH_DEV_BYPASS=false
-BRIEFS_SYSTEM_IMAGE=$BRIEFS_SYSTEM_IMAGE
-BRIEFS_MCP_IMAGE=$BRIEFS_MCP_IMAGE
-BRIEFS_DAILY_IMAGE=$BRIEFS_DAILY_IMAGE
+RUNTIME_ENV_FILE=$APP_DIR/.env
+SECRETS_DIR=$APP_DIR/secrets
+APP_HOST=0.0.0.0
+APP_PORT=8000
+MCP_PORT=3334
+DAILY_PORT=3000
+APP_URL=${APP_URL:?APP_URL is required}
+OAUTH_ISSUER=${OAUTH_ISSUER:?OAUTH_ISSUER is required}
+OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID:-briefs-daily}
+OAUTH_REDIRECT_URIS=${OAUTH_REDIRECT_URIS:?OAUTH_REDIRECT_URIS is required}
+OTP_MAILER=resend
+EMAIL_FROM=${EMAIL_FROM:?EMAIL_FROM is required}
+MCP_DEV_SKIP_AUTH=false
+API_DEV_BYPASS=false
+AUTH_DEV_BYPASS=false
+SYSTEM_IMAGE=$SYSTEM_IMAGE
+MCP_IMAGE=$MCP_IMAGE
+DAILY_IMAGE=$DAILY_IMAGE
 EOF
 
 bundle="$tmp_dir/briefs-bundle.tar.gz"
@@ -81,10 +81,10 @@ deliver_secret() {
 
 deliver_secret postgres_password "$POSTGRES_PASSWORD"
 deliver_secret database_url "$DATABASE_URL"
-deliver_secret auth_secret "$BRIEFS_AUTH_SECRET"
-deliver_secret session_secret "$BRIEFS_SESSION_SECRET"
-deliver_secret resend_api_key "$BRIEFS_RESEND_API_KEY"
-deliver_secret email_from "${BRIEFS_EMAIL_FROM:?BRIEFS_EMAIL_FROM is required}"
+deliver_secret auth_secret "$AUTH_SECRET"
+deliver_secret session_secret "$SESSION_SECRET"
+deliver_secret resend_api_key "$RESEND_API_KEY"
+deliver_secret email_from "${EMAIL_FROM:?EMAIL_FROM is required}"
 
 "${SSH_CMD[@]}" "cd '$APP_DIR' && docker compose --env-file .env -f docker-compose.prod.yml up -d --remove-orphans"
 echo "Deploy complete. Run: npm run remote:status"

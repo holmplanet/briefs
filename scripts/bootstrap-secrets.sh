@@ -7,7 +7,7 @@ INFISICAL_SITE_URL="${INFISICAL_SITE_URL:-https://app.infisical.com}"
 
 command -v infisical >/dev/null || { echo "ERROR: infisical CLI is required" >&2; exit 1; }
 
-required=(POSTGRES_PASSWORD BRIEFS_AUTH_SECRET BRIEFS_SESSION_SECRET BRIEFS_RESEND_API_KEY)
+required=(POSTGRES_PASSWORD AUTH_SECRET SESSION_SECRET RESEND_API_KEY)
 for key in "${required[@]}"; do
   if [[ -z "${!key:-}" ]]; then
     echo "ERROR: export $key before seeding Infisical" >&2

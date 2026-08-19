@@ -89,7 +89,7 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
         return;
       }
 
-      const code = String(process.env.BRIEFS_DEV_OTP_CODE ?? randomInt(100000, 1000000));
+      const code = String(process.env.DEV_OTP_CODE ?? randomInt(100000, 1000000));
       const challenge = await auth.createOtpChallenge({
         email,
         codeHash: hash(code),

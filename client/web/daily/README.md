@@ -20,7 +20,7 @@ npm run dev:docs      # SDK docs — http://localhost:3001
 
 Create `client/web/daily/.env.local` from `.env.example`.
 
-Without `BRIEFS_OAUTH_ISSUER`, development uses a dev user bypass (`BRIEFS_DEV_USER_ID`, default `demo`).
+Without `OAUTH_ISSUER`, development uses a dev user bypass (`DEV_USER_ID`, default `demo`).
 
 ## Pages
 
@@ -36,9 +36,9 @@ Without `BRIEFS_OAUTH_ISSUER`, development uses a dev user bypass (`BRIEFS_DEV_U
 
 | Variable | Purpose |
 |----------|---------|
-| `BRIEFS_OAUTH_ISSUER` | OAuth issuer URL (any OIDC-compatible provider) |
-| `BRIEFS_OAUTH_CLIENT_ID` | OAuth client id |
-| `BRIEFS_SESSION_SECRET` | HMAC session cookie signing |
-| `BRIEFS_APP_URL` | Daily origin for OAuth redirect |
+| `OAUTH_ISSUER` | OAuth issuer URL (any OIDC-compatible provider) |
+| `OAUTH_CLIENT_ID` | OAuth client id |
+| `SESSION_SECRET` | HMAC session cookie signing |
+| `APP_URL` | Daily origin for OAuth redirect |
 
 API requests use `X-Briefs-User-Id` from the signed session — the same user id MCP tools use when authenticated.

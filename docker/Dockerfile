@@ -46,8 +46,8 @@ RUN chmod 755 /usr/local/bin/briefs-entrypoint
 USER briefs
 
 ENV NODE_ENV=production
-ENV BRIEFS_HOST=0.0.0.0
-ENV BRIEFS_PORT=8000
+ENV APP_HOST=0.0.0.0
+ENV APP_PORT=8000
 
 EXPOSE 8000
 

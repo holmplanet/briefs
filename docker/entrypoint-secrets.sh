@@ -11,10 +11,10 @@ load_secret() {
   fi
 }
 
-load_secret BRIEFS_DATABASE_URL /run/secrets/database_url
-load_secret BRIEFS_AUTH_SECRET /run/secrets/auth_secret
-load_secret BRIEFS_SESSION_SECRET /run/secrets/session_secret
-load_secret BRIEFS_RESEND_API_KEY /run/secrets/resend_api_key
-load_secret BRIEFS_EMAIL_FROM /run/secrets/email_from
+load_secret DATABASE_URL /run/secrets/database_url
+load_secret AUTH_SECRET /run/secrets/auth_secret
+load_secret SESSION_SECRET /run/secrets/session_secret
+load_secret RESEND_API_KEY /run/secrets/resend_api_key
+load_secret EMAIL_FROM /run/secrets/email_from
 
 exec "$@"

@@ -92,6 +92,6 @@ export class BriefsApiClient {
 }
 
 export function createBriefsApiClient(userId: string, apiUrl?: string, accessToken?: string): BriefsApiClient {
-  const base = (apiUrl ?? process.env.BRIEFS_API_URL ?? "http://localhost:8001").replace(/\/$/, "");
+  const base = (apiUrl ?? process.env.API_URL ?? "http://localhost:8001").replace(/\/$/, "");
   return new BriefsApiClient(base, userId, accessToken);
 }

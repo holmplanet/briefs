@@ -75,7 +75,7 @@ Use `npm ci` (lockfile-driven installs). See `.cursor/rules/npm-security.mdc` fo
 | Activities | `GET /api/v1/items/:id/activities` | Append-only event log per item |
 | Actors | `GET /api/v1/actors/me`, `GET /api/v1/actors/:id` | Person actors for auth users |
 
-Auth: `X-Briefs-User-Id` header (falls back to `BRIEFS_DEFAULT_USER_ID` in `.env`).
+Auth: `X-Briefs-User-Id` header (falls back to `DEFAULT_USER_ID` in `.env`).
 
 Ingested items can pass `source: { "system": "github", "externalId": "issue-18" }` on create; the DB enforces uniqueness per user.
 

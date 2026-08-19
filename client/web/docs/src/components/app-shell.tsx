@@ -6,7 +6,7 @@ import {
 
 import { fetchBriefsHealth } from "@/lib/briefs-api";
 
-const dailyUrl = process.env.NEXT_PUBLIC_BRIEFS_DAILY_URL ?? "http://localhost:3000";
+const dailyUrl = process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000";
 
 export async function AppShell({
   children,

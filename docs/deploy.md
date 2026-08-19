@@ -15,8 +15,9 @@ bind to loopback; Nginx/TLS should be the only public ingress and is a follow-up
 
 ## Configure
 
-Copy `docker/.env.example.prod` to a local, ignored `.env` and set the public URLs and image
-references. Export deploy-only variables:
+Copy `deploy/docker.production.env.example` to a local, ignored `.env` and set the public URLs
+and image references. The template is the source of truth for the runtime variable names. Export
+deploy-only variables:
 
 ```bash
 export DROPLET_IP=203.0.113.10

@@ -1,6 +1,7 @@
 import { ZodError } from "zod";
 
 import { verifyAccessToken } from "@briefs/shared/auth";
+import { briefCreateInputSchema } from "@briefs/shared/brief";
 import { ItemStatus, itemCreateInputSchema, itemUpdateInputSchema } from "@briefs/shared/item";
 
 import type { AppContext } from "./bootstrap.js";
@@ -29,6 +30,7 @@ export async function handleWebApiRequest(request: Request, context: AppContext)
   const segments = url.pathname.split("/").filter(Boolean).slice(2);
   try {
     if (segments[0] === "items") return handleItems(request, context, userId, segments.slice(1), url.searchParams);
+    if (segments[0] === "briefs") return handleBriefs(request, context, userId, segments.slice(1), url.searchParams);
     if (segments[0] === "actors" && segments[1] === "me" && request.method === "GET") {
       return json({ actor: await context.actors.ensurePerson(userId) });
     }
@@ -36,6 +38,30 @@ export async function handleWebApiRequest(request: Request, context: AppContext)
   } catch (error) {
     return apiErrorResponse(error);
   }
+}
+
+async function handleBriefs(
+  request: Request,
+  context: AppContext,
+  userId: string,
+  segments: string[],
+  searchParams: URLSearchParams,
+): Promise<Response> {
+  const briefId = segments[0];
+  if (!briefId && request.method === "GET") {
+    const rawLimit = Number(searchParams.get("limit") ?? 20);
+    const limit = Number.isFinite(rawLimit) ? Math.min(Math.max(Math.floor(rawLimit), 1), 100) : 20;
+    return json({ briefs: await context.briefs.list(userId, limit) });
+  }
+  if (!briefId && request.method === "POST") {
+    const brief = await context.briefs.create(userId, briefCreateInputSchema.parse(await request.json()));
+    return json({ brief }, 201);
+  }
+  if (briefId && request.method === "GET") {
+    const brief = await context.briefs.get(userId, briefId);
+    return brief ? json({ brief }) : json({ error: `Brief not found: ${briefId}` }, 404);
+  }
+  return json({ error: "Not found" }, 404);
 }
 
 async function handleItems(

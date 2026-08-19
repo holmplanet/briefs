@@ -11,14 +11,14 @@ const USER_HEADER = "x-briefs-user-id";
 export async function authenticateWebRequest(request: Request): Promise<string | null> {
   const authHeader = request.headers.get("authorization") ?? "";
   const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-  const issuer = process.env.BRIEFS_OAUTH_ISSUER ?? `http://localhost:${process.env.BRIEFS_PORT ?? "8001"}/oauth`;
-  const secret = process.env.BRIEFS_AUTH_SECRET ?? "dev-briefs-auth-secret";
+  const issuer = process.env.OAUTH_ISSUER ?? `http://localhost:${process.env.APP_PORT ?? "8001"}/oauth`;
+  const secret = process.env.AUTH_SECRET ?? "dev-briefs-auth-secret";
   const claims = bearer ? await verifyAccessToken(bearer, secret, issuer.replace(/\/$/, "")) : null;
   if (claims) return claims.sub;
 
-  const devBypass = process.env.BRIEFS_API_DEV_BYPASS !== "false" && (process.env.BRIEFS_ENV ?? "development") !== "production";
+  const devBypass = process.env.API_DEV_BYPASS !== "false" && (process.env.APP_ENV ?? "development") !== "production";
   if (!devBypass) return null;
-  return request.headers.get(USER_HEADER)?.trim() || process.env.BRIEFS_DEFAULT_USER_ID || "default";
+  return request.headers.get(USER_HEADER)?.trim() || process.env.DEFAULT_USER_ID || "default";
 }
 
 export async function handleWebApiRequest(request: Request, context: AppContext): Promise<Response> {

@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@briefs/shared", "@briefs/web-shared"],
+  transpilePackages: ["@briefs/mcp", "@briefs/shared", "@briefs/system", "@briefs/web-shared"],
 };
 
 export default nextConfig;

@@ -1,3 +1,5 @@
+import { loadFileSecrets } from "./loadEnv.js";
+
 export type BriefsConfig = {
   env: string;
   host: string;
@@ -20,6 +22,8 @@ function readPort(value: string | undefined, fallback: number): number {
 }
 
 export function loadConfig(): BriefsConfig {
+  loadFileSecrets();
+
   return {
     env: process.env.BRIEFS_ENV ?? "development",
     host: process.env.BRIEFS_HOST ?? "0.0.0.0",

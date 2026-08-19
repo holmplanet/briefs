@@ -9,6 +9,8 @@ import { buttonVariants, cn } from "@briefs/web-shared";
 import { fetchItems } from "@/lib/briefs-api";
 import { formatDateTime } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 const statusFilters: Array<{ value?: ItemStatusValue; label: string }> = [
   { label: "All" },
   { value: ItemStatus.OPEN, label: "Open" },

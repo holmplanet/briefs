@@ -33,4 +33,13 @@ describe("Daily auth configuration", () => {
 
     expect(loadAuthConfig().devBypass).toBe(true);
   });
+
+  it("treats Vercel Preview as non-production", () => {
+    process.env.NODE_ENV = "production";
+    process.env.VERCEL_ENV = "preview";
+    delete process.env.BRIEFS_ENV;
+    delete process.env.BRIEFS_OAUTH_ISSUER;
+
+    expect(loadAuthConfig().devBypass).toBe(true);
+  });
 });

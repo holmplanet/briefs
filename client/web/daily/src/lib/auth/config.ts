@@ -15,12 +15,14 @@ export function loadAuthConfig(): AuthConfig {
   const appUrl = (process.env.BRIEFS_APP_URL ?? "http://localhost:3000").replace(/\/$/, "");
   const production = process.env.BRIEFS_ENV
     ? process.env.BRIEFS_ENV === "production"
-    : process.env.NODE_ENV === "production";
+    : process.env.VERCEL_ENV === "preview"
+      ? false
+      : process.env.NODE_ENV === "production";
   const building = process.env.NEXT_PHASE === "phase-production-build";
   const sessionSecret = process.env.BRIEFS_SESSION_SECRET ?? "dev-briefs-session-secret";
   const devBypass = !production && (
     process.env.BRIEFS_AUTH_DEV_BYPASS === "true" ||
-    (!issuer && process.env.NODE_ENV !== "production")
+    (!issuer && !production)
   );
 
   if (production && !building && !issuer) {

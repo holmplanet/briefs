@@ -29,16 +29,19 @@ COPY shared/package.json shared/
 COPY --from=build /repo/shared/dist shared/dist
 COPY client/mcp/package.json client/mcp/
 COPY --from=build /repo/client/mcp/dist client/mcp/dist
+COPY docker/entrypoint-secrets.sh /usr/local/bin/briefs-entrypoint
+RUN chmod 755 /usr/local/bin/briefs-entrypoint
 
 USER briefs
 
 ENV NODE_ENV=production
-ENV BRIEFS_MCP_PORT=3334
-ENV BRIEFS_API_URL=http://system:8000
+ENV MCP_PORT=3334
+ENV API_URL=http://system:8000
 
 EXPOSE 3334
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3334/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
+ENTRYPOINT ["/usr/local/bin/briefs-entrypoint"]
 CMD ["node", "client/mcp/dist/standalone.js"]

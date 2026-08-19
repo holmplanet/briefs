@@ -27,5 +27,5 @@ npm run dev:system    # API
 Optional `client/web/docs/.env.local`:
 
 ```bash
-NEXT_PUBLIC_BRIEFS_DAILY_URL=http://localhost:3000
+NEXT_PUBLIC_DAILY_URL=http://localhost:3000
 ```

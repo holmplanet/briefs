@@ -1,0 +1,119 @@
+name: briefs
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: briefs
+      POSTGRES_DB: briefs
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    volumes:
+      - briefs-postgres:/var/lib/postgresql/data
+    secrets:
+      - postgres_password
+    networks:
+      - private
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U briefs -d briefs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  system:
+    image: ${SYSTEM_IMAGE:?SYSTEM_IMAGE is required}
+    restart: unless-stopped
+    env_file:
+      - ${RUNTIME_ENV_FILE:-.env}
+    environment:
+      DATABASE_URL_FILE: /run/secrets/database_url
+      AUTH_SECRET_FILE: /run/secrets/auth_secret
+      RESEND_API_KEY_FILE: /run/secrets/resend_api_key
+      EMAIL_FROM_FILE: /run/secrets/email_from
+    ports:
+      - "127.0.0.1:${APP_PORT:-8001}:8000"
+    secrets:
+      - database_url
+      - auth_secret
+      - resend_api_key
+      - email_from
+    networks:
+      - private
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8000/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  mcp:
+    image: ${MCP_IMAGE:?MCP_IMAGE is required}
+    restart: unless-stopped
+    env_file:
+      - ${RUNTIME_ENV_FILE:-.env}
+    environment:
+      API_URL: http://system:8000
+      AUTH_SECRET_FILE: /run/secrets/auth_secret
+    ports:
+      - "127.0.0.1:${MCP_PORT:-3334}:3334"
+    secrets:
+      - auth_secret
+    networks:
+      - private
+    depends_on:
+      system:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3334/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  daily:
+    image: ${DAILY_IMAGE:?DAILY_IMAGE is required}
+    restart: unless-stopped
+    env_file:
+      - ${RUNTIME_ENV_FILE:-.env}
+    environment:
+      API_URL: http://system:8000
+      MCP_HEALTH_URL: http://mcp:3334/mcp
+      SESSION_SECRET_FILE: /run/secrets/session_secret
+    ports:
+      - "127.0.0.1:${DAILY_PORT:-3000}:3000"
+    secrets:
+      - session_secret
+    networks:
+      - private
+    depends_on:
+      system:
+        condition: service_healthy
+      mcp:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  private:
+    driver: bridge
+
+volumes:
+  briefs-postgres:
+
+secrets:
+  postgres_password:
+    file: ${SECRETS_DIR:-./secrets}/postgres_password
+  database_url:
+    file: ${SECRETS_DIR:-./secrets}/database_url
+  auth_secret:
+    file: ${SECRETS_DIR:-./secrets}/auth_secret
+  session_secret:
+    file: ${SECRETS_DIR:-./secrets}/session_secret
+  resend_api_key:
+    file: ${SECRETS_DIR:-./secrets}/resend_api_key
+  email_from:
+    file: ${SECRETS_DIR:-./secrets}/email_from

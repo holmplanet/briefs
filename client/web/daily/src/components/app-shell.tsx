@@ -14,7 +14,7 @@ const navItems = [
   { href: "/connect", label: "Connect" },
 ] as const;
 
-const docsUrl = process.env.NEXT_PUBLIC_BRIEFS_DOCS_URL ?? "http://localhost:3001";
+const docsUrl = process.env.NEXT_PUBLIC_DOCS_URL ?? "http://localhost:3001";
 
 export async function AppShell({
   children,

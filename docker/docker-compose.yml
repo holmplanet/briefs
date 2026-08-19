@@ -22,21 +22,21 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     ports:
-      - "${BRIEFS_PORT:-8001}:8000"
+      - "${APP_PORT:-8001}:8000"
     environment:
-      BRIEFS_ENV: ${BRIEFS_ENV:-development}
-      BRIEFS_HOST: 0.0.0.0
-      BRIEFS_PORT: 8000
-      BRIEFS_DATABASE_URL: ${BRIEFS_DATABASE_URL:-postgresql://briefs:briefs@postgres:5432/briefs}
-      BRIEFS_API_DEV_BYPASS: ${BRIEFS_API_DEV_BYPASS:-true}
-      BRIEFS_AUTH_SECRET: ${BRIEFS_AUTH_SECRET:-dev-briefs-auth-secret}
-      BRIEFS_OAUTH_ISSUER: ${BRIEFS_OAUTH_ISSUER-http://localhost:8001/oauth}
-      BRIEFS_OAUTH_CLIENT_ID: ${BRIEFS_OAUTH_CLIENT_ID:-briefs-daily}
-      BRIEFS_OAUTH_REDIRECT_URIS: ${BRIEFS_OAUTH_REDIRECT_URIS-http://localhost:3000/auth/callback}
-      BRIEFS_OTP_MAILER: ${BRIEFS_OTP_MAILER:-console}
-      BRIEFS_RESEND_API_KEY: ${BRIEFS_RESEND_API_KEY-}
-      BRIEFS_EMAIL_FROM: ${BRIEFS_EMAIL_FROM-}
-      BRIEFS_OTP_TTL_SECONDS: ${BRIEFS_OTP_TTL_SECONDS:-600}
+      APP_ENV: ${APP_ENV:-development}
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      DATABASE_URL: ${DATABASE_URL:-postgresql://briefs:briefs@postgres:5432/briefs}
+      API_DEV_BYPASS: ${API_DEV_BYPASS:-true}
+      AUTH_SECRET: ${AUTH_SECRET:-dev-briefs-auth-secret}
+      OAUTH_ISSUER: ${OAUTH_ISSUER-http://localhost:8001/oauth}
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID:-briefs-daily}
+      OAUTH_REDIRECT_URIS: ${OAUTH_REDIRECT_URIS-http://localhost:3000/auth/callback}
+      OTP_MAILER: ${OTP_MAILER:-console}
+      RESEND_API_KEY: ${RESEND_API_KEY-}
+      EMAIL_FROM: ${EMAIL_FROM-}
+      OTP_TTL_SECONDS: ${OTP_TTL_SECONDS:-600}
     depends_on:
       postgres:
         condition: service_healthy
@@ -56,14 +56,14 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.mcp
     ports:
-      - "${BRIEFS_MCP_PORT:-3334}:3334"
+      - "${MCP_PORT:-3334}:3334"
     environment:
       NODE_ENV: ${NODE_ENV:-development}
-      BRIEFS_MCP_PORT: 3334
-      BRIEFS_API_URL: http://system:8000
-      BRIEFS_MCP_DEV_SKIP_AUTH: ${BRIEFS_MCP_DEV_SKIP_AUTH:-true}
-      BRIEFS_OAUTH_ISSUER: ${BRIEFS_OAUTH_ISSUER-http://system:8000/oauth}
-      BRIEFS_AUTH_SECRET: ${BRIEFS_AUTH_SECRET:-dev-briefs-auth-secret}
+      MCP_PORT: 3334
+      API_URL: http://system:8000
+      MCP_DEV_SKIP_AUTH: ${MCP_DEV_SKIP_AUTH:-true}
+      OAUTH_ISSUER: ${OAUTH_ISSUER-http://system:8000/oauth}
+      AUTH_SECRET: ${AUTH_SECRET:-dev-briefs-auth-secret}
     depends_on:
       system:
         condition: service_healthy
@@ -73,22 +73,22 @@ services:
       context: ..
       dockerfile: docker/Dockerfile.daily
       args:
-        NEXT_PUBLIC_BRIEFS_API_URL: ${NEXT_PUBLIC_BRIEFS_API_URL:-http://localhost:8001}
-        NEXT_PUBLIC_BRIEFS_MCP_URL: ${NEXT_PUBLIC_BRIEFS_MCP_URL:-http://localhost:3334/mcp}
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8001}
+        NEXT_PUBLIC_MCP_URL: ${NEXT_PUBLIC_MCP_URL:-http://localhost:3334/mcp}
     ports:
-      - "${BRIEFS_DAILY_PORT:-3000}:3000"
+      - "${DAILY_PORT:-3000}:3000"
     environment:
-      BRIEFS_API_URL: http://system:8000
-      BRIEFS_MCP_HEALTH_URL: http://mcp:3334/mcp
-      BRIEFS_ENV: ${BRIEFS_ENV:-development}
+      API_URL: http://system:8000
+      MCP_HEALTH_URL: http://mcp:3334/mcp
+      APP_ENV: ${APP_ENV:-development}
       NODE_ENV: ${NODE_ENV:-development}
-      BRIEFS_OAUTH_ISSUER: ${BRIEFS_OAUTH_ISSUER-}
-      BRIEFS_OAUTH_CLIENT_ID: ${BRIEFS_OAUTH_CLIENT_ID:-briefs-daily}
-      BRIEFS_OAUTH_CLIENT_SECRET: ${BRIEFS_OAUTH_CLIENT_SECRET-}
-      BRIEFS_AUTH_DEV_BYPASS: ${BRIEFS_AUTH_DEV_BYPASS:-true}
-      BRIEFS_SESSION_SECRET: ${BRIEFS_SESSION_SECRET:-dev-briefs-daily-session-secret}
-      BRIEFS_DEV_USER_ID: ${BRIEFS_DEV_USER_ID:-demo}
-      BRIEFS_APP_URL: ${BRIEFS_APP_URL:-http://localhost:3000}
+      OAUTH_ISSUER: ${OAUTH_ISSUER-}
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID:-briefs-daily}
+      OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET-}
+      AUTH_DEV_BYPASS: ${AUTH_DEV_BYPASS:-true}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-briefs-daily-session-secret}
+      DEV_USER_ID: ${DEV_USER_ID:-demo}
+      APP_URL: ${APP_URL:-http://localhost:3000}
     depends_on:
       system:
         condition: service_healthy

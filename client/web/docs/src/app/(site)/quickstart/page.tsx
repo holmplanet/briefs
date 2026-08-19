@@ -48,16 +48,16 @@ npm run dev:docs      # SDK docs — http://localhost:3001`}
           </p>
           <CodeBlock
             title="client/web/daily/.env.local"
-            code={`NEXT_PUBLIC_BRIEFS_API_URL=${apiBase}
-NEXT_PUBLIC_BRIEFS_USER_ID=demo
-NEXT_PUBLIC_BRIEFS_DOCS_URL=http://localhost:3001`}
+            code={`NEXT_PUBLIC_API_URL=${apiBase}
+NEXT_PUBLIC_USER_ID=demo
+NEXT_PUBLIC_DOCS_URL=http://localhost:3001`}
           />
           <p>
             The API defaults to port <code className="text-foreground">8001</code> so it does not
             conflict with the Brief MCP server on <code className="text-foreground">8000</code>.
-            Override with <code className="text-foreground">BRIEFS_PORT</code> in the repo root{" "}
+            Override with <code className="text-foreground">APP_PORT</code> in the repo root{" "}
             <code className="text-foreground">.env</code> and match{" "}
-            <code className="text-foreground">NEXT_PUBLIC_BRIEFS_API_URL</code> in your web client.
+            <code className="text-foreground">NEXT_PUBLIC_API_URL</code> in your web client.
           </p>
         </DocSection>
 
@@ -78,7 +78,7 @@ NEXT_PUBLIC_BRIEFS_DOCS_URL=http://localhost:3001`}
           <p>
             Open{" "}
             <a
-              href={process.env.NEXT_PUBLIC_BRIEFS_DAILY_URL ?? "http://localhost:3000"}
+              href={process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000"}
               className="text-blue-300 hover:text-blue-200"
               target="_blank"
               rel="noreferrer"

@@ -24,10 +24,19 @@ services:
     ports:
       - "${BRIEFS_PORT:-8001}:8000"
     environment:
-      BRIEFS_ENV: development
+      BRIEFS_ENV: ${BRIEFS_ENV:-development}
       BRIEFS_HOST: 0.0.0.0
       BRIEFS_PORT: 8000
-      BRIEFS_DATABASE_URL: postgresql://briefs:briefs@postgres:5432/briefs
+      BRIEFS_DATABASE_URL: ${BRIEFS_DATABASE_URL:-postgresql://briefs:briefs@postgres:5432/briefs}
+      BRIEFS_API_DEV_BYPASS: ${BRIEFS_API_DEV_BYPASS:-true}
+      BRIEFS_AUTH_SECRET: ${BRIEFS_AUTH_SECRET:-dev-briefs-auth-secret}
+      BRIEFS_OAUTH_ISSUER: ${BRIEFS_OAUTH_ISSUER-http://localhost:8001/oauth}
+      BRIEFS_OAUTH_CLIENT_ID: ${BRIEFS_OAUTH_CLIENT_ID:-briefs-daily}
+      BRIEFS_OAUTH_REDIRECT_URIS: ${BRIEFS_OAUTH_REDIRECT_URIS-http://localhost:3000/auth/callback}
+      BRIEFS_OTP_MAILER: ${BRIEFS_OTP_MAILER:-console}
+      BRIEFS_RESEND_API_KEY: ${BRIEFS_RESEND_API_KEY-}
+      BRIEFS_EMAIL_FROM: ${BRIEFS_EMAIL_FROM-}
+      BRIEFS_OTP_TTL_SECONDS: ${BRIEFS_OTP_TTL_SECONDS:-600}
     depends_on:
       postgres:
         condition: service_healthy
@@ -71,7 +80,11 @@ services:
     environment:
       BRIEFS_API_URL: http://system:8000
       BRIEFS_MCP_HEALTH_URL: http://mcp:3334/mcp
+      BRIEFS_ENV: ${BRIEFS_ENV:-development}
+      NODE_ENV: ${NODE_ENV:-development}
       BRIEFS_OAUTH_ISSUER: ${BRIEFS_OAUTH_ISSUER-}
+      BRIEFS_OAUTH_CLIENT_ID: ${BRIEFS_OAUTH_CLIENT_ID:-briefs-daily}
+      BRIEFS_OAUTH_CLIENT_SECRET: ${BRIEFS_OAUTH_CLIENT_SECRET-}
       BRIEFS_AUTH_DEV_BYPASS: ${BRIEFS_AUTH_DEV_BYPASS:-true}
       BRIEFS_SESSION_SECRET: ${BRIEFS_SESSION_SECRET:-dev-briefs-daily-session-secret}
       BRIEFS_DEV_USER_ID: ${BRIEFS_DEV_USER_ID:-demo}

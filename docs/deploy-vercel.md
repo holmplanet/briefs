@@ -5,21 +5,8 @@ contracts. The Docker Compose path remains the self-hosted reference.
 
 ## Preview setup
 
-Create a separate preview Postgres database and configure these variables in the Vercel Preview
-environment:
-
-```text
-APP_ENV=development
-DATABASE_URL=postgres://...
-AUTH_SECRET=<preview-only-secret>
-SESSION_SECRET=<preview-only-secret>
-OAUTH_ISSUER=https://<preview-domain>/oauth
-OAUTH_CLIENT_ID=briefs-daily
-OAUTH_REDIRECT_URIS=https://<preview-domain>/auth/callback
-OTP_MAILER=console
-API_URL=https://<preview-domain>
-MCP_DEV_SKIP_AUTH=true
-```
+Use [`deploy/vercel.preview.env.example`](../deploy/vercel.preview.env.example) as the complete
+Preview variable list. Create a separate Preview Postgres database and use Preview-only secrets.
 
 Use `OTP_MAILER=resend`, a preview-only Resend sender, and `MCP_DEV_SKIP_AUTH=false`
 only when testing the authenticated OAuth flow. Never point Preview at production Postgres.

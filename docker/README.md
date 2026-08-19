@@ -17,7 +17,7 @@ Ports are `8001` (System), `3334` (MCP), and `3000` (Daily). Set `APP_ENV=produc
 using this compose file beyond local development. Also set `OAUTH_ISSUER` and
 `AUTH_DEV_BYPASS=false` for Daily. The defaults are intentionally development-only.
 
-For a production-shaped configuration, copy `docker/production.env.example` to `.env`, replace every
+For a production-shaped configuration, copy `deploy/docker.production.env.example` to `.env`, replace every
 placeholder, and verify the OAuth redirect URI matches the registered Daily client. Then run:
 
 ```bash

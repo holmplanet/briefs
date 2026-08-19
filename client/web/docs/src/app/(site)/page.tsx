@@ -27,7 +27,7 @@ export default async function DocsHomePage() {
           <ArrowRight className="size-4" />
         </Link>
         <a
-          href={process.env.NEXT_PUBLIC_BRIEFS_DAILY_URL ?? "http://localhost:3000"}
+          href={process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000"}
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/40 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-card/70 hover:text-foreground"
@@ -168,7 +168,7 @@ client/plugin/       Cursor/Codex skills`}
             </li>
             <li>
               <a
-                href={process.env.NEXT_PUBLIC_BRIEFS_DAILY_URL ?? "http://localhost:3000"}
+                href={process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000"}
                 className="text-blue-300 hover:text-blue-200"
                 target="_blank"
                 rel="noreferrer"

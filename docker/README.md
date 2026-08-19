@@ -12,12 +12,12 @@ npm run docker:down
 
 Compose file: `docker/docker-compose.yml` (build context is repo root).
 
-Ports are `8001` (System), `3334` (MCP), and `3000` (Daily). Set `BRIEFS_ENV=production`, a real
-`BRIEFS_AUTH_SECRET`, `NODE_ENV=production`, `BRIEFS_MCP_DEV_SKIP_AUTH=false`, and the Resend/database settings before
-using this compose file beyond local development. Also set `BRIEFS_OAUTH_ISSUER` and
-`BRIEFS_AUTH_DEV_BYPASS=false` for Daily. The defaults are intentionally development-only.
+Ports are `8001` (System), `3334` (MCP), and `3000` (Daily). Set `APP_ENV=production`, a real
+`AUTH_SECRET`, `NODE_ENV=production`, `MCP_DEV_SKIP_AUTH=false`, and the Resend/database settings before
+using this compose file beyond local development. Also set `OAUTH_ISSUER` and
+`AUTH_DEV_BYPASS=false` for Daily. The defaults are intentionally development-only.
 
-For a production-shaped configuration, copy `docker/production.env.example` to `.env`, replace every
+For a production-shaped configuration, copy `deploy/docker.production.env.example` to `.env`, replace every
 placeholder, and verify the OAuth redirect URI matches the registered Daily client. Then run:
 
 ```bash
@@ -28,3 +28,6 @@ docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 The compose file is a deployment baseline, not a complete public ingress setup. Put TLS and a
 single public hostname in front of the services, keep Postgres private, and verify `/health`,
 Daily login, MCP bearer auth, and a real OTP delivery before calling the deployment production-ready.
+
+For the DigitalOcean/Infisical production path, see [`docs/deploy.md`](../docs/deploy.md),
+[`INFISICAL.md`](../INFISICAL.md), and `docker-compose.prod.yml`.

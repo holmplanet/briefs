@@ -6,7 +6,9 @@ import { McpConnectPanel } from "@/components/mcp/connect-panel";
 import { fetchBriefsHealth, fetchItems } from "@/lib/briefs-api";
 import { getSession, loadAuthConfig } from "@/lib/auth";
 
-const docsUrl = process.env.NEXT_PUBLIC_BRIEFS_DOCS_URL ?? "http://localhost:3001";
+export const dynamic = "force-dynamic";
+
+const docsUrl = process.env.NEXT_PUBLIC_DOCS_URL ?? "http://localhost:3001";
 
 export default async function DailyHomePage() {
   const config = loadAuthConfig();

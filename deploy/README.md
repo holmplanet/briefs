@@ -1,0 +1,13 @@
+# Deployment environment templates
+
+These files are the source of truth for deployment variables. They contain names and safe
+placeholders only; never commit real secrets.
+
+- `vercel.preview.env.example` — protected Vercel Preview with real OAuth/OTP testing.
+- `vercel.production.env.example` — Vercel Production baseline.
+- `docker.development.env.example` — local Docker Compose development.
+- `docker.production.env.example` — Docker Compose production-shaped baseline.
+
+Copy the relevant template into the deployment system's environment settings. For Vercel,
+configure each variable in the matching Preview or Production environment. For Docker, copy the
+template to `.env` and pass it with `docker compose --env-file .env`.

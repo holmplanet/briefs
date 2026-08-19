@@ -1,5 +1,7 @@
 import { McpConnectPanel } from "@/components/mcp/connect-panel";
 
+export const dynamic = "force-dynamic";
+
 export default function ConnectPage() {
   return (
     <div className="flex flex-col gap-8 pb-16 pt-4">

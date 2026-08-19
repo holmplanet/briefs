@@ -26,9 +26,9 @@ describe("Eve System client", () => {
     const address = server.address();
     if (!address || typeof address === "string") throw new Error("Expected server address");
 
-    process.env.BRIEFS_SYSTEM_URL = `http://127.0.0.1:${address.port}`;
-    process.env.BRIEFS_EVE_USER_ID = "eve-test-user";
-    process.env.BRIEFS_EVE_ACCESS_TOKEN = "eve-test-token";
+    process.env.SYSTEM_URL = `http://127.0.0.1:${address.port}`;
+    process.env.EVE_USER_ID = "eve-test-user";
+    process.env.EVE_ACCESS_TOKEN = "eve-test-token";
 
     await listItems();
     await createItem({ name: "Capture Eve test" });

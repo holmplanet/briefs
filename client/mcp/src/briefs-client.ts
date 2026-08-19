@@ -1,5 +1,6 @@
 import type { Activity } from "@briefs/shared/activity";
 import type { Actor } from "@briefs/shared/actor";
+import type { Brief, BriefCreateInput } from "@briefs/shared/brief";
 import type { Item, ItemCreateInput, ItemUpdateInput } from "@briefs/shared/item";
 
 export class BriefsApiError extends Error {
@@ -56,6 +57,14 @@ export class BriefsApiClient {
   async getActorMe(): Promise<Actor> {
     const data = await this.fetchJson<{ actor: Actor }>("/api/v1/actors/me");
     return data.actor;
+  }
+
+  async createBrief(input: BriefCreateInput): Promise<Brief> {
+    const data = await this.fetchJson<{ brief: Brief }>("/api/v1/briefs", {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+    return data.brief;
   }
 
   private async fetchJson<T>(path: string, init: RequestInit = {}): Promise<T> {

@@ -137,3 +137,4 @@ Postgres + `@briefs/system` on port 8000. The production image compiles `shared`
 - `client/web/docs/README.md` — SDK docs dev
 - `client/web/daily/README.md` — Briefs Daily dev
 - `client/plugin/README.md` — assistant integration
+- `docs/dogfood.md` — calendar-to-morning-brief dogfood runbook

@@ -20,21 +20,36 @@ type UserInfo = {
 
 let metadataCache: OAuthMetadata | null = null;
 
-async function fetchMetadata(issuer: string): Promise<OAuthMetadata> {
+async function fetchMetadata(issuer: string, appUrl: string): Promise<OAuthMetadata> {
   if (metadataCache) {
     return metadataCache;
   }
 
-  const response = await fetch(`${issuer}/.well-known/oauth-authorization-server`, {
-    next: { revalidate: 3600 },
-  });
+  try {
+    const response = await fetch(`${issuer}/.well-known/oauth-authorization-server`, {
+      next: { revalidate: 3600 },
+    });
 
-  if (!response.ok) {
-    throw new Error(`Failed to load OAuth metadata from ${issuer}`);
+    if (!response.ok || !response.headers.get("content-type")?.includes("application/json")) {
+      throw new Error("OAuth metadata was not returned as JSON");
+    }
+
+    metadataCache = (await response.json()) as OAuthMetadata;
+    return metadataCache;
+  } catch (error) {
+    const issuerOrigin = new URL(issuer).origin;
+    const appOrigin = new URL(appUrl).origin;
+    if (issuerOrigin !== appOrigin) {
+      throw new Error(`Failed to load OAuth metadata from ${issuer}`, { cause: error });
+    }
+
+    metadataCache = {
+      authorization_endpoint: `${issuer}/authorize`,
+      token_endpoint: `${issuer}/token`,
+      userinfo_endpoint: `${issuer}/oidc/me`,
+    };
+    return metadataCache;
   }
-
-  metadataCache = (await response.json()) as OAuthMetadata;
-  return metadataCache;
 }
 
 export async function buildAuthorizeUrl(
@@ -46,7 +61,7 @@ export async function buildAuthorizeUrl(
     throw new Error("OAuth issuer is not configured");
   }
 
-  const metadata = await fetchMetadata(config.issuer);
+  const metadata = await fetchMetadata(config.issuer, config.appUrl);
   const url = new URL(metadata.authorization_endpoint);
 
   url.searchParams.set("response_type", "code");
@@ -69,7 +84,7 @@ export async function exchangeCodeForUser(
     throw new Error("OAuth issuer is not configured");
   }
 
-  const metadata = await fetchMetadata(config.issuer);
+  const metadata = await fetchMetadata(config.issuer, config.appUrl);
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     code,

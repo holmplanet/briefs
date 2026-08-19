@@ -22,16 +22,16 @@ export async function bootstrap(): Promise<AppContext> {
   const config = loadConfig();
 
   if (config.env === "production" && config.otpMailer !== "resend") {
-    throw new Error("Production requires BRIEFS_OTP_MAILER=resend");
+    throw new Error("Production requires OTP_MAILER=resend");
   }
   if (config.env === "production" && !config.databaseUrl) {
-    throw new Error("Production requires BRIEFS_DATABASE_URL for durable OAuth storage");
+    throw new Error("Production requires DATABASE_URL for durable OAuth storage");
   }
   if (config.env === "production" && config.authSecret === "dev-briefs-auth-secret") {
-    throw new Error("Production requires a non-default BRIEFS_AUTH_SECRET");
+    throw new Error("Production requires a non-default AUTH_SECRET");
   }
   if (config.otpMailer === "resend" && (!config.resendApiKey || !config.emailFrom)) {
-    throw new Error("Resend OTP mailer requires BRIEFS_RESEND_API_KEY and BRIEFS_EMAIL_FROM");
+    throw new Error("Resend OTP mailer requires RESEND_API_KEY and EMAIL_FROM");
   }
 
   if (config.databaseUrl) {

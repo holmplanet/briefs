@@ -11,10 +11,10 @@ RUN npm ci -w @briefs/daily -w @briefs/web-shared -w @briefs/shared --include-wo
 
 FROM deps AS build
 
-ARG NEXT_PUBLIC_BRIEFS_API_URL=http://system:8000
-ARG NEXT_PUBLIC_BRIEFS_MCP_URL=http://localhost:3334/mcp
-ENV NEXT_PUBLIC_BRIEFS_API_URL=$NEXT_PUBLIC_BRIEFS_API_URL
-ENV NEXT_PUBLIC_BRIEFS_MCP_URL=$NEXT_PUBLIC_BRIEFS_MCP_URL
+ARG NEXT_PUBLIC_API_URL=http://system:8000
+ARG NEXT_PUBLIC_MCP_URL=http://localhost:3334/mcp
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_MCP_URL=$NEXT_PUBLIC_MCP_URL
 
 COPY shared/src shared/src
 COPY client/web/shared/src client/web/shared/src
@@ -50,8 +50,8 @@ USER briefs
 
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV NEXT_PUBLIC_BRIEFS_API_URL=http://system:8000
-ENV NEXT_PUBLIC_BRIEFS_MCP_URL=http://localhost:3334/mcp
+ENV NEXT_PUBLIC_API_URL=http://system:8000
+ENV NEXT_PUBLIC_MCP_URL=http://localhost:3334/mcp
 
 EXPOSE 3000
 

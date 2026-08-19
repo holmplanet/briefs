@@ -1,10 +1,10 @@
 import { readFileSync } from "node:fs";
 
 const SECRET_FILE_KEYS = [
-  "BRIEFS_DATABASE_URL",
-  "BRIEFS_AUTH_SECRET",
-  "BRIEFS_RESEND_API_KEY",
-  "BRIEFS_EMAIL_FROM",
+  "DATABASE_URL",
+  "AUTH_SECRET",
+  "RESEND_API_KEY",
+  "EMAIL_FROM",
 ] as const;
 
 /** Hydrate unset runtime variables from Docker secrets without logging values. */

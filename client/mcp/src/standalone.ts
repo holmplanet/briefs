@@ -9,9 +9,9 @@ import express from "express";
 import { registerBriefsTools } from "./tools/index.js";
 import type { BriefsMcpAuth } from "./tools/types.js";
 
-const port = Number(process.env.BRIEFS_MCP_PORT ?? 3334);
-const devUserId = process.env.BRIEFS_DEV_USER_ID ?? "demo";
-const devSkipAuth = process.env.BRIEFS_MCP_DEV_SKIP_AUTH !== "false";
+const port = Number(process.env.MCP_PORT ?? 3334);
+const devUserId = process.env.DEV_USER_ID ?? "demo";
+const devSkipAuth = process.env.MCP_DEV_SKIP_AUTH !== "false";
 
 type Session = {
   transport: StreamableHTTPServerTransport;
@@ -34,10 +34,10 @@ async function resolveAuth(req: express.Request): Promise<BriefsMcpAuth | null> 
     return null;
   }
 
-  const issuer = (process.env.BRIEFS_OAUTH_ISSUER ?? "http://localhost:8001/oauth").replace(/\/$/, "");
+  const issuer = (process.env.OAUTH_ISSUER ?? "http://localhost:8001/oauth").replace(/\/$/, "");
   const claims = await verifyAccessToken(
     authHeader.slice(7).trim(),
-    process.env.BRIEFS_AUTH_SECRET ?? "dev-briefs-auth-secret",
+    process.env.AUTH_SECRET ?? "dev-briefs-auth-secret",
     issuer,
   );
   if (!claims) return null;
@@ -128,6 +128,6 @@ app.delete("/mcp", async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Briefs MCP dev server: http://localhost:${port}/mcp`);
-  console.log(`Briefs API: ${process.env.BRIEFS_API_URL ?? "http://localhost:8001"}`);
-  console.log(`Dev user: ${devUserId} (BRIEFS_MCP_DEV_SKIP_AUTH=${devSkipAuth})`);
+  console.log(`Briefs API: ${process.env.API_URL ?? "http://localhost:8001"}`);
+  console.log(`Dev user: ${devUserId} (MCP_DEV_SKIP_AUTH=${devSkipAuth})`);
 });

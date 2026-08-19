@@ -35,8 +35,8 @@ RUN chmod 755 /usr/local/bin/briefs-entrypoint
 USER briefs
 
 ENV NODE_ENV=production
-ENV BRIEFS_MCP_PORT=3334
-ENV BRIEFS_API_URL=http://system:8000
+ENV MCP_PORT=3334
+ENV API_URL=http://system:8000
 
 EXPOSE 3334
 

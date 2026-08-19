@@ -2,14 +2,14 @@ import type { Brief, BriefCreateInput } from "@briefs/shared/brief";
 import type { Item, ItemCreateInput } from "@briefs/shared/item";
 
 function systemUrl(): string {
-  return (process.env.BRIEFS_SYSTEM_URL ?? "http://localhost:8001").replace(/\/$/, "");
+  return (process.env.SYSTEM_URL ?? "http://localhost:8001").replace(/\/$/, "");
 }
 
 function requestHeaders(): Headers {
   const headers = new Headers({ "Content-Type": "application/json" });
-  const userId = process.env.BRIEFS_EVE_USER_ID ?? "demo";
+  const userId = process.env.EVE_USER_ID ?? "demo";
   headers.set("X-Briefs-User-Id", userId);
-  const token = process.env.BRIEFS_EVE_ACCESS_TOKEN;
+  const token = process.env.EVE_ACCESS_TOKEN;
   if (token) headers.set("Authorization", `Bearer ${token}`);
   return headers;
 }

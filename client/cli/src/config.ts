@@ -14,11 +14,11 @@ export type GlobalFlagOverrides = {
 
 export function loadConfig(overrides: GlobalFlagOverrides = {}): CliConfig {
   return {
-    apiUrl: (overrides.apiUrl ?? process.env.BRIEFS_API_URL ?? "http://localhost:8001").replace(
+    apiUrl: (overrides.apiUrl ?? process.env.API_URL ?? "http://localhost:8001").replace(
       /\/$/,
       "",
     ),
-    userId: overrides.userId ?? process.env.BRIEFS_USER_ID ?? "demo",
+    userId: overrides.userId ?? process.env.USER_ID ?? "demo",
     json: overrides.json ?? false,
     quiet: overrides.quiet ?? false,
   };

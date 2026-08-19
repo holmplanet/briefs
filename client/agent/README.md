@@ -13,8 +13,8 @@ npm run info -w @briefs/agent
 npm run dev:agent
 ```
 
-Set `BRIEFS_SYSTEM_URL` (default `http://localhost:8001`), `BRIEFS_EVE_USER_ID`, and
-`BRIEFS_EVE_ACCESS_TOKEN` for tool calls. The access token should be a Briefs bearer token in
+Set `SYSTEM_URL` (default `http://localhost:8001`), `EVE_USER_ID`, and
+`EVE_ACCESS_TOKEN` for tool calls. The access token should be a Briefs bearer token in
 production; local development may use the explicit System dev bypass.
 
 ## Phase 1 tools

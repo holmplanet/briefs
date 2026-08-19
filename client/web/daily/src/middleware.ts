@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { loadAuthConfig, isOAuthEnabled } from "@/lib/auth/config";
 import { SESSION_COOKIE, decodeSessionValue } from "@/lib/auth/session";
 
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/logout"];
+const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/logout", "/oauth"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

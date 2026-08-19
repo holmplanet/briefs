@@ -10,6 +10,8 @@ import { buttonVariants, cn } from "@briefs/web-shared";
 import { fetchItem, fetchItemActivities } from "@/lib/briefs-api";
 import { formatDateTime } from "@/lib/format";
 
+export const dynamic = "force-dynamic";
+
 export default async function ItemDetailPage({
   params,
 }: {

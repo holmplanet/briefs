@@ -33,8 +33,8 @@ Global flags: `--json`, `--api-url`, `--user-id`, `--quiet`
 
 | Variable | Default |
 |----------|---------|
-| `BRIEFS_API_URL` | `http://localhost:8001` |
-| `BRIEFS_USER_ID` | `demo` |
+| `API_URL` | `http://localhost:8001` |
+| `USER_ID` | `demo` |
 
 ## Layout
 

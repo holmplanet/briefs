@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@briefs/web-shared";
 
-const dailyUrl = process.env.NEXT_PUBLIC_BRIEFS_DAILY_URL ?? "http://localhost:3000";
+const dailyUrl = process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000";
 
 type DocLink = {
   href: string;

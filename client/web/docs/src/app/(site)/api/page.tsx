@@ -31,7 +31,7 @@ export default function ApiReferencePage() {
         <DocSection id="auth" title="Authentication">
           <p>
             Pass <code className="text-foreground">X-Briefs-User-Id</code> on every request. In development the API
-            falls back to <code className="text-foreground">BRIEFS_DEFAULT_USER_ID</code> from{" "}
+            falls back to <code className="text-foreground">DEFAULT_USER_ID</code> from{" "}
             <code className="text-foreground">.env</code> when the header is omitted.
           </p>
           <CodeBlock

@@ -15,8 +15,8 @@ describe("API auth boundary", () => {
       throw new Error("Expected server to bind to a TCP port");
     }
 
-    const previousBypass = process.env.BRIEFS_API_DEV_BYPASS;
-    process.env.BRIEFS_API_DEV_BYPASS = "false";
+    const previousBypass = process.env.API_DEV_BYPASS;
+    process.env.API_DEV_BYPASS = "false";
 
     try {
       const response = await fetch(`http://127.0.0.1:${address.port}/api/v1/items`, {
@@ -25,8 +25,8 @@ describe("API auth boundary", () => {
 
       expect(response.status).toBe(401);
     } finally {
-      if (previousBypass === undefined) delete process.env.BRIEFS_API_DEV_BYPASS;
-      else process.env.BRIEFS_API_DEV_BYPASS = previousBypass;
+      if (previousBypass === undefined) delete process.env.API_DEV_BYPASS;
+      else process.env.API_DEV_BYPASS = previousBypass;
       await new Promise<void>((resolve, reject) => {
         server.close((error) => (error ? reject(error) : resolve()));
       });
@@ -43,8 +43,8 @@ describe("API auth boundary", () => {
       throw new Error("Expected server to bind to a TCP port");
     }
 
-    const secret = process.env.BRIEFS_AUTH_SECRET ?? "dev-briefs-auth-secret";
-    const issuer = `http://localhost:${process.env.BRIEFS_PORT ?? "8001"}/oauth`;
+    const secret = process.env.AUTH_SECRET ?? "dev-briefs-auth-secret";
+    const issuer = `http://localhost:${process.env.APP_PORT ?? "8001"}/oauth`;
     const token = await issueAccessToken(
       { sub: "token-user", email: "token@example.com", iss: issuer },
       secret,

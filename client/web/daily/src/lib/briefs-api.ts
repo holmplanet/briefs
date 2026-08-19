@@ -7,16 +7,16 @@ import { getSession, loadAuthConfig } from "@/lib/auth";
 
 export function getBriefsApiBase(): string {
   return (
-    process.env.BRIEFS_API_URL ?? process.env.NEXT_PUBLIC_BRIEFS_API_URL ?? "http://localhost:8001"
+    process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001"
   ).replace(/\/$/, "");
 }
 
 export function getBriefsMcpUrl(): string {
-  return (process.env.NEXT_PUBLIC_BRIEFS_MCP_URL ?? "http://localhost:3334/mcp").replace(/\/$/, "");
+  return (process.env.NEXT_PUBLIC_MCP_URL ?? "http://localhost:3334/mcp").replace(/\/$/, "");
 }
 
 function getBriefsMcpHealthUrl(): string {
-  return (process.env.BRIEFS_MCP_HEALTH_URL ?? getBriefsMcpUrl()).replace(/\/$/, "");
+  return (process.env.MCP_HEALTH_URL ?? getBriefsMcpUrl()).replace(/\/$/, "");
 }
 
 export async function getBriefsUserId(): Promise<string> {

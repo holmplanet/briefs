@@ -11,10 +11,10 @@ RUN npm ci -w @briefs/daily -w @briefs/web-shared -w @briefs/shared --include-wo
 
 FROM deps AS build
 
-ARG NEXT_PUBLIC_BRIEFS_API_URL=http://system:8000
-ARG NEXT_PUBLIC_BRIEFS_MCP_URL=http://localhost:3334/mcp
-ENV NEXT_PUBLIC_BRIEFS_API_URL=$NEXT_PUBLIC_BRIEFS_API_URL
-ENV NEXT_PUBLIC_BRIEFS_MCP_URL=$NEXT_PUBLIC_BRIEFS_MCP_URL
+ARG NEXT_PUBLIC_API_URL=http://system:8000
+ARG NEXT_PUBLIC_MCP_URL=http://localhost:3334/mcp
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_MCP_URL=$NEXT_PUBLIC_MCP_URL
 
 COPY shared/src shared/src
 COPY client/web/shared/src client/web/shared/src
@@ -43,17 +43,20 @@ COPY --from=build /repo/client/web/shared/src client/web/shared/src
 COPY client/web/daily/package.json client/web/daily/
 COPY --from=build /repo/client/web/daily/.next client/web/daily/.next
 COPY --from=build /repo/client/web/daily/next.config.ts client/web/daily/
+COPY docker/entrypoint-secrets.sh /usr/local/bin/briefs-entrypoint
+RUN chmod 755 /usr/local/bin/briefs-entrypoint
 
 USER briefs
 
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV NEXT_PUBLIC_BRIEFS_API_URL=http://system:8000
-ENV NEXT_PUBLIC_BRIEFS_MCP_URL=http://localhost:3334/mcp
+ENV NEXT_PUBLIC_API_URL=http://system:8000
+ENV NEXT_PUBLIC_MCP_URL=http://localhost:3334/mcp
 
 EXPOSE 3000
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3000/').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
+ENTRYPOINT ["/usr/local/bin/briefs-entrypoint"]
 CMD ["npm", "run", "start", "-w", "@briefs/daily"]

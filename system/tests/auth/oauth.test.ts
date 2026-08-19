@@ -2,16 +2,16 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { bootstrap, createApp } from "../../src/index.js";
 
-const originalOtp = process.env.BRIEFS_DEV_OTP_CODE;
+const originalOtp = process.env.DEV_OTP_CODE;
 
 afterEach(() => {
-  if (originalOtp === undefined) delete process.env.BRIEFS_DEV_OTP_CODE;
-  else process.env.BRIEFS_DEV_OTP_CODE = originalOtp;
+  if (originalOtp === undefined) delete process.env.DEV_OTP_CODE;
+  else process.env.DEV_OTP_CODE = originalOtp;
 });
 
 describe("OAuth email OTP flow", () => {
   it("persists a one-time challenge and exchanges a PKCE code", async () => {
-    process.env.BRIEFS_DEV_OTP_CODE = "123456";
+    process.env.DEV_OTP_CODE = "123456";
     const context = await bootstrap();
     const app = createApp(context);
     const server = app.listen(0);

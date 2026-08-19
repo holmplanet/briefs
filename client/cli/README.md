@@ -28,8 +28,8 @@ npm run build -w @briefs/cli
 
 | Variable | Default |
 |----------|---------|
-| `BRIEFS_API_URL` | `http://localhost:8001` |
-| `BRIEFS_USER_ID` | `demo` |
+| `API_URL` | `http://localhost:8001` |
+| `USER_ID` | `demo` |
 
 Flags override env: `--api-url`, `--user-id`, `--json`, `--quiet`.
 

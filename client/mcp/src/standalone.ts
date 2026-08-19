@@ -1,12 +1,11 @@
 import { randomUUID } from "node:crypto";
 
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { verifyAccessToken } from "@briefs/shared/auth";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
 import express from "express";
 
-import { registerBriefsTools } from "./tools/index.js";
+import { createBriefsMcpServer } from "./server.js";
 import type { BriefsMcpAuth } from "./tools/types.js";
 
 const port = Number(process.env.BRIEFS_MCP_PORT ?? 3334);
@@ -63,10 +62,7 @@ async function createServerTransport(user: BriefsMcpAuth): Promise<StreamableHTT
     }
   };
 
-  const server = new McpServer({ name: "briefs-mcp", version: "0.1.0" });
-  registerBriefsTools(server, {
-    requireAccessToken: async () => user,
-  });
+  const server = createBriefsMcpServer(user);
   await server.connect(transport);
 
   return transport;

@@ -88,16 +88,38 @@ async function main(): Promise<void> {
       return "connected";
     });
 
-    const itemName = `E2E smoke ${new Date().toISOString()}`;
-    await runStep("mcp_items_create", async () => {
+    const itemName = `E2E calendar smoke ${new Date().toISOString()}`;
+    const externalId = `event-${Date.now()}`;
+    const contextNode = {
+      externalId,
+      kind: "event",
+      name: itemName,
+      startsAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+      endsAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
+      location: "Smoke test",
+    };
+    await runStep("mcp_ingest_context", async () => {
       const result = await client.callTool({
-        name: "items_create",
-        arguments: { name: itemName, kind: "task", description: "Phase 0 MCP-to-Daily smoke test" },
+        name: "ingest_context",
+        arguments: {
+          source: "e2e-calendar",
+          nodes: [contextNode],
+        },
       });
-      const data = toolData<{ item: { id: string; name: string } }>(result);
-      itemId = data.item.id;
-      if (data.item.name !== itemName) throw new Error("MCP returned the wrong item");
+      const data = toolData<{ items: Array<{ id: string; name: string }> }>(result);
+      itemId = data.items[0]?.id;
+      if (!itemId || data.items[0]?.name !== itemName) throw new Error("MCP returned the wrong context item");
       return itemId;
+    });
+
+    await runStep("mcp_ingest_dedupe", async () => {
+      const result = await client.callTool({
+        name: "ingest_context",
+        arguments: { source: "e2e-calendar", nodes: [contextNode] },
+      });
+      const data = toolData<{ items: Array<{ id: string }> }>(result);
+      if (data.items[0]?.id !== itemId) throw new Error("Repeated context created a duplicate item");
+      return itemId!;
     });
 
     await runStep("api_item_round_trip", async () => {
@@ -128,6 +150,18 @@ async function main(): Promise<void> {
         throw new Error(`Daily did not render the item (${response.status})`);
       }
       return `${dailyUrl}/items/${itemId}`;
+    });
+
+    await runStep("mcp_brief_me", async () => {
+      const result = await client.callTool({
+        name: "brief_me",
+        arguments: { kind: "morning" },
+      });
+      const data = toolData<{ brief: { kind: string; itemIds: string[] } }>(result);
+      if (data.brief.kind !== "morning" || !data.brief.itemIds.includes(itemId!)) {
+        throw new Error("Brief did not include the ingested event");
+      }
+      return data.brief.itemIds.join(", ");
     });
 
     if (!keepItem && itemId) {

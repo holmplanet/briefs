@@ -9,7 +9,7 @@ export async function POST(request: Request): Promise<Response> {
   const user = await resolveAuth(request);
   if (!user) return Response.json({ error: "unauthorized", error_description: "Bearer token required" }, { status: 401 });
 
-  const server = createBriefsMcpServer(user, process.env.BRIEFS_API_URL);
+  const server = createBriefsMcpServer(user, process.env.BRIEFS_API_URL ?? new URL(request.url).origin);
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
@@ -29,7 +29,7 @@ export async function DELETE(): Promise<Response> {
 async function resolveAuth(request: Request) {
   const authHeader = request.headers.get("authorization") ?? "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-  const devSkipAuth = process.env.BRIEFS_MCP_DEV_SKIP_AUTH !== "false" && process.env.NODE_ENV !== "production";
+  const devSkipAuth = process.env.BRIEFS_MCP_DEV_SKIP_AUTH !== "false" && (process.env.BRIEFS_ENV ?? "development") !== "production";
   if (!token && devSkipAuth) {
     return { userId: process.env.BRIEFS_DEV_USER_ID ?? "demo", email: "dev@localhost", token: "dev-token" };
   }

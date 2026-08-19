@@ -28,3 +28,6 @@ docker compose --env-file .env -f docker/docker-compose.yml up -d --build
 The compose file is a deployment baseline, not a complete public ingress setup. Put TLS and a
 single public hostname in front of the services, keep Postgres private, and verify `/health`,
 Daily login, MCP bearer auth, and a real OTP delivery before calling the deployment production-ready.
+
+For the DigitalOcean/Infisical production path, see [`docs/deploy.md`](../docs/deploy.md),
+[`INFISICAL.md`](../INFISICAL.md), and `docker-compose.prod.yml`.

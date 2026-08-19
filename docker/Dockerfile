@@ -40,6 +40,8 @@ COPY shared/package.json ./shared/package.json
 COPY --from=build /repo/system/dist ./system/dist
 COPY system/package.json ./system/package.json
 COPY db db
+COPY docker/entrypoint-secrets.sh /usr/local/bin/briefs-entrypoint
+RUN chmod 755 /usr/local/bin/briefs-entrypoint
 
 USER briefs
 
@@ -52,4 +54,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:8000/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
+ENTRYPOINT ["/usr/local/bin/briefs-entrypoint"]
 CMD ["node", "system/dist/index.js"]

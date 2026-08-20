@@ -1,9 +1,10 @@
 import { readdir, readFile } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { Pool, type PoolConfig } from "pg";
 
-const migrationsDir = join(process.cwd(), "db/migrations");
+const migrationsDir = join(dirname(fileURLToPath(import.meta.url)), "../../db/migrations");
 
 let migrationPromise: Promise<void> | null = null;
 

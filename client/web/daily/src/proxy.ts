@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { loadAuthConfig, isOAuthEnabled } from "@/lib/auth/config";
 import { SESSION_COOKIE, decodeSessionValue } from "@/lib/auth/session";
 
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/logout", "/api/health"];
+const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/logout", "/api/health", "/api/mcp", "/api/v1"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

@@ -13,6 +13,9 @@ bind to loopback; Nginx/TLS should be the only public ingress and is a follow-up
 - Production OAuth redirect URI and Resend sender/API key.
 - Prebuilt images published to a registry accessible by the droplet.
 
+Briefs uses standard PostgreSQL through `DATABASE_URL`; see [`docs/database.md`](database.md) for
+Neon, Supabase, local, and self-hosted provider examples.
+
 ## Configure
 
 Copy `deploy/docker.production.env.example` to a local, ignored `.env` and set the public URLs

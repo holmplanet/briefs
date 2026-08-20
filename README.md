@@ -138,3 +138,4 @@ Postgres + `@briefs/system` on port 8001. The production image compiles `shared`
 - `client/web/daily/README.md` — Briefs Daily dev
 - `client/plugin/README.md` — assistant integration
 - `docs/dogfood.md` — calendar-to-morning-brief dogfood runbook
+- `docs/database.md` — provider-neutral PostgreSQL setup for local, hosted, and self-hosted use

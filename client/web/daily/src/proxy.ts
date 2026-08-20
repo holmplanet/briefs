@@ -5,7 +5,7 @@ import { SESSION_COOKIE, decodeSessionValue } from "@/lib/auth/session";
 
 const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/logout"];
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (

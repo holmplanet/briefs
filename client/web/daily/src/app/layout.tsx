@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { SkyBackground } from "@briefs/web-shared";
 
@@ -17,6 +17,9 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Briefs Daily",
   description: "View your Briefs items and activity log. Create and update work through MCP.",
+};
+
+export const viewport: Viewport = {
   themeColor: "#0a0a0e",
 };
 

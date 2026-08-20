@@ -23,7 +23,7 @@ export function registerBriefMeTool(
     async (args, extra) => {
       const auth = await deps.requireAccessToken(extra);
       try {
-        const client = createBriefsApiClient(auth.userId, config.apiUrl, auth.token);
+        const client = createBriefsApiClient(auth.userId, config.apiUrl, auth.token, config.headers);
         const items = (await client.listItems()).filter((item) => item.lifecycle === "active");
         const prioritized = items
           .filter((item) => item.kind !== "event" || item.scheduledAt)

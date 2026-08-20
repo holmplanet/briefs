@@ -9,7 +9,10 @@ export async function POST(request: Request): Promise<Response> {
   const user = await resolveAuth(request);
   if (!user) return Response.json({ error: "unauthorized", error_description: "Bearer token required" }, { status: 401 });
 
-  const server = createBriefsMcpServer(user, process.env.API_URL);
+  const vercelCookie = request.headers.get("cookie");
+  const server = createBriefsMcpServer(user, process.env.API_URL, {
+    headers: vercelCookie ? { cookie: vercelCookie } : undefined,
+  });
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,

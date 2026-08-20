@@ -38,7 +38,7 @@ export function registerIngestContextTool(
     async (args, extra) => {
       const auth = await deps.requireAccessToken(extra);
       try {
-        const client = createBriefsApiClient(auth.userId, config.apiUrl, auth.token);
+        const client = createBriefsApiClient(auth.userId, config.apiUrl, auth.token, config.headers);
         const recordedAt = new Date().toISOString();
         const items = await Promise.all(args.nodes.map((node) => client.createItem({
           name: node.name,

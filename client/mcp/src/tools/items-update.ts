@@ -33,7 +33,7 @@ export function registerItemsUpdateTool(
       const { item_id, ...patch } = args;
 
       try {
-        const client = createBriefsApiClient(auth.userId, config.apiUrl, auth.token);
+        const client = createBriefsApiClient(auth.userId, config.apiUrl, auth.token, config.headers);
         const item = await client.updateItem(item_id, patch);
         return formatToolResult({ item });
       } catch (error) {

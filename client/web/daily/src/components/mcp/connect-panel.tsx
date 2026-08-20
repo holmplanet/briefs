@@ -5,6 +5,7 @@ import { fetchMcpHealth, getBriefsMcpUrl } from "@/lib/briefs-api";
 
 export async function McpConnectPanel({ className }: { className?: string }) {
   const mcpUrl = getBriefsMcpUrl();
+  const hostedMcp = !mcpUrl.includes("localhost") && !mcpUrl.includes("127.0.0.1");
   const health = await fetchMcpHealth();
   const mcpOnline = health?.status === "ok" && health.service === "briefs-mcp";
   const cursorConfig = `{
@@ -26,8 +27,7 @@ export async function McpConnectPanel({ className }: { className?: string }) {
             <h2 className="text-lg font-medium tracking-[-0.01em]">Work through MCP</h2>
             <p className="text-sm text-muted-foreground">
               Briefs Daily is read-focused. Create tasks, update status, and capture work from your
-              assistant via <code className="text-foreground">@briefs/mcp</code> — then view changes
-              here.
+              assistant via MCP — then view changes here.
             </p>
           </div>
         </div>
@@ -44,20 +44,15 @@ export async function McpConnectPanel({ className }: { className?: string }) {
 
         <ol className="space-y-3 text-sm text-muted-foreground">
           <li>
-            <span className="font-medium text-foreground">1. Start the MCP server</span> —{" "}
-            <code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:mcp</code> from
-            the repo root.
+            <span className="font-medium text-foreground">1. {hostedMcp ? "Connect your assistant" : "Start the MCP server"}</span>{" "}
+            — {hostedMcp ? "add the hosted MCP URL below, then sign in with your allowed email when prompted." : <><code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:mcp</code> from the repo root.</>}
           </li>
           <li>
-            <span className="font-medium text-foreground">2. Connect in Cursor</span> — add the MCP
-            server URL below.
-          </li>
-          <li>
-            <span className="font-medium text-foreground">3. Ask your assistant</span> — e.g.
+            <span className="font-medium text-foreground">2. Ask your assistant</span> — e.g.
             &quot;create a task to ship the auth flow&quot; or &quot;mark my open items done.&quot;
           </li>
           <li>
-            <span className="font-medium text-foreground">4. Refresh Daily</span> — changes appear
+            <span className="font-medium text-foreground">3. Refresh Daily</span> — changes appear
             here with the full activity log.
           </li>
         </ol>
@@ -65,7 +60,7 @@ export async function McpConnectPanel({ className }: { className?: string }) {
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             <Terminal className="size-3.5" />
-            Cursor MCP config
+            {hostedMcp ? "Hosted MCP config" : "Local MCP config"}
           </div>
           <pre className="overflow-x-auto rounded-2xl border border-border/60 bg-background/50 p-4 text-xs leading-relaxed text-foreground/90">
             {cursorConfig}
@@ -75,7 +70,7 @@ export async function McpConnectPanel({ className }: { className?: string }) {
         <p className="text-xs text-muted-foreground">
           MCP URL:{" "}
           <code className="rounded-full bg-background/60 px-2 py-0.5 text-foreground">{mcpUrl}</code>
-          . Run <code className="text-foreground">npm run dev:mcp</code> from the briefs repo root.
+          {hostedMcp ? "." : <>. Run <code className="text-foreground">npm run dev:mcp</code> from the briefs repo root.</>}
         </p>
       </div>
     </section>

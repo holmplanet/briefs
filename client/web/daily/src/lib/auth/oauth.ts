@@ -20,12 +20,14 @@ type UserInfo = {
 
 let metadataCache: OAuthMetadata | null = null;
 
-async function fetchMetadata(issuer: string): Promise<OAuthMetadata> {
+type OAuthFetch = typeof fetch;
+
+async function fetchMetadata(issuer: string, requestFetch: OAuthFetch = fetch): Promise<OAuthMetadata> {
   if (metadataCache) {
     return metadataCache;
   }
 
-  const response = await fetch(`${issuer}/.well-known/oauth-authorization-server`, {
+  const response = await requestFetch(`${issuer}/.well-known/oauth-authorization-server`, {
     next: { revalidate: 3600 },
   });
 
@@ -41,12 +43,13 @@ export async function buildAuthorizeUrl(
   config: AuthConfig,
   state: string,
   challenge: string,
+  requestFetch: OAuthFetch = fetch,
 ): Promise<string> {
   if (!config.issuer) {
     throw new Error("OAuth issuer is not configured");
   }
 
-  const metadata = await fetchMetadata(config.issuer);
+  const metadata = await fetchMetadata(config.issuer, requestFetch);
   const url = new URL(metadata.authorization_endpoint);
 
   url.searchParams.set("response_type", "code");
@@ -64,12 +67,13 @@ export async function exchangeCodeForUser(
   config: AuthConfig,
   code: string,
   verifier: string,
+  requestFetch: OAuthFetch = fetch,
 ): Promise<{ userId: string; email?: string; accessToken: string }> {
   if (!config.issuer) {
     throw new Error("OAuth issuer is not configured");
   }
 
-  const metadata = await fetchMetadata(config.issuer);
+  const metadata = await fetchMetadata(config.issuer, requestFetch);
   const body = new URLSearchParams({
     grant_type: "authorization_code",
     code,
@@ -82,7 +86,7 @@ export async function exchangeCodeForUser(
     body.set("client_secret", config.clientSecret);
   }
 
-  const tokenResponse = await fetch(metadata.token_endpoint, {
+  const tokenResponse = await requestFetch(metadata.token_endpoint, {
     method: "POST",
     headers: {
       "Content-Type": "application/x-www-form-urlencoded",
@@ -98,7 +102,7 @@ export async function exchangeCodeForUser(
   const tokens = (await tokenResponse.json()) as TokenResponse;
   const userinfoEndpoint = metadata.userinfo_endpoint ?? `${config.issuer}/oidc/me`;
 
-  const userinfoResponse = await fetch(userinfoEndpoint, {
+  const userinfoResponse = await requestFetch(userinfoEndpoint, {
     headers: {
       Authorization: `Bearer ${tokens.access_token}`,
     },

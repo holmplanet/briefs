@@ -9,6 +9,7 @@ import {
   isOAuthEnabled,
   loadAuthConfig,
 } from "@/lib/auth";
+import { getInProcessOAuthFetch } from "@/lib/auth/in-process-oauth";
 
 const OAUTH_STATE_COOKIE = "briefs_oauth_state";
 const OAUTH_VERIFIER_COOKIE = "briefs_oauth_verifier";
@@ -56,7 +57,12 @@ export default async function LoginPage({
     const state = createOAuthState();
     const { verifier, challenge } = createPkcePair();
     const next = String(formData.get("next") ?? "/");
-    const authorizeUrl = await buildAuthorizeUrl(authConfig, state, challenge);
+    const authorizeUrl = await buildAuthorizeUrl(
+      authConfig,
+      state,
+      challenge,
+      await getInProcessOAuthFetch(),
+    );
     const cookieStore = await cookies();
 
     cookieStore.set(OAUTH_STATE_COOKIE, `${state}:${next}`, {

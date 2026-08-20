@@ -6,6 +6,7 @@ import {
   loadAuthConfig,
   setSession,
 } from "@/lib/auth";
+import { getInProcessOAuthFetch } from "@/lib/auth/in-process-oauth";
 
 const OAUTH_STATE_COOKIE = "briefs_oauth_state";
 const OAUTH_VERIFIER_COOKIE = "briefs_oauth_verifier";
@@ -41,7 +42,7 @@ export async function GET(request: Request) {
   }
 
   try {
-    const user = await exchangeCodeForUser(config, code, verifier);
+    const user = await exchangeCodeForUser(config, code, verifier, await getInProcessOAuthFetch());
     await setSession(config, {
       userId: user.userId,
       email: user.email,

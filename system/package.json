@@ -14,6 +14,10 @@
     "./web": {
       "types": "./src/web.ts",
       "default": "./dist/web.js"
+    },
+    "./web-oauth": {
+      "types": "./src/web-oauth.ts",
+      "default": "./dist/web-oauth.js"
     }
   },
   "type": "module",

@@ -3,8 +3,10 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Layers } from "lucide-react";
 
 import { McpConnectPanel } from "@/components/mcp/connect-panel";
+import { ItemStatusBadge } from "@/components/items/item-status-badge";
 import { fetchBriefsHealth, fetchItems } from "@/lib/briefs-api";
 import { getSession, loadAuthConfig } from "@/lib/auth";
+import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +30,7 @@ export default async function DailyHomePage() {
   const openItems = items.filter(
     (item) => item.lifecycle === "active" && item.status !== "done" && item.status !== "cancelled",
   );
+  const nextItems = openItems.slice(0, 5);
 
   return (
     <div className="flex flex-col gap-10 pb-16 pt-4">
@@ -88,6 +91,60 @@ export default async function DailyHomePage() {
           <BookOpen className="size-3.5" />
           SDK docs
         </a>
+      </section>
+
+      <section className="space-y-4">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-blue-300/80">Work queue</p>
+            <h2 className="mt-1 text-xl font-medium tracking-[-0.02em]">Next up</h2>
+          </div>
+          <Link
+            href="/items"
+            className="inline-flex items-center gap-1 text-sm text-muted-foreground transition hover:text-foreground"
+          >
+            View all
+            <ArrowRight className="size-3.5" />
+          </Link>
+        </div>
+
+        {nextItems.length === 0 ? (
+          <div className="glass-panel rounded-3xl border-dashed p-6">
+            <p className="font-medium">You’re clear for now.</p>
+            <p className="mt-1 max-w-xl text-sm text-muted-foreground">
+              Capture your next task through MCP, or start a brief to turn a thought into durable work.
+            </p>
+            <Link
+              href="/connect"
+              className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border/70 bg-card/80 px-3 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-card hover:text-foreground"
+            >
+              Connect MCP
+              <ArrowRight className="size-3.5" />
+            </Link>
+          </div>
+        ) : (
+          <ul className="glass-panel divide-y divide-border/60 overflow-hidden rounded-3xl">
+            {nextItems.map((item) => (
+              <li key={item.id}>
+                <Link
+                  href={`/items/${item.id}`}
+                  className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-background/30"
+                >
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="truncate font-medium tracking-[-0.01em]">{item.name}</p>
+                      <ItemStatusBadge status={item.status} />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {item.kind} · Updated {formatDateTime(item.updatedAt)}
+                    </p>
+                  </div>
+                  <ArrowRight className="size-4 shrink-0 text-muted-foreground" />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <McpConnectPanel />

@@ -3,13 +3,15 @@ import { NextResponse, type NextRequest } from "next/server";
 import { loadAuthConfig, isOAuthEnabled } from "@/lib/auth/config";
 import { SESSION_COOKIE, decodeSessionValue } from "@/lib/auth/session";
 
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/logout"];
+const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/logout", "/api/health"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (
     PUBLIC_PATHS.some((path) => pathname === path || pathname.startsWith(`${path}/`)) ||
+    pathname === "/oauth" ||
+    pathname.startsWith("/oauth/") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon")
   ) {

@@ -19,6 +19,7 @@ export class BriefsApiClient {
     private readonly userId: string,
     private readonly accessToken?: string,
     private readonly requestHeaders?: Record<string, string>,
+    private readonly requestFetch: typeof fetch = fetch,
   ) {}
 
   async listItems(status?: string): Promise<Item[]> {
@@ -79,7 +80,7 @@ export class BriefsApiClient {
       headers.set("Content-Type", "application/json");
     }
 
-    const response = await fetch(`${this.apiUrl}${path}`, {
+    const response = await this.requestFetch(`${this.apiUrl}${path}`, {
       ...init,
       headers,
     });
@@ -98,7 +99,8 @@ export function createBriefsApiClient(
   apiUrl?: string,
   accessToken?: string,
   headers?: Record<string, string>,
+  requestFetch?: typeof fetch,
 ): BriefsApiClient {
   const base = (apiUrl ?? process.env.API_URL ?? "http://localhost:8001").replace(/\/$/, "");
-  return new BriefsApiClient(base, userId, accessToken, headers);
+  return new BriefsApiClient(base, userId, accessToken, headers, requestFetch);
 }

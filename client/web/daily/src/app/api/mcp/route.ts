@@ -1,6 +1,8 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createBriefsMcpServer } from "@briefs/mcp/server";
 import { verifyAccessToken } from "@briefs/shared/auth";
+import { getSystemRuntime } from "@briefs/system/runtime";
+import { handleWebApiRequest } from "@briefs/system/web";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -10,8 +12,14 @@ export async function POST(request: Request): Promise<Response> {
   if (!user) return Response.json({ error: "unauthorized", error_description: "Bearer token required" }, { status: 401 });
 
   const vercelCookie = request.headers.get("cookie");
+  const systemRuntime = await getSystemRuntime();
+  const internalFetch: typeof fetch = async (input, init) => {
+    const url = new URL(typeof input === "string" ? input : input.toString());
+    return handleWebApiRequest(new Request(url, init), systemRuntime);
+  };
   const server = createBriefsMcpServer(user, process.env.API_URL, {
     headers: vercelCookie ? { cookie: vercelCookie } : undefined,
+    fetch: internalFetch,
   });
   const transport = new WebStandardStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,

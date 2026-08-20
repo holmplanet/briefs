@@ -27,7 +27,7 @@ export function registerItemsListTool(
     async (args, extra) => {
       const auth = await deps.requireAccessToken(extra);
       try {
-        const client = createBriefsApiClient(auth.userId, config.apiUrl, auth.token, config.headers);
+        const client = createBriefsApiClient(auth.userId, config.apiUrl, auth.token, config.headers, config.fetch);
         const items = await client.listItems(args.status);
         return formatToolResult({ items, count: items.length });
       } catch (error) {

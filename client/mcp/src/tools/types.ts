@@ -12,4 +12,5 @@ export type BriefsToolDeps = {
 export type BriefsToolsConfig = {
   apiUrl?: string;
   headers?: Record<string, string>;
+  fetch?: typeof fetch;
 };

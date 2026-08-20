@@ -6,9 +6,13 @@ import type { BriefsMcpAuth } from "./tools/types.js";
 export function createBriefsMcpServer(
   user: BriefsMcpAuth,
   apiUrl?: string,
-  options: { headers?: Record<string, string> } = {},
+  options: { headers?: Record<string, string>; fetch?: typeof fetch } = {},
 ): McpServer {
   const server = new McpServer({ name: "briefs-mcp", version: "0.1.0" });
-  registerBriefsTools(server, { requireAccessToken: async () => user }, { apiUrl, headers: options.headers });
+  registerBriefsTools(server, { requireAccessToken: async () => user }, {
+    apiUrl,
+    headers: options.headers,
+    fetch: options.fetch,
+  });
   return server;
 }

@@ -48,7 +48,7 @@ async function requestOtp(request: Request, context: AppContext): Promise<Respon
   const values = formValues(form);
   const email = normalizeEmail(String(form.get("email") ?? ""));
 
-  if (!validAuthorization(values, context) || !isValidEmail(email)) {
+  if (!validAuthorization(values, context) || !isValidEmail(email) || !isAllowedEmail(context, email)) {
     return text("Invalid OAuth authorization request", 400);
   }
   if (await context.auth.hasRecentOtp(email, new Date(Date.now() - 60_000))) {
@@ -167,6 +167,10 @@ function normalizeEmail(value: string): string {
 
 function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+}
+
+function isAllowedEmail(context: AppContext, email: string): boolean {
+  return context.config.oauthAllowedEmails.length === 0 || context.config.oauthAllowedEmails.includes(email);
 }
 
 function hash(value: string): string {

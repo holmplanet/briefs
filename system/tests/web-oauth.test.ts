@@ -15,6 +15,7 @@ function createContext(): AppContext {
       authDevBypass: false,
       oauthClientId: "briefs-daily",
       oauthRedirectUris: ["https://preview.example.com/auth/callback"],
+      oauthAllowedEmails: ["owner@example.com"],
       otpMailer: "resend",
       resendApiKey: "re_example",
       emailFrom: "Briefs <preview@example.com>",
@@ -42,6 +43,27 @@ describe("Vercel OAuth adapter", () => {
   it("rejects authorization requests for an unregistered redirect URI", async () => {
     const response = await handleWebOAuthRequest(
       new Request("https://preview.example.com/oauth/authorize?response_type=code&client_id=briefs-daily&redirect_uri=https%3A%2F%2Fevil.example%2Fcallback&code_challenge=challenge&code_challenge_method=S256"),
+      createContext(),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.text()).resolves.toBe("Invalid OAuth authorization request");
+  });
+
+  it("rejects OTP requests for emails outside the allowlist", async () => {
+    const body = new URLSearchParams({
+      response_type: "code",
+      client_id: "briefs-daily",
+      redirect_uri: "https://preview.example.com/auth/callback",
+      code_challenge: "challenge",
+      code_challenge_method: "S256",
+      email: "other@example.com",
+    });
+    const response = await handleWebOAuthRequest(
+      new Request("https://preview.example.com/oauth/authorize/request", {
+        method: "POST",
+        body,
+      }),
       createContext(),
     );
 

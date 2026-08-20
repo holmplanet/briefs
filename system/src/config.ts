@@ -10,6 +10,7 @@ export type BriefsConfig = {
   authDevBypass: boolean;
   oauthClientId: string;
   oauthRedirectUris: string[];
+  oauthAllowedEmails: string[];
   otpMailer: "console" | "resend";
   resendApiKey?: string;
   emailFrom?: string;
@@ -34,6 +35,7 @@ export function loadConfig(): BriefsConfig {
     authDevBypass: process.env.API_DEV_BYPASS !== "false" && (process.env.APP_ENV ?? "development") !== "production",
     oauthClientId: process.env.OAUTH_CLIENT_ID ?? "briefs-daily",
     oauthRedirectUris: (process.env.OAUTH_REDIRECT_URIS ?? "http://localhost:3000/auth/callback").split(",").map((value) => value.trim()).filter(Boolean),
+    oauthAllowedEmails: (process.env.AUTH_ALLOWED_EMAILS ?? "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean),
     otpMailer: process.env.OTP_MAILER === "resend" ? "resend" : "console",
     resendApiKey: process.env.RESEND_API_KEY,
     emailFrom: process.env.EMAIL_FROM,

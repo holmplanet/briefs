@@ -35,6 +35,10 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 }
 
+function isAllowedEmail(config: BriefsConfig, email: string): boolean {
+  return config.oauthAllowedEmails.length === 0 || config.oauthAllowedEmails.includes(email);
+}
+
 function isAllowedClient(config: BriefsConfig, clientId: string, redirectUri: string): boolean {
   return clientId === config.oauthClientId && config.oauthRedirectUris.includes(redirectUri);
 }
@@ -79,7 +83,7 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
           .map((key) => [key, String(req.body[key] ?? "")]),
       );
       const email = normalizeEmail(String(req.body.email ?? ""));
-      if (values.response_type !== "code" || values.code_challenge_method !== "S256" || !values.code_challenge || !isAllowedClient(config, values.client_id, values.redirect_uri) || !isValidEmail(email)) {
+      if (values.response_type !== "code" || values.code_challenge_method !== "S256" || !values.code_challenge || !isAllowedClient(config, values.client_id, values.redirect_uri) || !isValidEmail(email) || !isAllowedEmail(config, email)) {
         res.status(400).send("Invalid OAuth authorization request");
         return;
       }

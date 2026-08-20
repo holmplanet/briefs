@@ -7,3 +7,5 @@ dist/
 !docker/.env.example.prod
 *.tsbuildinfo
 /.next/
+.vercel
+.env*

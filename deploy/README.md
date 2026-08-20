@@ -11,3 +11,7 @@ placeholders only; never commit real secrets.
 Copy the relevant template into the deployment system's environment settings. For Vercel,
 configure each variable in the matching Preview or Production environment. For Docker, copy the
 template to `.env` and pass it with `docker compose --env-file .env`.
+
+All deployment profiles use the provider-neutral `DATABASE_URL` contract. See
+[`../docs/database.md`](../docs/database.md) for local Postgres, Neon, Supabase, and self-hosted
+provider setup.

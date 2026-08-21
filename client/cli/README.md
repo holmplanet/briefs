@@ -50,4 +50,4 @@ briefs smoke [--keep] [--json]
 
 - [SPEC.md](./SPEC.md) — design spec
 - `../web/daily/` — Briefs Daily UI
-- `../plugin/` — legacy holmplanet-brief MCP (`:8000`, separate from this API)
+- `../plugin/` — Cursor/Codex assistant manifests and Briefs MCP configuration

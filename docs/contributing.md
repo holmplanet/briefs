@@ -13,6 +13,13 @@ npm run test -w @briefs/daily
 npm run build
 ```
 
+The root `npm run build` compiles the shared, System, MCP, CLI, docs, and Daily workspaces.
+The docs site can be checked independently with:
+
+```bash
+npm run build -w @briefs/docs
+```
+
 Use a separate local or preview database. Never point development or preview at
 production data. Do not commit `.env` files, access tokens, OTPs, or real user
 data.
@@ -24,3 +31,5 @@ data.
 - Keep activity records append-only.
 - Add or update tests for authentication and API behavior.
 - Smoke-test MCP changes through the authenticated tool path.
+- Update the relevant README or docs page when changing a public command, environment variable,
+  route, tool, or deployment assumption.

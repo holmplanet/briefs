@@ -22,6 +22,10 @@ Daily web app ──OAuth session─────────┘               �
 - `client/cli/` provides a terminal client and smoke-test commands.
 - `client/plugin/` contains assistant manifests and the Brief workflow skill.
 
+The repository intentionally ships one reference web client (`@briefs/daily`) and one
+documentation site (`@briefs/docs`). New domain-specific clients can be added as separate
+workspaces when a concrete product need exists; they are not bundled as placeholder apps.
+
 ## Request flow
 
 1. An assistant authenticates with OAuth and receives a bearer access token.

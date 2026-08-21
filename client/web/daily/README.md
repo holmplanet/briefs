@@ -41,4 +41,6 @@ Without `OAUTH_ISSUER`, development uses a dev user bypass (`DEV_USER_ID`, defau
 | `SESSION_SECRET` | HMAC session cookie signing |
 | `APP_URL` | Daily origin for OAuth redirect |
 
-API requests use `X-Briefs-User-Id` from the signed session — the same user id MCP tools use when authenticated.
+In local development without OAuth, API requests use the development identity fallback.
+With OAuth enabled, Daily forwards the session's bearer access token to System and MCP;
+the user identity is resolved from that token rather than from a browser-controlled header.

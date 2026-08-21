@@ -23,7 +23,7 @@ sent only as a development fallback and is ignored by the API in production.
 
 ```bash
 npm run dev:system   # API on :8001
-npm run dev:mcp      # MCP on :3334/mcp (dev auth bypass)
+  npm run dev:mcp      # MCP on :3334/mcp (configure bypass explicitly for local work)
 npm run dev:daily     # Daily on :3000
 npm run briefs:e2e-smoke # MCP → API → Daily smoke (archives its test item)
 ```
@@ -46,7 +46,7 @@ The smoke command expects all three local services to be running. Set
 | `API_URL` | `http://localhost:8001` |
 | `MCP_PORT` | `3334` |
 | `DEV_USER_ID` | `demo` |
-| `MCP_DEV_SKIP_AUTH` | `true` in dev |
+| `MCP_DEV_SKIP_AUTH` | `false` by default; set `true` only for local development |
 | `OAUTH_ISSUER` | `http://localhost:8001/oauth` |
 | `AUTH_SECRET` | `dev-briefs-auth-secret` |
 | `API_DEV_BYPASS` | `true` outside production |

@@ -77,4 +77,4 @@ client/cli/
 
 - Postgres or in-process system imports
 - Dependencies on `@briefs/daily` or `@briefs/docs`
-- Replacing holmplanet-brief MCP (`:8000`)
+- Replacing the standalone MCP contract; MCP remains a separate client surface.

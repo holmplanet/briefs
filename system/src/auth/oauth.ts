@@ -39,8 +39,10 @@ function isAllowedEmail(config: BriefsConfig, email: string): boolean {
   return config.oauthAllowedEmails.length === 0 || config.oauthAllowedEmails.includes(email);
 }
 
-function isAllowedClient(config: BriefsConfig, clientId: string, redirectUri: string): boolean {
-  return clientId === config.oauthClientId && config.oauthRedirectUris.includes(redirectUri);
+async function isAllowedClient(config: BriefsConfig, auth: AuthStore, clientId: string, redirectUri: string): Promise<boolean> {
+  if (clientId === config.oauthClientId) return config.oauthRedirectUris.includes(redirectUri);
+  const client = await auth.getOAuthClient(clientId);
+  return Boolean(client?.redirectUris.includes(redirectUri));
 }
 
 function challengeValues(req: Request): Record<string, string> {
@@ -64,16 +66,49 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
       grant_types_supported: ["authorization_code"],
       code_challenge_methods_supported: ["S256"],
       scopes_supported: ["openid", "email", "profile", "offline_access"],
+      registration_endpoint: `${issuer}/register`,
     });
   });
 
-  router.get("/authorize", (req, res) => {
-    const values = challengeValues(req);
-    if (values.response_type !== "code" || values.code_challenge_method !== "S256" || !values.code_challenge || !isAllowedClient(config, values.client_id, values.redirect_uri)) {
-      res.status(400).send("Invalid OAuth authorization request");
-      return;
+  router.post("/register", async (req, res, next) => {
+    try {
+      const redirectUris = Array.isArray(req.body?.redirect_uris)
+        ? req.body.redirect_uris.filter((value: unknown): value is string => typeof value === "string" && value.length > 0)
+        : [];
+      if (redirectUris.length === 0) {
+        res.status(400).json({ error: "invalid_client_metadata" });
+        return;
+      }
+      const clientId = `briefs-${randomUUID()}`;
+      const client = await auth.registerOAuthClient({
+        clientId,
+        redirectUris,
+        clientName: typeof req.body.client_name === "string" ? req.body.client_name : undefined,
+      });
+      res.status(201).json({
+        client_id: client.clientId,
+        client_name: client.clientName,
+        redirect_uris: client.redirectUris,
+        grant_types: ["authorization_code"],
+        response_types: ["code"],
+        token_endpoint_auth_method: "none",
+      });
+    } catch (error) {
+      next(error);
     }
+  });
+
+  router.get("/authorize", async (req, res, next) => {
+    const values = challengeValues(req);
+    try {
+      if (values.response_type !== "code" || values.code_challenge_method !== "S256" || !values.code_challenge || !(await isAllowedClient(config, auth, values.client_id, values.redirect_uri))) {
+        res.status(400).send("Invalid OAuth authorization request");
+        return;
+      }
       res.type("html").send(formPage("Sign in to Briefs", `<h1>Sign in to Briefs</h1><p>We’ll email you a one-time sign-in code.</p><form method="post" action="${issuer}/authorize/request">${hiddenFields(values)}<label>Email<input name="email" type="email" autocomplete="email" required></label><button>Send code</button></form>`));
+    } catch (error) {
+      next(error);
+    }
   });
 
   router.post("/authorize/request", async (req, res, next) => {
@@ -83,7 +118,7 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
           .map((key) => [key, String(req.body[key] ?? "")]),
       );
       const email = normalizeEmail(String(req.body.email ?? ""));
-      if (values.response_type !== "code" || values.code_challenge_method !== "S256" || !values.code_challenge || !isAllowedClient(config, values.client_id, values.redirect_uri) || !isValidEmail(email) || !isAllowedEmail(config, email)) {
+      if (values.response_type !== "code" || values.code_challenge_method !== "S256" || !values.code_challenge || !(await isAllowedClient(config, auth, values.client_id, values.redirect_uri)) || !isValidEmail(email) || !isAllowedEmail(config, email)) {
         res.status(400).send("Invalid OAuth authorization request");
         return;
       }
@@ -149,7 +184,7 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
     try {
       const { grant_type: grantType, code, client_id: clientId, redirect_uri: redirectUri, code_verifier: verifier } = req.body as Record<string, string>;
       const authorization = code ? await auth.consumeAuthorizationCode(hash(code)) : undefined;
-      if (grantType !== "authorization_code" || !authorization || authorization.expiresAt.getTime() < Date.now() || !isAllowedClient(config, clientId, redirectUri) || !verifier) {
+      if (grantType !== "authorization_code" || !authorization || authorization.expiresAt.getTime() < Date.now() || !(await isAllowedClient(config, auth, clientId, redirectUri)) || !verifier) {
         res.status(400).json({ error: "invalid_grant" });
         return;
       }

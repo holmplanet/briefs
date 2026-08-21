@@ -21,9 +21,11 @@ export async function handleWebOAuthRequest(request: Request, context: AppContex
       grant_types_supported: ["authorization_code"],
       code_challenge_methods_supported: ["S256"],
       scopes_supported: ["openid", "email", "profile", "offline_access"],
+      registration_endpoint: `${issuer}/register`,
     });
   }
 
+  if (path === "register" && request.method === "POST") return registerClient(request, context);
   if (path === "authorize" && request.method === "GET") return authorizePage(url, context);
   if (path === "authorize/request" && request.method === "POST") return requestOtp(request, context);
   if (path === "authorize/verify" && request.method === "POST") return verifyOtp(request, context);
@@ -33,9 +35,31 @@ export async function handleWebOAuthRequest(request: Request, context: AppContex
   return json({ error: "Not found" }, 404);
 }
 
-function authorizePage(url: URL, context: AppContext): Response {
+async function registerClient(request: Request, context: AppContext): Promise<Response> {
+  const body = await request.json().catch(() => null) as { redirect_uris?: unknown; client_name?: unknown } | null;
+  const redirectUris = Array.isArray(body?.redirect_uris)
+    ? body.redirect_uris.filter((value): value is string => typeof value === "string" && value.length > 0)
+    : [];
+  if (redirectUris.length === 0) return json({ error: "invalid_client_metadata" }, 400);
+
+  const client = await context.auth.registerOAuthClient({
+    clientId: `briefs-${randomUUID()}`,
+    redirectUris,
+    clientName: typeof body?.client_name === "string" ? body.client_name : undefined,
+  });
+  return json({
+    client_id: client.clientId,
+    client_name: client.clientName,
+    redirect_uris: client.redirectUris,
+    grant_types: ["authorization_code"],
+    response_types: ["code"],
+    token_endpoint_auth_method: "none",
+  }, 201);
+}
+
+async function authorizePage(url: URL, context: AppContext): Promise<Response> {
   const values = queryValues(url.searchParams);
-  if (!validAuthorization(values, context)) return text("Invalid OAuth authorization request", 400);
+  if (!(await validAuthorization(values, context))) return text("Invalid OAuth authorization request", 400);
 
   return html(formPage(
     "Sign in to Briefs",
@@ -48,7 +72,7 @@ async function requestOtp(request: Request, context: AppContext): Promise<Respon
   const values = formValues(form);
   const email = normalizeEmail(String(form.get("email") ?? ""));
 
-  if (!validAuthorization(values, context)) {
+  if (!(await validAuthorization(values, context))) {
     return text("Invalid OAuth authorization request", 400);
   }
   if (!isValidEmail(email)) {
@@ -78,6 +102,9 @@ async function requestOtp(request: Request, context: AppContext): Promise<Respon
 async function verifyOtp(request: Request, context: AppContext): Promise<Response> {
   const form = await request.formData();
   const values = formValues(form);
+  if (!(await validAuthorization(values, context))) {
+    return text("Invalid OAuth authorization request", 400);
+  }
   const challengeId = String(form.get("challenge_id") ?? "");
   const challenge = await context.auth.getOtpChallenge(challengeId);
 
@@ -115,7 +142,7 @@ async function exchangeToken(request: Request, context: AppContext): Promise<Res
   const verifier = String(form.get("code_verifier") ?? "");
   const authorization = code ? await context.auth.consumeAuthorizationCode(hash(code)) : undefined;
 
-  if (String(form.get("grant_type") ?? "") !== "authorization_code" || !authorization || authorization.expiresAt.getTime() < Date.now() || !isAllowedClient(context, clientId, redirectUri) || !verifier) {
+  if (String(form.get("grant_type") ?? "") !== "authorization_code" || !authorization || authorization.expiresAt.getTime() < Date.now() || !(await isAllowedClient(context, clientId, redirectUri)) || !verifier) {
     return json({ error: "invalid_grant" }, 400);
   }
 
@@ -159,12 +186,14 @@ function formKeys(read: (key: string) => string | null): Record<string, string> 
   ].map((key) => [key, read(key) ?? ""]));
 }
 
-function isAllowedClient(context: AppContext, clientId: string, redirectUri: string): boolean {
-  return clientId === context.config.oauthClientId && context.config.oauthRedirectUris.includes(redirectUri);
+async function isAllowedClient(context: AppContext, clientId: string, redirectUri: string): Promise<boolean> {
+  if (clientId === context.config.oauthClientId) return context.config.oauthRedirectUris.includes(redirectUri);
+  const client = await context.auth.getOAuthClient(clientId);
+  return Boolean(client?.redirectUris.includes(redirectUri));
 }
 
-function validAuthorization(values: Record<string, string>, context: AppContext): boolean {
-  return values.response_type === "code" && values.code_challenge_method === "S256" && Boolean(values.code_challenge) && isAllowedClient(context, values.client_id, values.redirect_uri);
+async function validAuthorization(values: Record<string, string>, context: AppContext): Promise<boolean> {
+  return values.response_type === "code" && values.code_challenge_method === "S256" && Boolean(values.code_challenge) && await isAllowedClient(context, values.client_id, values.redirect_uri);
 }
 
 function normalizeEmail(value: string): string {

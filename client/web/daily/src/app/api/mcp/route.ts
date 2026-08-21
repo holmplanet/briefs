@@ -9,7 +9,16 @@ export const maxDuration = 60;
 
 export async function POST(request: Request): Promise<Response> {
   const user = await resolveAuth(request);
-  if (!user) return Response.json({ error: "unauthorized", error_description: "Bearer token required" }, { status: 401 });
+  if (!user) {
+    const resourceMetadata = new URL("/.well-known/oauth-protected-resource", request.url);
+    return Response.json(
+      { error: "unauthorized", error_description: "Bearer token required" },
+      {
+        status: 401,
+        headers: { "WWW-Authenticate": `Bearer resource_metadata="${resourceMetadata.toString()}"` },
+      },
+    );
+  }
 
   const vercelCookie = request.headers.get("cookie");
   const systemRuntime = await getSystemRuntime();

@@ -23,6 +23,13 @@ export type AuthorizationCode = {
   createdAt: Date;
 };
 
+export type OAuthClient = {
+  clientId: string;
+  redirectUris: string[];
+  clientName?: string;
+  createdAt: Date;
+};
+
 export type AuthStore = {
   createOtpChallenge(input: Omit<OtpChallenge, "id" | "attempts" | "createdAt">): Promise<OtpChallenge>;
   hasRecentOtp(email: string, since: Date): Promise<boolean>;
@@ -31,11 +38,14 @@ export type AuthStore = {
   consumeOtpChallenge(id: string): Promise<void>;
   createAuthorizationCode(input: Omit<AuthorizationCode, "createdAt">): Promise<void>;
   consumeAuthorizationCode(codeHash: string): Promise<AuthorizationCode | undefined>;
+  registerOAuthClient(input: Omit<OAuthClient, "createdAt">): Promise<OAuthClient>;
+  getOAuthClient(clientId: string): Promise<OAuthClient | undefined>;
 };
 
 export class MemoryAuthStore implements AuthStore {
   private readonly otp = new Map<string, OtpChallenge>();
   private readonly codes = new Map<string, AuthorizationCode>();
+  private readonly clients = new Map<string, OAuthClient>();
 
   async createOtpChallenge(input: Omit<OtpChallenge, "id" | "attempts" | "createdAt">): Promise<OtpChallenge> {
     const challenge = { ...input, id: randomUUID(), attempts: 0, createdAt: new Date() };
@@ -72,6 +82,16 @@ export class MemoryAuthStore implements AuthStore {
     this.codes.delete(codeHash);
     return code;
   }
+
+  async registerOAuthClient(input: Omit<OAuthClient, "createdAt">): Promise<OAuthClient> {
+    const client = { ...input, createdAt: new Date() };
+    this.clients.set(client.clientId, client);
+    return client;
+  }
+
+  async getOAuthClient(clientId: string): Promise<OAuthClient | undefined> {
+    return this.clients.get(clientId);
+  }
 }
 
 type OtpRow = {
@@ -95,12 +115,23 @@ type CodeRow = {
   created_at: Date;
 };
 
+type ClientRow = {
+  client_id: string;
+  redirect_uris: string[];
+  client_name: string | null;
+  created_at: Date;
+};
+
 function mapOtp(row: OtpRow): OtpChallenge {
   return { id: row.id, email: row.email, codeHash: row.code_hash, attempts: row.attempts, expiresAt: row.expires_at, consumedAt: row.consumed_at ?? undefined, createdAt: row.created_at };
 }
 
 function mapCode(row: CodeRow): AuthorizationCode {
   return { codeHash: row.code_hash, clientId: row.client_id, redirectUri: row.redirect_uri, codeChallenge: row.code_challenge, userId: row.user_id, email: row.email, expiresAt: row.expires_at, createdAt: row.created_at };
+}
+
+function mapClient(row: ClientRow): OAuthClient {
+  return { clientId: row.client_id, redirectUris: row.redirect_uris, clientName: row.client_name ?? undefined, createdAt: row.created_at };
 }
 
 export class PostgresAuthStore implements AuthStore {
@@ -149,5 +180,23 @@ export class PostgresAuthStore implements AuthStore {
       [codeHash],
     );
     return result.rows[0] ? mapCode(result.rows[0]) : undefined;
+  }
+
+  async registerOAuthClient(input: Omit<OAuthClient, "createdAt">): Promise<OAuthClient> {
+    const result = await this.pool.query<ClientRow>(
+      `INSERT INTO oauth_clients (client_id, redirect_uris, client_name, created_at)
+       VALUES ($1, $2, $3, NOW())
+       RETURNING client_id, redirect_uris, client_name, created_at`,
+      [input.clientId, input.redirectUris, input.clientName ?? null],
+    );
+    return mapClient(result.rows[0]);
+  }
+
+  async getOAuthClient(clientId: string): Promise<OAuthClient | undefined> {
+    const result = await this.pool.query<ClientRow>(
+      `SELECT client_id, redirect_uris, client_name, created_at FROM oauth_clients WHERE client_id = $1`,
+      [clientId],
+    );
+    return result.rows[0] ? mapClient(result.rows[0]) : undefined;
   }
 }

@@ -30,6 +30,55 @@ export default function DailyPage() {
           </a>
         </DocSection>
 
+        <DocSection id="daily-driver" title="A daily driver for durable work">
+          <p>
+            Daily is meant to be the place a person returns to throughout the day. It turns assistant and automation
+            activity into a calm, human-readable work surface: what is open, what changed, what needs attention, and
+            which actor made the change.
+          </p>
+          <p>
+            The conversation is where work is captured. Daily is where the resulting work is reviewed. That split keeps
+            assistants fast and natural while giving people a stable view that does not disappear when a chat ends.
+          </p>
+          <CodeBlock
+            title="Typical day"
+            code={`1. Ask an assistant to capture a task or note.
+2. The assistant writes an Item through MCP.
+3. Open Daily to review the current work queue.
+4. Inspect an item's Activity history when context matters.
+5. Ask the assistant to update status or details as work moves forward.`}
+          />
+        </DocSection>
+
+        <DocSection id="repo" title="Where Daily fits in the repository">
+          <p>
+            Daily is a reference implementation, not a separate product model. It is intentionally thin: the System
+            API owns persistence, <code className="text-foreground">@briefs/shared</code> owns the schemas, and MCP
+            owns the assistant-facing write tools.
+          </p>
+          <DocTable>
+            <thead className="border-b border-border/60 bg-card/40 text-muted-foreground">
+              <tr>
+                <th className="px-4 py-2.5 font-medium">Repository area</th>
+                <th className="px-4 py-2.5 font-medium">Responsibility</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/50 text-foreground/90">
+              {[
+                ["client/web/daily", "The daily-driver web experience and auth/session boundary."],
+                ["client/mcp", "Assistant-facing tools for creating, updating, and reading work."],
+                ["system", "REST API, persistence, actor resolution, and activity history."],
+                ["shared", "The Item, Actor, Activity, and input schemas shared by every client."],
+              ].map(([area, responsibility]) => (
+                <tr key={area}>
+                  <td className="px-4 py-2.5 font-mono text-xs">{area}</td>
+                  <td className="px-4 py-2.5">{responsibility}</td>
+                </tr>
+              ))}
+            </tbody>
+          </DocTable>
+        </DocSection>
+
         <DocSection id="local" title="Run it locally">
           <p>From the repository root, start the System API and Daily together:</p>
           <CodeBlock

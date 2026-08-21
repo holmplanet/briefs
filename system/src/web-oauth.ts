@@ -10,7 +10,7 @@ export async function handleWebOAuthRequest(request: Request, context: AppContex
   const url = new URL(request.url);
   const path = url.pathname.replace(/^\/oauth\/?/, "");
 
-  if (path === ".well-known/oauth-authorization-server" && request.method === "GET") {
+  if ((path === ".well-known/oauth-authorization-server" || path === ".well-known/openid-configuration") && request.method === "GET") {
     const issuer = context.config.oauthIssuer;
     return json({
       issuer,

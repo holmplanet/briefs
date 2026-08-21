@@ -65,10 +65,15 @@ export async function fetchBriefsHealth(): Promise<{ status: string; service: st
   for (const url of buildBriefsHealthUrls(getBriefsApiBase())) {
     try {
       const response = await fetch(url, { next: { revalidate: 30 } });
-      if (!response.ok || !response.headers.get("content-type")?.includes("application/json")) {
+      if (!response.ok) {
         continue;
       }
-      return response.json();
+      const body = await response.text();
+      try {
+        return JSON.parse(body) as { status: string; service: string };
+      } catch {
+        continue;
+      }
     } catch {
       continue;
     }

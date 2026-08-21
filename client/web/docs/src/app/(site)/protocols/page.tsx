@@ -31,6 +31,27 @@ export default function ProtocolsPage() {
           </a>
         </DocSection>
 
+        <DocSection id="activitypub" title="ActivityPub as a reference">
+          <p>
+            ActivityPub was an important reference point for Briefs&apos; model: it demonstrates how a protocol can
+            represent actors, durable objects, and activities as structured data that clients and services can act on.
+          </p>
+          <p>
+            Briefs is not an ActivityPub implementation. It does not expose ActivityPub inboxes or outboxes, use the
+            ActivityStreams vocabulary as its schema contract, or provide server-to-server federation. The Item,
+            Actor, and Activity schemas are Briefs-owned contracts designed for authenticated assistant workflows and
+            application clients.
+          </p>
+          <a
+            href="https://www.w3.org/TR/activitypub/"
+            target="_blank"
+            rel="noreferrer"
+            className="text-blue-300 hover:text-blue-200"
+          >
+            Read the W3C ActivityPub Recommendation
+          </a>
+        </DocSection>
+
         <DocSection id="oauth" title="OAuth 2.1 and PKCE">
           <p>
             Production access uses OAuth bearer tokens. Daily uses the authorization code flow with PKCE, and the

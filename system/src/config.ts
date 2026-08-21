@@ -29,7 +29,7 @@ export function loadConfig(): BriefsConfig {
     env: process.env.APP_ENV ?? "development",
     host: process.env.APP_HOST ?? "0.0.0.0",
     port: readPort(process.env.APP_PORT, 8001),
-    databaseUrl: process.env.DATABASE_URL,
+    databaseUrl: process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL,
     authSecret: process.env.AUTH_SECRET ?? "dev-briefs-auth-secret",
     oauthIssuer: (process.env.OAUTH_ISSUER ?? `http://localhost:${readPort(process.env.APP_PORT, 8001)}/oauth`).replace(/\/$/, ""),
     authDevBypass: process.env.API_DEV_BYPASS !== "false" && (process.env.APP_ENV ?? "development") !== "production",

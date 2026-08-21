@@ -25,8 +25,17 @@ function readPort(value: string | undefined, fallback: number): number {
 export function loadConfig(): BriefsConfig {
   loadFileSecrets();
 
+  const env = process.env.APP_ENV ?? "development";
+  const oauthAllowedEmails = (process.env.AUTH_ALLOWED_EMAILS ?? "")
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+  if (env === "production" && oauthAllowedEmails.length === 0) {
+    throw new Error("Production Briefs requires AUTH_ALLOWED_EMAILS or an explicit public-signup policy");
+  }
+
   return {
-    env: process.env.APP_ENV ?? "development",
+    env,
     host: process.env.APP_HOST ?? "0.0.0.0",
     port: readPort(process.env.APP_PORT, 8001),
     databaseUrl: process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL,
@@ -35,7 +44,7 @@ export function loadConfig(): BriefsConfig {
     authDevBypass: process.env.API_DEV_BYPASS !== "false" && (process.env.APP_ENV ?? "development") !== "production",
     oauthClientId: process.env.OAUTH_CLIENT_ID ?? "briefs-daily",
     oauthRedirectUris: (process.env.OAUTH_REDIRECT_URIS ?? "http://localhost:3000/auth/callback").split(",").map((value) => value.trim()).filter(Boolean),
-    oauthAllowedEmails: (process.env.AUTH_ALLOWED_EMAILS ?? "").split(",").map((value) => value.trim().toLowerCase()).filter(Boolean),
+    oauthAllowedEmails,
     otpMailer: process.env.OTP_MAILER === "resend" ? "resend" : "console",
     resendApiKey: process.env.RESEND_API_KEY,
     emailFrom: process.env.EMAIL_FROM,

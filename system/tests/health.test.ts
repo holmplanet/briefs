@@ -1,6 +1,12 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import { bootstrap, createApp } from "../src/index.js";
+
+const originalEnv = { ...process.env };
+
+afterEach(() => {
+  process.env = { ...originalEnv };
+});
 
 describe("health", () => {
   it("returns ok", async () => {
@@ -23,5 +29,16 @@ describe("health", () => {
         server.close((error) => (error ? reject(error) : resolve()));
       });
     }
+  });
+});
+
+describe("production configuration", () => {
+  it("requires an explicit email allowlist", async () => {
+    process.env.APP_ENV = "production";
+    delete process.env.AUTH_ALLOWED_EMAILS;
+
+    await expect(import("../src/config.js").then(({ loadConfig }) => loadConfig())).rejects.toThrow(
+      "AUTH_ALLOWED_EMAILS",
+    );
   });
 });

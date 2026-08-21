@@ -4,6 +4,7 @@ import type { Item } from "@briefs/shared/item";
 import type { ItemCreateInput } from "@briefs/shared/item";
 
 import { getSession, loadAuthConfig } from "@/lib/auth";
+import { getBriefsHealthUrls as buildBriefsHealthUrls } from "./briefs-api-urls";
 
 export function getBriefsApiBase(): string {
   return (
@@ -61,17 +62,18 @@ async function briefsFetch<T>(path: string, options: FetchOptions = {}): Promise
 }
 
 export async function fetchBriefsHealth(): Promise<{ status: string; service: string } | null> {
-  try {
-    const response = await fetch(`${getBriefsApiBase()}/health`, {
-      next: { revalidate: 30 },
-    });
-    if (!response.ok) {
-      return null;
+  for (const url of buildBriefsHealthUrls(getBriefsApiBase())) {
+    try {
+      const response = await fetch(url, { next: { revalidate: 30 } });
+      if (!response.ok || !response.headers.get("content-type")?.includes("application/json")) {
+        continue;
+      }
+      return response.json();
+    } catch {
+      continue;
     }
-    return response.json();
-  } catch {
-    return null;
   }
+  return null;
 }
 
 export async function fetchMcpHealth(): Promise<{

@@ -4,9 +4,10 @@ import { ArrowRight, BookOpen, Layers } from "lucide-react";
 
 import { McpConnectPanel } from "@/components/mcp/connect-panel";
 import { ItemStatusBadge } from "@/components/items/item-status-badge";
-import { fetchBriefsHealth, fetchItems } from "@/lib/briefs-api";
+import { fetchBriefsHealth, fetchItems, isBriefsAuthError } from "@/lib/briefs-api";
 import { getSession, loadAuthConfig } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,10 @@ export default async function DailyHomePage() {
   if (apiOnline && session) {
     try {
       items = await fetchItems();
-    } catch {
+    } catch (error) {
+      if (isBriefsAuthError(error)) {
+        redirect(`/login?next=${encodeURIComponent("/")}&error=${encodeURIComponent("Your session expired. Please sign in again.")}`);
+      }
       items = [];
     }
   }

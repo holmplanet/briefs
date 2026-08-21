@@ -7,6 +7,8 @@ import { ItemLifecycleBadge, ItemStatusBadge } from "@/components/items/item-sta
 import { buttonVariants, cn } from "@briefs/web-shared";
 
 import { fetchItems } from "@/lib/briefs-api";
+import { isBriefsAuthError } from "@/lib/briefs-api";
+import { redirect } from "next/navigation";
 import { formatDateTime } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +37,9 @@ export default async function ItemsPage({
   try {
     items = await fetchItems(status);
   } catch (error) {
+    if (isBriefsAuthError(error)) {
+      redirect(`/login?next=${encodeURIComponent("/items")}&error=${encodeURIComponent("Your session expired. Please sign in again.")}`);
+    }
     loadError = error instanceof Error ? error.message : "Failed to load items.";
   }
 

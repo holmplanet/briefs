@@ -6,6 +6,17 @@ import type { ItemCreateInput } from "@briefs/shared/item";
 import { getSession, loadAuthConfig } from "@/lib/auth";
 import { getBriefsHealthUrls as buildBriefsHealthUrls } from "./briefs-api-urls";
 
+export class BriefsAuthError extends Error {
+  constructor(message = "Your Briefs session expired. Please sign in again.") {
+    super(message);
+    this.name = "BriefsAuthError";
+  }
+}
+
+export function isBriefsAuthError(error: unknown): error is BriefsAuthError {
+  return error instanceof BriefsAuthError;
+}
+
 export function getBriefsApiBase(): string {
   return (
     process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001"
@@ -29,6 +40,9 @@ export async function getBriefsUserId(): Promise<string> {
   if (!session) {
     throw new Error("Not authenticated");
   }
+  if (config.issuer && !session.accessToken) {
+    throw new BriefsAuthError();
+  }
   return session.userId;
 }
 
@@ -41,6 +55,9 @@ async function briefsFetch<T>(path: string, options: FetchOptions = {}): Promise
   const session = await getSession(config);
   if (!session) {
     throw new Error("Not authenticated");
+  }
+  if (config.issuer && !session.accessToken) {
+    throw new BriefsAuthError();
   }
 
   const requestHeaders = new Headers(options.headers);
@@ -58,6 +75,9 @@ async function briefsFetch<T>(path: string, options: FetchOptions = {}): Promise
 
   if (!response.ok) {
     const body = await response.text();
+    if (response.status === 401) {
+      throw new BriefsAuthError();
+    }
     throw new Error(body || `Request failed: ${response.status}`);
   }
 
@@ -118,7 +138,10 @@ export async function fetchItem(itemId: string): Promise<Item | null> {
       next: { tags: [`item-${itemId}`] },
     });
     return data.item;
-  } catch {
+  } catch (error) {
+    if (isBriefsAuthError(error)) {
+      throw error;
+    }
     return null;
   }
 }

@@ -12,6 +12,8 @@ export type AppShellProps = {
   brandHref?: string;
   brandLabel?: string;
   brandInitial?: string;
+  brandLogoSrc?: string;
+  brandLogoAlt?: string;
   /** Custom header navigation. Overrides navItems when set. */
   nav?: React.ReactNode;
   /** Custom header actions. Overrides apiOnline/githubHref defaults when set. */
@@ -29,6 +31,8 @@ export function AppShell({
   brandHref = "/",
   brandLabel = "Briefs",
   brandInitial = "B",
+  brandLogoSrc,
+  brandLogoAlt,
   nav,
   actions,
   navItems = [],
@@ -49,6 +53,8 @@ export function AppShell({
         brandHref={brandHref}
         brandLabel={brandLabel}
         brandInitial={brandInitial}
+        brandLogoSrc={brandLogoSrc}
+        brandLogoAlt={brandLogoAlt}
         nav={headerNav}
         actions={headerActions}
       />

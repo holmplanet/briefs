@@ -33,7 +33,7 @@ export default function WalkthroughPage() {
         <DocSection id="persist" title="2. Briefs persists the work">
           <p>
             The MCP tool calls the System API with the authenticated bearer token. The API validates the input against
-            <code className="text-foreground">itemCreateInputSchema</code>, creates the Item, resolves the acting
+            {" "}<code className="text-foreground">itemCreateInputSchema</code>, creates the Item, resolves the acting
             Actor, and appends an Activity in the same write path.
           </p>
           <CodeBlock

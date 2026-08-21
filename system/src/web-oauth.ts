@@ -48,11 +48,17 @@ async function requestOtp(request: Request, context: AppContext): Promise<Respon
   const values = formValues(form);
   const email = normalizeEmail(String(form.get("email") ?? ""));
 
-  if (!validAuthorization(values, context) || !isValidEmail(email) || !isAllowedEmail(context, email)) {
+  if (!validAuthorization(values, context)) {
     return text("Invalid OAuth authorization request", 400);
   }
+  if (!isValidEmail(email)) {
+    return html(authorizeForm(values, context.config.oauthIssuer, email, "Enter a valid email address."), 400);
+  }
+  if (!isAllowedEmail(context, email)) {
+    return html(authorizeForm(values, context.config.oauthIssuer, email, "That email is not authorized for this Briefs account."), 403);
+  }
   if (await context.auth.hasRecentOtp(email, new Date(Date.now() - 60_000))) {
-    return text("A sign-in code was already sent recently. Please wait a minute.", 429);
+    return html(authorizeForm(values, context.config.oauthIssuer, email, "A sign-in code was already sent recently. Please wait a minute."), 429);
   }
 
   const code = String(process.env.DEV_OTP_CODE ?? randomInt(100000, 1000000));
@@ -188,11 +194,19 @@ function escapeHtml(value: string): string {
 }
 
 function formPage(title: string, body: string): string {
-  return `<!doctype html><meta name="viewport" content="width=device-width"><title>${title}</title><style>body{font:16px system-ui;max-width:420px;margin:15vh auto;padding:24px}input{width:100%;box-sizing:border-box;padding:10px;margin:8px 0 16px}button{padding:10px 16px}</style>${body}`;
+  return `<!doctype html><meta name="viewport" content="width=device-width"><title>${escapeHtml(title)}</title><style>:root{color-scheme:dark}body{font:16px system-ui;max-width:420px;margin:15vh auto;padding:24px;background:#0a0a0e;color:#f5f5f5}main{border:1px solid #292934;border-radius:24px;padding:28px;background:#14141b;box-shadow:0 20px 60px #0008}p{color:#a8a8b8;line-height:1.5}label{display:block;color:#d8d8e2}input{width:100%;box-sizing:border-box;padding:11px 12px;margin:8px 0 16px;border:1px solid #393946;border-radius:10px;background:#0d0d12;color:#fff;font:inherit}button{padding:11px 16px;border:0;border-radius:999px;background:linear-gradient(90deg,#3b82f6,#8b5cf6);color:#fff;font:inherit;font-weight:600;cursor:pointer}.error{padding:10px 12px;border:1px solid #9f3d50;border-radius:12px;background:#4a1824;color:#ffc4cf}</style><main>${body}</main>`;
 }
 
-function html(body: string): Response {
-  return new Response(body, { headers: { "content-type": "text/html; charset=utf-8" } });
+function authorizeForm(values: Record<string, string>, issuer: string, email = "", error?: string): string {
+  const errorMarkup = error ? `<p class="error" role="alert">${escapeHtml(error)}</p>` : "";
+  return formPage(
+    "Sign in to Briefs",
+    `<h1>Sign in to Briefs</h1><p>We’ll email you a one-time sign-in code.</p>${errorMarkup}<form method="post" action="${escapeHtml(issuer)}/authorize/request">${hiddenFields(values)}<label>Email<input name="email" type="email" autocomplete="email" value="${escapeHtml(email)}" required></label><button>Send code</button></form>`,
+  );
+}
+
+function html(body: string, status = 200): Response {
+  return new Response(body, { status, headers: { "content-type": "text/html; charset=utf-8" } });
 }
 
 function text(body: string, status = 200): Response {

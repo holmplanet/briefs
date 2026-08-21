@@ -67,7 +67,30 @@ describe("Vercel OAuth adapter", () => {
       createContext(),
     );
 
+    expect(response.status).toBe(403);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    await expect(response.text()).resolves.toContain("not authorized for this Briefs account");
+  });
+
+  it("returns an inline error for malformed email addresses", async () => {
+    const body = new URLSearchParams({
+      response_type: "code",
+      client_id: "briefs-daily",
+      redirect_uri: "https://preview.example.com/auth/callback",
+      code_challenge: "challenge",
+      code_challenge_method: "S256",
+      email: "not-an-email",
+    });
+    const response = await handleWebOAuthRequest(
+      new Request("https://preview.example.com/oauth/authorize/request", {
+        method: "POST",
+        body,
+      }),
+      createContext(),
+    );
+
     expect(response.status).toBe(400);
-    await expect(response.text()).resolves.toBe("Invalid OAuth authorization request");
+    expect(response.headers.get("content-type")).toContain("text/html");
+    await expect(response.text()).resolves.toContain("Enter a valid email address");
   });
 });

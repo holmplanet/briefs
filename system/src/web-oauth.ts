@@ -18,7 +18,7 @@ export async function handleWebOAuthRequest(request: Request, context: AppContex
       token_endpoint: `${issuer}/token`,
       userinfo_endpoint: `${issuer}/oidc/me`,
       response_types_supported: ["code"],
-      grant_types_supported: ["authorization_code"],
+      grant_types_supported: ["authorization_code", "refresh_token"],
       code_challenge_methods_supported: ["S256"],
       scopes_supported: ["openid", "email", "profile", "offline_access"],
       registration_endpoint: `${issuer}/register`,
@@ -136,8 +136,20 @@ async function verifyOtp(request: Request, context: AppContext): Promise<Respons
 
 async function exchangeToken(request: Request, context: AppContext): Promise<Response> {
   const form = await request.formData();
-  const code = String(form.get("code") ?? "");
+  const grantType = String(form.get("grant_type") ?? "");
+  const incomingRefreshToken = String(form.get("refresh_token") ?? "");
   const clientId = String(form.get("client_id") ?? "");
+  if (grantType === "refresh_token") {
+    const claims = await verifyAccessToken(incomingRefreshToken, context.config.authSecret, context.config.oauthIssuer, "refresh");
+    if (!claims || clientId !== context.config.oauthClientId) return json({ error: "invalid_grant" }, 400);
+    const accessToken = await issueAccessToken(
+      { sub: claims.sub, email: claims.email, iss: context.config.oauthIssuer },
+      context.config.authSecret,
+    );
+    return json({ access_token: accessToken, refresh_token: incomingRefreshToken, token_type: "Bearer", expires_in: 3600, scope: "openid email profile" });
+  }
+
+  const code = String(form.get("code") ?? "");
   const redirectUri = String(form.get("redirect_uri") ?? "");
   const verifier = String(form.get("code_verifier") ?? "");
   const authorization = code ? await context.auth.consumeAuthorizationCode(hash(code)) : undefined;
@@ -157,7 +169,12 @@ async function exchangeToken(request: Request, context: AppContext): Promise<Res
     { sub: authorization.userId, email: authorization.email, iss: context.config.oauthIssuer },
     context.config.authSecret,
   );
-  return json({ access_token: accessToken, token_type: "Bearer", expires_in: 3600, scope: "openid email profile" });
+  const refreshToken = await issueAccessToken(
+    { sub: authorization.userId, email: authorization.email, iss: context.config.oauthIssuer, tokenUse: "refresh" },
+    context.config.authSecret,
+    30 * 24 * 60 * 60,
+  );
+  return json({ access_token: accessToken, refresh_token: refreshToken, token_type: "Bearer", expires_in: 3600, scope: "openid email profile" });
 }
 
 async function userInfo(request: Request, context: AppContext): Promise<Response> {

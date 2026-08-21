@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { issueAccessToken } from "@briefs/shared/auth";
 import type { AppContext } from "../src/bootstrap";
 import { handleWebOAuthRequest } from "../src/web-oauth";
 
@@ -92,5 +93,31 @@ describe("Vercel OAuth adapter", () => {
     expect(response.status).toBe(400);
     expect(response.headers.get("content-type")).toContain("text/html");
     await expect(response.text()).resolves.toContain("Enter a valid email address");
+  });
+
+  it("refreshes hosted OAuth access tokens without accepting refresh tokens as API tokens", async () => {
+    const refreshToken = await issueAccessToken(
+      { sub: "owner@example.com", email: "owner@example.com", iss: "https://preview.example.com/oauth", tokenUse: "refresh" },
+      "preview-auth-secret",
+      3600,
+    );
+    const response = await handleWebOAuthRequest(
+      new Request("https://preview.example.com/oauth/token", {
+        method: "POST",
+        body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: "briefs-daily" }),
+      }),
+      createContext(),
+    );
+
+    expect(response.status).toBe(200);
+    const tokens = await response.json();
+    expect(tokens.access_token).toEqual(expect.any(String));
+    expect(tokens.refresh_token).toBe(refreshToken);
+
+    const profile = await handleWebOAuthRequest(
+      new Request("https://preview.example.com/oauth/oidc/me", { headers: { Authorization: `Bearer ${refreshToken}` } }),
+      createContext(),
+    );
+    expect(profile.status).toBe(401);
   });
 });

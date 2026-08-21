@@ -47,6 +47,8 @@ export async function GET(request: Request) {
       userId: user.userId,
       email: user.email,
       accessToken: user.accessToken,
+      refreshToken: user.refreshToken,
+      accessTokenExpiresAt: user.accessTokenExpiresAt,
     });
   } catch (callbackError) {
     const message =

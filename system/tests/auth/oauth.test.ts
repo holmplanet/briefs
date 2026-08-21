@@ -63,9 +63,22 @@ describe("OAuth email OTP flow", () => {
       });
       expect(token.status).toBe(200);
       const tokens = await token.json();
+      expect(tokens.refresh_token).toEqual(expect.any(String));
       const profile = await fetch(`${base}/oauth/oidc/me`, { headers: { Authorization: `Bearer ${tokens.access_token}` } });
       expect(profile.status).toBe(200);
       expect(await profile.json()).toMatchObject({ sub: "auth-test@example.com", email: "auth-test@example.com" });
+
+      const refreshed = await fetch(`${base}/oauth/token`, {
+        method: "POST",
+        headers: { "content-type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: tokens.refresh_token, client_id: oauth.client_id }),
+      });
+      expect(refreshed.status).toBe(200);
+      const refreshedTokens = await refreshed.json();
+      expect(refreshedTokens.access_token).toEqual(expect.any(String));
+
+      const refreshAsAccess = await fetch(`${base}/oauth/oidc/me`, { headers: { Authorization: `Bearer ${tokens.refresh_token}` } });
+      expect(refreshAsAccess.status).toBe(401);
 
       const replay = await fetch(`${base}/oauth/token`, {
         method: "POST",

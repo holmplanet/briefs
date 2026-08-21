@@ -9,6 +9,8 @@ export type DailySession = {
   userId: string;
   email?: string;
   accessToken?: string;
+  refreshToken?: string;
+  accessTokenExpiresAt?: number;
   expiresAt: number;
   devBypass?: boolean;
 };
@@ -52,7 +54,7 @@ function constantTimeEqual(a: string, b: string): boolean {
   return difference === 0;
 }
 
-async function encodeSession(session: DailySession, secret: string): Promise<string> {
+export async function encodeSessionValue(session: DailySession, secret: string): Promise<string> {
   const payload = encodeBase64Url(textEncoder.encode(JSON.stringify(session)));
   return payload + "." + (await sign(payload, secret));
 }
@@ -113,7 +115,7 @@ export async function getSession(config: AuthConfig): Promise<DailySession | nul
 
 export async function setSession(config: AuthConfig, session: Omit<DailySession, "expiresAt">): Promise<void> {
   const cookieStore = await cookies();
-  const value = await encodeSession(
+  const value = await encodeSessionValue(
     {
       ...session,
       expiresAt: Date.now() + SESSION_TTL_MS,
@@ -121,13 +123,17 @@ export async function setSession(config: AuthConfig, session: Omit<DailySession,
     config.sessionSecret,
   );
 
-  cookieStore.set(SESSION_COOKIE, value, {
+  cookieStore.set(SESSION_COOKIE, value, sessionCookieOptions());
+}
+
+export function sessionCookieOptions() {
+  return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: SESSION_TTL_MS / 1000,
-  });
+  } as const;
 }
 
 export async function clearSession(): Promise<void> {

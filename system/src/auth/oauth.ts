@@ -63,7 +63,7 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
       token_endpoint: `${issuer}/token`,
       userinfo_endpoint: `${issuer}/oidc/me`,
       response_types_supported: ["code"],
-      grant_types_supported: ["authorization_code"],
+      grant_types_supported: ["authorization_code", "refresh_token"],
       code_challenge_methods_supported: ["S256"],
       scopes_supported: ["openid", "email", "profile", "offline_access"],
       registration_endpoint: `${issuer}/register`,
@@ -182,7 +182,17 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
 
   router.post("/token", async (req, res, next) => {
     try {
-      const { grant_type: grantType, code, client_id: clientId, redirect_uri: redirectUri, code_verifier: verifier } = req.body as Record<string, string>;
+      const { grant_type: grantType, code, client_id: clientId, redirect_uri: redirectUri, code_verifier: verifier, refresh_token: refreshToken } = req.body as Record<string, string>;
+      if (grantType === "refresh_token") {
+        const claims = await verifyAccessToken(refreshToken ?? "", config.authSecret, issuer, "refresh");
+        if (!claims || clientId !== config.oauthClientId) {
+          res.status(400).json({ error: "invalid_grant" });
+          return;
+        }
+        const accessToken = await issueAccessToken({ sub: claims.sub, email: claims.email, iss: issuer }, config.authSecret);
+        res.json({ access_token: accessToken, refresh_token: refreshToken, token_type: "Bearer", expires_in: 3600, scope: "openid email profile" });
+        return;
+      }
       const authorization = code ? await auth.consumeAuthorizationCode(hash(code)) : undefined;
       if (grantType !== "authorization_code" || !authorization || authorization.expiresAt.getTime() < Date.now() || !(await isAllowedClient(config, auth, clientId, redirectUri)) || !verifier) {
         res.status(400).json({ error: "invalid_grant" });
@@ -195,7 +205,8 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
         return;
       }
       const accessToken = await issueAccessToken({ sub: authorization.userId, email: authorization.email, iss: issuer }, config.authSecret);
-      res.json({ access_token: accessToken, token_type: "Bearer", expires_in: 3600, scope: "openid email profile" });
+      const issuedRefreshToken = await issueAccessToken({ sub: authorization.userId, email: authorization.email, iss: issuer, tokenUse: "refresh" }, config.authSecret, 30 * 24 * 60 * 60);
+      res.json({ access_token: accessToken, refresh_token: issuedRefreshToken, token_type: "Bearer", expires_in: 3600, scope: "openid email profile" });
     } catch (error) {
       next(error);
     }

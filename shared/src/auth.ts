@@ -3,6 +3,7 @@ export type AccessTokenClaims = {
   email?: string;
   iss: string;
   exp: number;
+  tokenUse?: "access" | "refresh";
 };
 
 const encoder = new TextEncoder();
@@ -30,7 +31,7 @@ async function signature(payload: string, secret: string): Promise<string> {
 }
 
 export async function issueAccessToken(
-  claims: Omit<AccessTokenClaims, "exp">,
+  claims: Omit<AccessTokenClaims, "exp" | "tokenUse"> & { tokenUse?: "access" | "refresh" },
   secret: string,
   ttlSeconds = 3600,
 ): Promise<string> {
@@ -42,6 +43,7 @@ export async function verifyAccessToken(
   token: string,
   secret: string,
   issuer: string,
+  expectedUse: "access" | "refresh" = "access",
 ): Promise<AccessTokenClaims | null> {
   const separator = token.lastIndexOf(".");
   if (separator < 1) return null;
@@ -59,7 +61,7 @@ export async function verifyAccessToken(
 
   try {
     const claims = JSON.parse(decoder.decode(Uint8Array.from(decode(payload), (char) => char.charCodeAt(0)))) as AccessTokenClaims;
-    if (!claims.sub || claims.iss !== issuer || !Number.isFinite(claims.exp) || claims.exp <= Math.floor(Date.now() / 1000)) {
+    if (!claims.sub || claims.iss !== issuer || (claims.tokenUse ?? "access") !== expectedUse || !Number.isFinite(claims.exp) || claims.exp <= Math.floor(Date.now() / 1000)) {
       return null;
     }
     return claims;

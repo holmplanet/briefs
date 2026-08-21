@@ -9,6 +9,8 @@ type OAuthMetadata = {
 
 type TokenResponse = {
   access_token: string;
+  refresh_token?: string;
+  expires_in?: number;
   id_token?: string;
   token_type: string;
 };
@@ -16,6 +18,14 @@ type TokenResponse = {
 type UserInfo = {
   sub: string;
   email?: string;
+};
+
+export type OAuthUser = {
+  userId: string;
+  email?: string;
+  accessToken: string;
+  refreshToken?: string;
+  accessTokenExpiresAt?: number;
 };
 
 let metadataCache: OAuthMetadata | null = null;
@@ -68,7 +78,7 @@ export async function exchangeCodeForUser(
   code: string,
   verifier: string,
   requestFetch: OAuthFetch = fetch,
-): Promise<{ userId: string; email?: string; accessToken: string }> {
+): Promise<OAuthUser> {
   if (!config.issuer) {
     throw new Error("OAuth issuer is not configured");
   }
@@ -117,5 +127,42 @@ export async function exchangeCodeForUser(
     userId: profile.sub,
     email: profile.email,
     accessToken: tokens.access_token,
+    refreshToken: tokens.refresh_token,
+    accessTokenExpiresAt: tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
+  };
+}
+
+export async function refreshAccessToken(
+  config: AuthConfig,
+  refreshToken: string,
+  requestFetch: OAuthFetch = fetch,
+): Promise<Pick<OAuthUser, "accessToken" | "refreshToken" | "accessTokenExpiresAt">> {
+  if (!config.issuer) {
+    throw new Error("OAuth issuer is not configured");
+  }
+
+  const metadata = await fetchMetadata(config.issuer, requestFetch);
+  const body = new URLSearchParams({
+    grant_type: "refresh_token",
+    refresh_token: refreshToken,
+    client_id: config.clientId,
+  });
+  if (config.clientSecret) body.set("client_secret", config.clientSecret);
+
+  const tokenResponse = await requestFetch(metadata.token_endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body,
+  });
+  if (!tokenResponse.ok) {
+    const detail = await tokenResponse.text();
+    throw new Error(detail || "Token refresh failed");
+  }
+
+  const tokens = (await tokenResponse.json()) as TokenResponse;
+  return {
+    accessToken: tokens.access_token,
+    refreshToken: tokens.refresh_token ?? refreshToken,
+    accessTokenExpiresAt: tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
   };
 }

@@ -23,7 +23,7 @@ export default async function LoginPage({
   const config = loadAuthConfig();
   const session = await getSession(config);
 
-  if (session) {
+  if (session && (!isOAuthEnabled(config) || session.accessToken)) {
     redirect(params.next ?? "/");
   }
 

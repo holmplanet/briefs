@@ -26,7 +26,7 @@ export async function AppShell({
       brandLabel="Briefs SDK"
       actions={defaultHeaderActions({
         apiOnline,
-        extra: <HeaderLink href={dailyUrl()} label="Briefs Daily source" external />,
+        extra: <HeaderLink href={dailyUrl()} label="Briefs Daily" external />,
       })}
     >
       {children}

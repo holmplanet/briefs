@@ -30,7 +30,7 @@ const sections: DocSectionGroup[] = [
   },
   {
     title: "Apps",
-    links: [{ href: dailyUrl(), label: "Briefs Daily source", external: true }],
+    links: [{ href: dailyUrl(), label: "Briefs Daily", external: true }],
   },
 ];
 

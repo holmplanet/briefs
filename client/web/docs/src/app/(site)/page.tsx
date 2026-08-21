@@ -33,7 +33,7 @@ export default async function DocsHomePage() {
           rel="noreferrer"
           className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/40 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-card/70 hover:text-foreground"
         >
-          Briefs Daily source
+          Briefs Daily
         </a>
       </div>
 
@@ -172,7 +172,7 @@ client/plugin/       Cursor/Codex skills`}
                 target="_blank"
                 rel="noreferrer"
               >
-                Briefs Daily source
+                Briefs Daily
               </a>{" "}
               — reference web client and local setup
             </li>

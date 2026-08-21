@@ -84,7 +84,7 @@ NEXT_PUBLIC_DOCS_URL=http://localhost:3001`}
               target="_blank"
               rel="noreferrer"
             >
-              View Briefs Daily source
+              Briefs Daily
             </a>{" "}
             for the reference web client and local setup.
           </p>

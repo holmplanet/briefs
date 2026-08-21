@@ -5,6 +5,7 @@ import { CodeBlock } from "@/components/docs/code-block";
 import { DocPageHeader, DocSection, DocTable } from "@/components/docs/doc-section";
 import { fetchBriefsHealth } from "@/lib/briefs-api";
 import { curlHealth } from "@/lib/docs-snippets";
+import { dailyUrl } from "@/lib/urls";
 
 export default async function DocsHomePage() {
   const health = await fetchBriefsHealth();
@@ -27,12 +28,12 @@ export default async function DocsHomePage() {
           <ArrowRight className="size-4" />
         </Link>
         <a
-          href={process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000"}
+          href={dailyUrl()}
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/40 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-card/70 hover:text-foreground"
         >
-          Briefs Daily
+          Briefs Daily source
         </a>
       </div>
 
@@ -166,14 +167,14 @@ client/plugin/       Cursor/Codex skills`}
             </li>
             <li>
               <a
-                href={process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000"}
+                href={dailyUrl()}
                 className="text-blue-300 hover:text-blue-200"
                 target="_blank"
                 rel="noreferrer"
               >
-                Briefs Daily
+                Briefs Daily source
               </a>{" "}
-              — default web client against your local API
+              — reference web client and local setup
             </li>
           </ul>
           <p className="flex items-center gap-2 pt-2">

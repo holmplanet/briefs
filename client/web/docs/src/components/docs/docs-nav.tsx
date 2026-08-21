@@ -4,8 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@briefs/web-shared";
-
-const dailyUrl = process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000";
+import { dailyUrl } from "@/lib/urls";
 
 type DocLink = {
   href: string;
@@ -31,7 +30,7 @@ const sections: DocSectionGroup[] = [
   },
   {
     title: "Apps",
-    links: [{ href: dailyUrl, label: "Briefs Daily", external: true }],
+    links: [{ href: dailyUrl(), label: "Briefs Daily source", external: true }],
   },
 ];
 

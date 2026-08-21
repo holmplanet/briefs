@@ -4,7 +4,7 @@ SDK documentation for **Holmplanet Briefs** — API reference, schemas, quicksta
 
 Runs at **http://localhost:3001** (`npm run dev:docs`).
 
-For the daily-driver app, see `@briefs/daily` at http://localhost:3000.
+The docs link to the `@briefs/daily` source folder on GitHub by default. Set `NEXT_PUBLIC_DAILY_URL` when developing locally or deploying a hosted Daily instance.
 
 ## Pages
 

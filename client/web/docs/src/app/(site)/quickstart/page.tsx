@@ -7,6 +7,7 @@ import {
   curlListItems,
   docsApiBase,
 } from "@/lib/docs-snippets";
+import { dailyUrl } from "@/lib/urls";
 
 export default function QuickstartPage() {
   const apiBase = docsApiBase();
@@ -76,17 +77,16 @@ NEXT_PUBLIC_DOCS_URL=http://localhost:3001`}
 
         <DocSection id="daily" title="Briefs Daily">
           <p>
-            Open{" "}
+            Browse{" "}
             <a
-              href={process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000"}
+              href={dailyUrl()}
               className="text-blue-300 hover:text-blue-200"
               target="_blank"
               rel="noreferrer"
             >
-              Briefs Daily
+              View Briefs Daily source
             </a>{" "}
-            to use the default web client — capture items, update status, and inspect activity logs
-            against your local API.
+            for the reference web client and local setup.
           </p>
         </DocSection>
       </div>

@@ -89,31 +89,37 @@ export default async function DocsHomePage() {
         </DocSection>
       </div>
 
-      <div className="mb-12 grid gap-4 sm:grid-cols-3">
-        {[
-          {
-            icon: Layers,
-            title: "Items",
-            body: "Durable entities — tasks, notes, ingest — with stable identity and workflow fields.",
-          },
-          {
-            icon: Users,
-            title: "Actors",
-            body: "People and services that act. Every write records who performed it.",
-          },
-          {
-            icon: GitBranch,
-            title: "Activities",
-            body: "Append-only log per item — creates, updates, and structured change deltas.",
-          },
-        ].map(({ icon: Icon, title, body }) => (
-          <div key={title} className="glass-panel rounded-2xl p-4 sm:rounded-3xl">
-            <Icon className="mb-3 size-4 text-blue-300" />
-            <h3 className="font-medium text-foreground">{title}</h3>
-            <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{body}</p>
-          </div>
-        ))}
-      </div>
+      <DocSection id="core-model" title="Core model" className="mb-12">
+        <p>
+          Briefs keeps the work object, the responsible actor, and the history of change together. These three
+          primitives are the shared contract behind the API, MCP tools, Daily, and custom clients.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-3">
+          {[
+            {
+              icon: Layers,
+              title: "Items",
+              body: "Durable entities — tasks, notes, ingest — with stable identity and workflow fields.",
+            },
+            {
+              icon: Users,
+              title: "Actors",
+              body: "People and services that act. Every write records who performed it.",
+            },
+            {
+              icon: GitBranch,
+              title: "Activities",
+              body: "Append-only log per item — creates, updates, and structured change deltas.",
+            },
+          ].map(({ icon: Icon, title, body }) => (
+            <div key={title} className="glass-panel rounded-2xl p-4 sm:rounded-3xl">
+              <Icon className="mb-3 size-4 text-blue-300" />
+              <h3 className="font-medium text-foreground">{title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{body}</p>
+            </div>
+          ))}
+        </div>
+      </DocSection>
 
       <div className="space-y-12">
         <DocSection id="architecture" title="Monorepo layout">

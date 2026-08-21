@@ -17,7 +17,8 @@ export function getBriefsMcpUrl(): string {
 }
 
 function getBriefsMcpHealthUrl(): string {
-  return (process.env.MCP_HEALTH_URL ?? getBriefsMcpUrl()).replace(/\/$/, "");
+  const configuredUrl = (process.env.MCP_HEALTH_URL ?? getBriefsMcpUrl()).replace(/\/$/, "");
+  return configuredUrl.endsWith("/api/mcp") ? configuredUrl : new URL("/health", configuredUrl).toString();
 }
 
 export async function getBriefsUserId(): Promise<string> {
@@ -87,11 +88,15 @@ export async function fetchMcpHealth(): Promise<{
   devSkipAuth?: boolean;
 } | null> {
   try {
-    const response = await fetch(new URL("/health", getBriefsMcpHealthUrl()).toString(), {
+    const response = await fetch(getBriefsMcpHealthUrl(), {
       next: { revalidate: 30 },
     });
     if (!response.ok) return null;
-    return response.json();
+    return (await response.json()) as {
+      status: string;
+      service: string;
+      devSkipAuth?: boolean;
+    };
   } catch {
     return null;
   }

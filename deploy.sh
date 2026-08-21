@@ -7,6 +7,7 @@ SSH_KNOWN_HOSTS_FILE="${SSH_KNOWN_HOSTS_FILE:?SSH_KNOWN_HOSTS_FILE is required}"
 INFISICAL_PROJECT_ID="${INFISICAL_PROJECT_ID:?INFISICAL_PROJECT_ID is required}"
 INFISICAL_CLIENT_ID="${INFISICAL_CLIENT_ID:?INFISICAL_CLIENT_ID is required}"
 INFISICAL_CLIENT_SECRET="${INFISICAL_CLIENT_SECRET:?INFISICAL_CLIENT_SECRET is required}"
+export INFISICAL_CLIENT_ID INFISICAL_CLIENT_SECRET
 INFISICAL_SITE_URL="${INFISICAL_SITE_URL:-https://app.infisical.com}"
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
 APP_DIR="${APP_DIR:-/opt/briefs}"
@@ -26,8 +27,10 @@ SSH_CMD=("${SSH_BASE[@]}" "$DEPLOY_USER@$DROPLET_IP")
 echo "Fetching production secrets from Infisical …"
 INFISICAL_TOKEN=$(curl -sf -X POST "$INFISICAL_SITE_URL/api/v1/auth/universal-auth/login" \
   -H "Content-Type: application/json" \
-  -d "{\"clientId\":\"$INFISICAL_CLIENT_ID\",\"clientSecret\":\"$INFISICAL_CLIENT_SECRET\"}" \
-  | jq -r '.accessToken')
+  --data-binary @- <<'JSON' | jq -r '.accessToken'
+$(jq -n '{clientId: env.INFISICAL_CLIENT_ID, clientSecret: env.INFISICAL_CLIENT_SECRET}')
+JSON
+)
 [[ -n "$INFISICAL_TOKEN" && "$INFISICAL_TOKEN" != "null" ]] || { echo "ERROR: Infisical auth failed" >&2; exit 1; }
 
 secret() {

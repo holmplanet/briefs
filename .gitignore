@@ -9,3 +9,10 @@ dist/
 /.next/
 .vercel
 .env*
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+secrets/
+.secrets/

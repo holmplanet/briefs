@@ -3,6 +3,7 @@ export type AuthConfig = {
   issuer: string | null;
   clientId: string;
   clientSecret: string | null;
+  authSecret: string;
   sessionSecret: string;
   /** Daily origin for redirect_uri (e.g. http://localhost:3000). */
   appUrl: string;
@@ -17,6 +18,7 @@ export function loadAuthConfig(): AuthConfig {
     ? process.env.APP_ENV === "production"
     : process.env.NODE_ENV === "production";
   const building = process.env.NEXT_PHASE === "phase-production-build";
+  const authSecret = process.env.AUTH_SECRET ?? "";
   const sessionSecret = process.env.SESSION_SECRET ?? "dev-briefs-session-secret";
   const devBypass = !production && (
     process.env.AUTH_DEV_BYPASS === "true" ||
@@ -32,11 +34,15 @@ export function loadAuthConfig(): AuthConfig {
   if (production && !building && sessionSecret === "dev-briefs-session-secret") {
     throw new Error("Production Daily requires a non-default SESSION_SECRET");
   }
+  if (production && !building && !authSecret) {
+    throw new Error("Production Daily requires AUTH_SECRET");
+  }
 
   return {
     issuer,
     clientId: process.env.OAUTH_CLIENT_ID ?? "briefs-daily",
     clientSecret: process.env.OAUTH_CLIENT_SECRET ?? null,
+    authSecret,
     sessionSecret,
     appUrl,
     devBypass,

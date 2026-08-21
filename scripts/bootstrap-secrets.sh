@@ -15,11 +15,16 @@ for key in "${required[@]}"; do
   fi
 done
 
+umask 077
+secrets_file=$(mktemp)
+trap 'rm -f "$secrets_file"' EXIT
 for key in "${required[@]}"; do
-  infisical secrets set "$key=${!key}" \
-    --projectId "$INFISICAL_PROJECT_ID" \
-    --env "$INFISICAL_ENV" \
-    --domain "$INFISICAL_SITE_URL" >/dev/null
+  printf '%s=%s\n' "$key" "${!key}" >> "$secrets_file"
 done
+
+infisical secrets set --file "$secrets_file" \
+  --projectId "$INFISICAL_PROJECT_ID" \
+  --env "$INFISICAL_ENV" \
+  --domain "$INFISICAL_SITE_URL" >/dev/null
 
 echo "Seeded ${#required[@]} Briefs secrets in Infisical environment '$INFISICAL_ENV'."

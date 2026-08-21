@@ -12,6 +12,7 @@ describe("Daily auth configuration", () => {
   it("does not enable the development bypass in production", () => {
     process.env.NODE_ENV = "production";
     process.env.OAUTH_ISSUER = "https://briefs.example.com/oauth";
+    process.env.AUTH_SECRET = "production-auth-secret";
     process.env.SESSION_SECRET = "production-session-secret";
     process.env.AUTH_DEV_BYPASS = "true";
 
@@ -21,9 +22,19 @@ describe("Daily auth configuration", () => {
   it("fails fast when production OAuth is not configured", () => {
     process.env.NODE_ENV = "production";
     delete process.env.OAUTH_ISSUER;
+    process.env.AUTH_SECRET = "production-auth-secret";
     process.env.SESSION_SECRET = "production-session-secret";
 
     expect(() => loadAuthConfig()).toThrow("OAUTH_ISSUER");
+  });
+
+  it("fails fast when production auth signing is not configured", () => {
+    process.env.NODE_ENV = "production";
+    process.env.OAUTH_ISSUER = "https://briefs.example.com/oauth";
+    delete process.env.AUTH_SECRET;
+    process.env.SESSION_SECRET = "production-session-secret";
+
+    expect(() => loadAuthConfig()).toThrow("AUTH_SECRET");
   });
 
   it("keeps the dev user bypass available outside production", () => {

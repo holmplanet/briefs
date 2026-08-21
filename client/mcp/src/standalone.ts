@@ -10,7 +10,8 @@ import type { BriefsMcpAuth } from "./tools/types.js";
 
 const port = Number(process.env.MCP_PORT ?? 3334);
 const devUserId = process.env.DEV_USER_ID ?? "demo";
-const devSkipAuth = process.env.MCP_DEV_SKIP_AUTH !== "false";
+const production = process.env.APP_ENV === "production" || process.env.NODE_ENV === "production";
+const devSkipAuth = process.env.MCP_DEV_SKIP_AUTH === "true" && !production;
 
 type Session = {
   transport: StreamableHTTPServerTransport;

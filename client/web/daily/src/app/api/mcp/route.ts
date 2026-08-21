@@ -3,6 +3,7 @@ import { createBriefsMcpServer } from "@briefs/mcp/server";
 import { verifyAccessToken } from "@briefs/shared/auth";
 import { getSystemRuntime } from "@briefs/system/runtime";
 import { handleWebApiRequest } from "@briefs/system/web";
+import { loadAuthConfig } from "@/lib/auth/config";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -47,14 +48,16 @@ export async function DELETE(): Promise<Response> {
 }
 
 async function resolveAuth(request: Request) {
+  const authConfig = loadAuthConfig();
   const authHeader = request.headers.get("authorization") ?? "";
   const token = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-  const devSkipAuth = process.env.MCP_DEV_SKIP_AUTH !== "false" && process.env.NODE_ENV !== "production";
+  const production = process.env.APP_ENV === "production" || process.env.NODE_ENV === "production";
+  const devSkipAuth = process.env.MCP_DEV_SKIP_AUTH === "true" && !production;
   if (!token && devSkipAuth) {
     return { userId: process.env.DEV_USER_ID ?? "demo", email: "dev@localhost", token: "dev-token" };
   }
   if (!token) return null;
   const issuer = (process.env.OAUTH_ISSUER ?? "http://localhost:8001/oauth").replace(/\/$/, "");
-  const claims = await verifyAccessToken(token, process.env.AUTH_SECRET ?? "dev-briefs-auth-secret", issuer);
+  const claims = await verifyAccessToken(token, authConfig.authSecret, issuer);
   return claims ? { userId: claims.sub, email: claims.email, token } : null;
 }

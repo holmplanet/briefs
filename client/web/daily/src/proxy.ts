@@ -22,6 +22,16 @@ export async function proxy(request: NextRequest) {
   const raw = request.cookies.get(SESSION_COOKIE)?.value;
   const session = await decodeSessionValue(raw, config.sessionSecret);
 
+  if (session && isOAuthEnabled(config) && !session.accessToken) {
+    const loginUrl = request.nextUrl.clone();
+    loginUrl.pathname = "/login";
+    loginUrl.searchParams.set("next", pathname);
+    loginUrl.searchParams.set("error", "Your session expired. Please sign in again.");
+    const response = NextResponse.redirect(loginUrl);
+    response.cookies.delete(SESSION_COOKIE);
+    return response;
+  }
+
   if (session) {
     return NextResponse.next();
   }

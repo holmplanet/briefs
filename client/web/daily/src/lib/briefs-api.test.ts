@@ -12,8 +12,8 @@ describe("briefs health checks", () => {
     process.env.API_URL = "https://briefs.example.com";
 
     expect(getBriefsHealthUrls("https://briefs.example.com")).toEqual([
-      "https://briefs.example.com/health",
       "https://briefs.example.com/api/health",
+      "https://briefs.example.com/health",
     ]);
   });
 

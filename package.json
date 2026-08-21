@@ -24,6 +24,7 @@
     "dev:mcp": "npm run dev -w @briefs/mcp",
     "dev:agent": "npm run dev -w @briefs/agent",
     "briefs": "npm run briefs -w @briefs/cli --",
+    "example:rest": "node examples/create-and-read-item.mjs",
     "briefs:smoke": "npm run briefs -w @briefs/cli -- smoke",
     "briefs:e2e-smoke": "npm run e2e:smoke -w @briefs/mcp",
     "build": "npm run build -w @briefs/shared && npm run build -w @briefs/system && npm run build -w @briefs/mcp && npm run build -w @briefs/cli && npm run build -w @briefs/docs && npm run build -w @briefs/daily",

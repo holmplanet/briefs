@@ -22,6 +22,27 @@ db/migrations/       Postgres schema
 docker/              Dockerfile + compose
 ```
 
+## Why Briefs
+
+Briefs is a durable work substrate for applications where assistants, people,
+and automations need to create, update, and review the same body of work.
+It solves the gap between ephemeral assistant conversations and the durable
+systems developers need to build around them: identity, persistence, shared
+schemas, and an audit history of change.
+
+The core flow is:
+
+```text
+natural-language request → MCP write → Item + Activity → REST API → Daily or custom client
+```
+
+Use Briefs when you are building an assistant workflow, an agent-operated
+process, or a custom application that needs shared work records without
+inventing a new task model and activity log.
+
+Start with the [developer walkthrough](https://briefs-docs-holmplanet.vercel.app/walkthrough)
+or inspect the [Briefs Daily reference client](./client/web/daily).
+
 ## Data model
 
 Three primitives:
@@ -67,6 +88,18 @@ curl -H "X-Briefs-User-Id: demo" \
 curl -H "X-Briefs-User-Id: demo" \
   http://localhost:8001/api/v1/items/<item-id>/activities
 ```
+
+For a complete create-and-read example that does not require `jq` or another
+dependency:
+
+```bash
+npm run example:rest
+```
+
+The example creates one local development item and prints the item together
+with its activity history. Set `BRIEFS_API_URL` or `BRIEFS_USER_ID` to use
+different local values. Production requests use OAuth bearer tokens instead
+of the development identity header.
 
 Use `npm ci` (lockfile-driven installs). See `.cursor/rules/npm-security.mdc` for dependency policy.
 

@@ -14,7 +14,7 @@ For the daily-driver app, see `@briefs/daily` at http://localhost:3000.
 | `/quickstart` | Install, env, first curl requests |
 | `/api` | REST API reference with live base URL |
 | `/schemas` | `@briefs/shared` imports and field guide |
-| `/build` | How to ship a vertical web client |
+| `/build` | How to ship a web client |
 
 ## Dev
 

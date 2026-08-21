@@ -15,7 +15,7 @@ export default async function DocsHomePage() {
       <DocPageHeader
         eyebrow="Holmplanet Briefs"
         title="Build on a durable work spine"
-        description="Briefs is a schema-first platform for items, actors, and activities. Use the REST API, Zod schemas in @briefs/shared, and web primitives in @briefs/web-shared to ship vertical clients and integrations."
+        description="Briefs is a schema-first platform for items, actors, and activities. Use the REST API, Zod schemas in @briefs/shared, and web primitives in @briefs/web-shared to ship web clients and integrations."
       />
 
       <div className="mb-10 flex flex-wrap gap-2">
@@ -66,7 +66,7 @@ export default async function DocsHomePage() {
         <DocSection id="architecture" title="Monorepo layout">
           <p>
             Briefs follows a schema-first split: contracts in <code className="text-foreground">@briefs/shared</code>,
-            the write path in <code className="text-foreground">@briefs/system</code>, and vertical UIs in{" "}
+            the write path in <code className="text-foreground">@briefs/system</code>, and web clients in{" "}
             <code className="text-foreground">client/web/*</code>.
           </p>
           <CodeBlock
@@ -76,9 +76,7 @@ system/              @briefs/system — REST API + Postgres
 client/web/
   shared/            @briefs/web-shared — UI + theme
   docs/              @briefs/docs — SDK documentation
-  daily/             @briefs/daily — default daily-driver client
-  livestock/         vertical clients (backlog)
-  fishing/
+  daily/             @briefs/daily — reference web client
 client/plugin/       Cursor/Codex skills`}
           />
         </DocSection>
@@ -164,7 +162,7 @@ client/plugin/       Cursor/Codex skills`}
               <Link href="/build" className="text-blue-300 hover:text-blue-200">
                 Build a client
               </Link>{" "}
-              — vertical app on @briefs/web-shared
+              — web client on @briefs/web-shared
             </li>
             <li>
               <a

@@ -38,10 +38,10 @@ import { Actor } from "@briefs/shared/actor";`}
             <tbody className="divide-y divide-border/50 text-foreground/90">
               {[
                 ["name", "Display title"],
-                ["kind", "Vertical type — task, note, etc."],
+                ["kind", "Item type — task, note, etc."],
                 ["status", "open | in_progress | done | cancelled"],
                 ["ownerActorId", "Person actor who owns the item"],
-                ["context / originContext", "Vertical scope — default core"],
+                ["context / originContext", "Domain scope — default core"],
                 ["lifecycle", "active | archived"],
                 ["occurredAt", "When it happened in the world"],
                 ["source", "Optional ingest key — system + externalId"],

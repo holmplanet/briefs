@@ -16,7 +16,7 @@ shared/              Item + Actor + Activity schemas — single source of truth
 system/              Express REST API + Postgres stores
 client/
   cli/               @briefs/cli — terminal client + smoke tests
-  web/               human-facing vertical UIs
+  web/               human-facing apps and shared UI
   plugin/            assistant manifests (Cursor/Codex skills)
 db/migrations/       Postgres schema
 docker/              Dockerfile + compose
@@ -112,8 +112,6 @@ Ingested items can pass `source: { "system": "github", "externalId": "issue-18" 
 | `@briefs/daily` | Briefs Daily — default web client |
 | `@briefs/cli` | Terminal client + smoke tests |
 | `@briefs/mcp` | MCP tools + standalone dev server |
-| `@briefs/livestock` | Livestock web client (placeholder — not in workspaces) |
-| `@briefs/fishing` | Fishing web client (placeholder — not in workspaces) |
 
 `client/plugin/` is not an npm workspace — static Cursor/Codex manifests and skills. See `client/plugin/README.md`.
 

@@ -1,6 +1,6 @@
 # @briefs/web-shared
 
-Shared UI primitives and layout for Briefs web verticals (`@briefs/docs`, `@briefs/daily`, `@briefs/livestock`, etc.).
+Shared UI primitives and layout for Briefs web apps (`@briefs/docs`, `@briefs/daily`, and future clients).
 
 ## Contents
 
@@ -12,7 +12,7 @@ Shared UI primitives and layout for Briefs web verticals (`@briefs/docs`, `@brie
 
 ## Usage
 
-Add to a vertical's `package.json`:
+Add to a web app's `package.json`:
 
 ```json
 "@briefs/web-shared": "*"
@@ -24,7 +24,7 @@ In `next.config.ts`:
 transpilePackages: ["@briefs/shared", "@briefs/web-shared"],
 ```
 
-Import theme in the vertical's `globals.css` (PostCSS resolves sibling workspace paths). Scan shared components so Tailwind picks up their utility classes:
+Import theme in the client's `globals.css` (PostCSS resolves sibling workspace paths). Scan shared components so Tailwind picks up their utility classes:
 
 ```css
 @import "tailwindcss";

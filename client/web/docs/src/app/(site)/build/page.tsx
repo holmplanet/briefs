@@ -6,13 +6,13 @@ export default function BuildPage() {
     <>
       <DocPageHeader
         eyebrow="Build"
-        title="Ship a vertical client"
-        description="Livestock, fishing, and other verticals share @briefs/web-shared for UI and theme. Each vertical is a Next.js app in client/web/ that calls the same system API."
+        title="Ship a web client"
+        description="Web clients share @briefs/web-shared for UI and theme. Each client is a Next.js app in client/web/ that calls the same System API."
       />
 
       <div className="space-y-12">
         <DocSection id="scaffold" title="Workspace setup">
-          <p>Add the vertical to root <code className="text-foreground">package.json</code> workspaces:</p>
+          <p>Add the client to root <code className="text-foreground">package.json</code> workspaces:</p>
           <CodeBlock
             title="package.json"
             code={`"workspaces": [
@@ -21,16 +21,16 @@ export default function BuildPage() {
   "client/web/shared",
   "client/web/docs",
   "client/web/daily",
-  "client/web/livestock"
+  "client/web/example"
 ]`}
           />
         </DocSection>
 
-        <DocSection id="deps" title="Vertical package.json">
+        <DocSection id="deps" title="Client package.json">
           <CodeBlock
-            title="client/web/livestock/package.json"
+            title="client/web/example/package.json"
             code={`{
-  "name": "@briefs/livestock",
+  "name": "@briefs/example",
   "dependencies": {
     "@briefs/shared": "*",
     "@briefs/web-shared": "*",
@@ -56,7 +56,7 @@ export default nextConfig;`}
         </DocSection>
 
         <DocSection id="theme" title="Theme">
-          <p>Import the shared theme from your vertical&apos;s globals.css:</p>
+          <p>Import the shared theme from your client&apos;s globals.css:</p>
           <CodeBlock
             title="globals.css"
             code={`@import "tailwindcss";
@@ -75,7 +75,7 @@ export default nextConfig;`}
 
         <DocSection id="api-client" title="API client">
           <p>
-            Each vertical owns its API client module (see{" "}
+            Each client owns its API client module (see{" "}
             <code className="text-foreground">client/web/daily/src/lib/briefs-api.ts</code>). Server components and
             server actions call the REST API with <code className="text-foreground">X-Briefs-User-Id</code> — avoid
             browser-side fetches unless you add CORS to the API.
@@ -84,10 +84,9 @@ export default nextConfig;`}
 
         <DocSection id="reference" title="Reference apps">
           <p>
-            <code className="text-foreground">@briefs/daily</code> is the default daily-driver client.{" "}
-            <code className="text-foreground">@briefs/docs</code> (this site) documents the platform. Verticals like
-            livestock and fishing follow the same patterns as Daily — shared UI, owned API client, vertical-specific
-            pages.
+            <code className="text-foreground">@briefs/daily</code> is the reference client and <code className="text-foreground">@briefs/docs</code>{" "}
+            (this site) documents the platform. New clients should follow the same pattern: shared UI, an owned API
+            client, and client-specific pages.
           </p>
         </DocSection>
       </div>

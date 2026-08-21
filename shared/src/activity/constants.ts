@@ -2,7 +2,7 @@ export const ACTIVITY_SCHEMA_VERSION = 1 as const;
 
 /**
  * Shared activity vocabulary. System-specific verbs use a namespace prefix,
- * e.g. `livestock:Weigh`.
+ * e.g. `domain:Verb`.
  */
 export const ActivityType = {
   CREATE: "Create",

@@ -1,7 +1,7 @@
 # Architecture
 
-Briefs is a small monorepo organized around a shared domain model and multiple
-clients.
+Briefs is a small monorepo organized around a shared domain model, a core API,
+and focused clients.
 
 ```text
 Assistant (MCP) ──OAuth bearer──► MCP adapter ──► System API ──► Postgres
@@ -17,7 +17,7 @@ Daily web app ──OAuth session─────────┘               �
 - `shared/` contains the schemas and domain types shared by every client.
 - `system/` owns the REST API, authentication issuer, services, and Postgres stores.
 - `client/mcp/` exposes assistant tools for reading and writing Briefs data.
-- `client/web/daily/` is the read-focused web interface and human brief-intake flow.
+- `client/web/daily/` is the reference web interface and human brief-intake flow.
 - `client/web/docs/` contains the SDK and API documentation site.
 - `client/cli/` provides a terminal client and smoke-test commands.
 - `client/plugin/` contains assistant manifests and the Brief workflow skill.

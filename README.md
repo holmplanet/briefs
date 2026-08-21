@@ -5,13 +5,17 @@ Schema-first platform for durable **items**, **actors**, and **activities**.
 Briefs is the system of record for things that matter — tasks, notes, ingest from assistants, vertical workflows — with an append-only activity log for every change. Schemas live in `@briefs/shared`; the Express API and Postgres stores enforce them at write time.
 
 
+Briefs is public-source software. The hosted Holmplanet deployment, its database,
+email delivery, and environment secrets are private and are not required to run
+the project locally.
+
 **Branching:** trunk-based — `main` only. See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ```
 shared/              Item + Actor + Activity schemas — single source of truth
 system/              Express REST API + Postgres stores
 client/
-  cli/               @briefs/cli — terminal client + smoke tests (planned)
+  cli/               @briefs/cli — terminal client + smoke tests
   web/               human-facing vertical UIs
   plugin/            assistant manifests (Cursor/Codex skills)
 db/migrations/       Postgres schema
@@ -76,6 +80,10 @@ Use `npm ci` (lockfile-driven installs). See `.cursor/rules/npm-security.mdc` fo
 
 Auth: `X-Briefs-User-Id` header (falls back to `DEFAULT_USER_ID` in `.env`).
 
+The header and development bypass are local-development conveniences only.
+Production API, Daily, and MCP requests require OAuth bearer tokens. Production
+OAuth also requires an explicit `AUTH_ALLOWED_EMAILS` allowlist.
+
 Ingested items can pass `source: { "system": "github", "externalId": "issue-18" }` on create; the DB enforces uniqueness per user.
 
 ## Scripts
@@ -138,3 +146,13 @@ Postgres + `@briefs/system` on port 8001. The production image compiles `shared`
 - `client/plugin/README.md` — assistant integration
 - `docs/dogfood.md` — calendar-to-morning-brief dogfood runbook
 - `docs/database.md` — provider-neutral PostgreSQL setup for local, hosted, and self-hosted use
+- `docs/architecture.md` — system boundaries and request flow
+- `docs/authentication.md` — local and production authentication behavior
+- `docs/contributing.md` — contributor setup and verification checklist
+
+## Public project boundary
+
+You can run the complete stack locally or deploy it yourself. The public
+repository does not include production credentials, hosted database access, or
+any private deployment configuration. See [SECURITY.md](./SECURITY.md) before
+deploying an internet-facing instance.

@@ -15,7 +15,7 @@ Execute these steps **in order**. Do not call `brief_me` until context is ingest
 
 Call the user's **calendar MCP** (Google Calendar, Outlook, etc.) for events from **start of today** through **end of today** (or next 24h). Use the user's timezone when interpreting "today".
 
-If no calendar MCP is available, say so and offer Brief-only brief (`list_tasks` / `brief_me` with tasks only).
+If no calendar MCP is available, say so and offer a Brief-only summary (`items_list` / `brief_me` with tasks only).
 
 ### 2. Map events → normalized nodes
 
@@ -65,13 +65,11 @@ Skip if no weather MCP — calendar + tasks still work.
 
 ```json
 {
-  "userId": "carter",
-  "kind": "morning",
-  "syncFirst": true
+  "kind": "morning"
 }
 ```
 
-Use `"kind": "on_demand"` for non-morning requests. **`syncFirst: true`** syncs Brief-owned tasks before reasoning.
+Use `"kind": "on_demand"` for non-morning requests.
 
 ### 6. Present the brief
 

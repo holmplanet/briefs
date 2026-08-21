@@ -4,7 +4,7 @@
 
 The Items page supports status filters through `/items?status=open`, `/items?status=in_progress`, `/items?status=done`, and `/items?status=cancelled`. The Connect page reports whether the configured MCP server is reachable.
 
-Daily auth follows the same OAuth 2.1 + PKCE + OTP patterns documented in [mcp-oauth-stack](https://github.com/holmplanet/mcp-oauth-stack) (reference only — Briefs does not modify that repo).
+Daily auth uses OAuth 2.1 with PKCE and email OTP. Briefs owns the issuer, client flow, and session handling used by this app.
 
 ## Dev
 

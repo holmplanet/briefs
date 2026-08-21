@@ -16,7 +16,7 @@ export default async function DocsHomePage() {
       <DocPageHeader
         eyebrow="Holmplanet Briefs"
         title="Build on a durable work spine"
-        description="Briefs is a schema-first platform for items, actors, and activities. Use the REST API, Zod schemas in @briefs/shared, and web primitives in @briefs/web-shared to ship web clients and integrations."
+        description="Briefs is a durable work substrate for applications where assistants, people, and automations need to create, update, and review the same body of work."
       />
 
       <div className="mb-10 flex flex-wrap gap-2">
@@ -35,6 +35,58 @@ export default async function DocsHomePage() {
         >
           Briefs Daily
         </a>
+      </div>
+
+      <div className="mb-12 space-y-10">
+        <DocSection id="why" title="Why Briefs exists">
+          <p>
+            Assistants are good at turning conversations into action, but that work should not disappear when the
+            conversation ends. Briefs gives developers a durable system of record for work that can be shared across
+            assistants, applications, and people.
+          </p>
+          <p>
+            Instead of rebuilding persistence, identity, activity history, schemas, and MCP integration for every
+            product, developers can build on one work contract and choose the clients that fit their users.
+          </p>
+        </DocSection>
+
+        <DocSection id="flow" title="How it works">
+          <p>
+            A natural-language request becomes a structured item through MCP. The System API stores the item and its
+            activity history, and Daily or a custom client gives people a place to review what changed.
+          </p>
+          <p className="font-mono text-xs text-foreground/90 sm:text-sm">
+            conversation → MCP write → item + activity → API → Daily or custom client
+          </p>
+        </DocSection>
+
+        <DocSection id="use-cases" title="What developers build">
+          <div className="grid gap-4 sm:grid-cols-3">
+            {[
+              {
+                icon: Terminal,
+                title: "Assistant workflows",
+                body: "Turn requests like “follow up with the design team” into structured, reviewable work instead of ephemeral chat output.",
+              },
+              {
+                icon: GitBranch,
+                title: "Agent operations",
+                body: "Let services create and update work with actor attribution and an append-only history of every change.",
+              },
+              {
+                icon: Layers,
+                title: "Custom clients",
+                body: "Build a CRM, research queue, content pipeline, or operations console on the same shared contracts.",
+              },
+            ].map(({ icon: Icon, title, body }) => (
+              <div key={title} className="glass-panel rounded-2xl p-4 sm:rounded-3xl">
+                <Icon className="mb-3 size-4 text-blue-300" />
+                <h3 className="font-medium text-foreground">{title}</h3>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{body}</p>
+              </div>
+            ))}
+          </div>
+        </DocSection>
       </div>
 
       <div className="mb-12 grid gap-4 sm:grid-cols-3">

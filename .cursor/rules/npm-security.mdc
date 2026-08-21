@@ -23,7 +23,7 @@ Active posture from 2026-08-04 hardening after the Keyv/Cacheable/Shai-Hulud npm
 
 ## User npm config (`~/.npmrc`)
 
-Expect these settings on Carter's machine:
+Expect these settings on the developer's machine:
 
 - `allow-git=none`
 - `allow-remote=none`

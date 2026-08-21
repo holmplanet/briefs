@@ -21,9 +21,9 @@ Briefs uses **trunk-based development**. `main` is the sole long-lived branch.
 Use `git -C /path/to/briefs` instead of `cd && git`.
 
 ```bash
-git -C /Users/carterholmes/Developer/briefs checkout main
-git -C /Users/carterholmes/Developer/briefs pull origin main
-git -C /Users/carterholmes/Developer/briefs checkout -b feat/18-my-feature
+git checkout main
+git pull origin main
+git checkout -b feat/18-my-feature
 ```
 
 ## Overrides team default

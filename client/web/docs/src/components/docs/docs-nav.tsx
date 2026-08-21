@@ -23,6 +23,7 @@ const sections: DocSectionGroup[] = [
     links: [
       { href: "/", label: "Introduction" },
       { href: "/quickstart", label: "Quickstart" },
+      { href: "/daily", label: "Briefs Daily" },
       { href: "/api", label: "API reference" },
       { href: "/schemas", label: "Schemas" },
       { href: "/build", label: "Build a client" },

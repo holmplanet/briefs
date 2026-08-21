@@ -12,6 +12,7 @@ The docs link to the `@briefs/daily` source folder on GitHub by default. Set `NE
 |-------|-------------|
 | `/` | Introduction — architecture, packages, write path |
 | `/quickstart` | Install, env, first curl requests |
+| `/daily` | Briefs Daily reference client, auth, and extension guide |
 | `/api` | REST API reference with live base URL |
 | `/schemas` | `@briefs/shared` imports and field guide |
 | `/build` | How to ship a web client |

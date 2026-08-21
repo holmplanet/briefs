@@ -1,16 +1,11 @@
 import Link from "next/link";
-import { ArrowRight, Box, GitBranch, Layers, Terminal, Users } from "lucide-react";
+import { ArrowRight, GitBranch, Layers, Terminal, Users } from "lucide-react";
 
 import { CodeBlock } from "@/components/docs/code-block";
 import { DocPageHeader, DocSection, DocTable } from "@/components/docs/doc-section";
-import { fetchBriefsHealth } from "@/lib/briefs-api";
-import { curlHealth } from "@/lib/docs-snippets";
 import { dailyUrl } from "@/lib/urls";
 
 export default async function DocsHomePage() {
-  const health = await fetchBriefsHealth();
-  const apiOnline = health?.status === "ok";
-
   return (
     <>
       <DocPageHeader
@@ -175,26 +170,6 @@ client/plugin/       Cursor/Codex skills`}
             Clients should treat the API as the system of record — validate inputs with shared schemas, send writes
             through the REST surface, and read activity logs for audit and UI history.
           </p>
-        </DocSection>
-
-        <DocSection id="status" title="Local API">
-          <div className="flex items-center gap-2 text-foreground">
-            <Box className="size-4 text-muted-foreground" />
-            <span className={apiOnline ? "text-emerald-300" : "text-amber-300"}>
-              {apiOnline ? `API online — ${health?.service}` : "API offline"}
-            </span>
-          </div>
-          {!apiOnline ? (
-            <p>
-              Run <code className="text-foreground">npm run dev:system</code> from the repo root. See{" "}
-              <Link href="/quickstart" className="text-blue-300 hover:text-blue-200">
-                Quickstart
-              </Link>{" "}
-              for port and env setup.
-            </p>
-          ) : (
-            <CodeBlock title="Health check" code={curlHealth()} />
-          )}
         </DocSection>
 
         <DocSection id="next" title="Next steps">

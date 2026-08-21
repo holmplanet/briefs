@@ -153,13 +153,19 @@ export default async function DailyHomePage() {
 
       <McpConnectPanel />
 
-      {!apiOnline ? (
+      {!apiOnline && process.env.NODE_ENV !== "production" ? (
         <div className="glass-panel rounded-3xl border-dashed p-5 text-sm text-muted-foreground">
           <p className="font-medium text-foreground">Start the API</p>
           <p className="mt-2">
             Run <code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:system</code>{" "}
             from the repo root.
           </p>
+        </div>
+      ) : null}
+      {!apiOnline && process.env.NODE_ENV === "production" ? (
+        <div className="glass-panel rounded-3xl border-dashed p-5 text-sm text-muted-foreground">
+          <p className="font-medium text-foreground">Briefs is temporarily unavailable</p>
+          <p className="mt-2">Refresh in a moment to reconnect to your work.</p>
         </div>
       ) : null}
     </div>

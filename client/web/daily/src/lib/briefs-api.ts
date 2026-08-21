@@ -17,6 +17,18 @@ export function isBriefsAuthError(error: unknown): error is BriefsAuthError {
   return error instanceof BriefsAuthError;
 }
 
+export function getBriefsErrorMessage(error: unknown): string {
+  if (isBriefsAuthError(error)) {
+    return error.message;
+  }
+
+  if (process.env.NODE_ENV !== "production" && error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Briefs could not load this data right now. Please refresh and try again.";
+}
+
 export function getBriefsApiBase(): string {
   return (
     process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8001"

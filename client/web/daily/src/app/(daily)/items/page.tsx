@@ -6,8 +6,7 @@ import { McpHint } from "@/components/mcp/connect-panel";
 import { ItemLifecycleBadge, ItemStatusBadge } from "@/components/items/item-status-badge";
 import { buttonVariants, cn } from "@briefs/web-shared";
 
-import { fetchItems } from "@/lib/briefs-api";
-import { isBriefsAuthError } from "@/lib/briefs-api";
+import { fetchItems, getBriefsErrorMessage, isBriefsAuthError } from "@/lib/briefs-api";
 import { redirect } from "next/navigation";
 import { formatDateTime } from "@/lib/format";
 
@@ -40,7 +39,7 @@ export default async function ItemsPage({
     if (isBriefsAuthError(error)) {
       redirect(`/login?next=${encodeURIComponent("/items")}&error=${encodeURIComponent("Your session expired. Please sign in again.")}`);
     }
-    loadError = error instanceof Error ? error.message : "Failed to load items.";
+    loadError = getBriefsErrorMessage(error);
   }
 
   return (
@@ -91,11 +90,15 @@ export default async function ItemsPage({
           <div className="glass-panel rounded-2xl border-dashed p-6 text-sm text-muted-foreground sm:rounded-3xl">
             <p className="font-medium text-foreground">Could not reach the API</p>
             <p className="mt-1">{loadError}</p>
-            <p className="mt-3">
-              Start the API with{" "}
-              <code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:system</code>{" "}
-              and sign in with the same user id your MCP client uses.
-            </p>
+            {process.env.NODE_ENV !== "production" ? (
+              <p className="mt-3">
+                Start the API with{" "}
+                <code className="rounded-full bg-background/60 px-2 py-0.5">npm run dev:system</code>{" "}
+                and sign in with the same user id your MCP client uses.
+              </p>
+            ) : (
+              <p className="mt-3">If this keeps happening, try again in a moment.</p>
+            )}
           </div>
         ) : items.length === 0 ? (
           <div className="glass-panel rounded-2xl border-dashed p-6 text-sm text-muted-foreground sm:rounded-3xl">

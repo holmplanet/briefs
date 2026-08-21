@@ -18,7 +18,9 @@ export function getBriefsMcpUrl(): string {
 
 function getBriefsMcpHealthUrl(): string {
   const configuredUrl = (process.env.MCP_HEALTH_URL ?? getBriefsMcpUrl()).replace(/\/$/, "");
-  return configuredUrl.endsWith("/api/mcp") ? configuredUrl : new URL("/health", configuredUrl).toString();
+  return configuredUrl.endsWith("/api/mcp")
+    ? `${configuredUrl}/health`
+    : new URL("/health", configuredUrl).toString();
 }
 
 export async function getBriefsUserId(): Promise<string> {

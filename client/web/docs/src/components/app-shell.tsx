@@ -1,10 +1,9 @@
 import {
   AppShell as SharedAppShell,
-  defaultHeaderActions,
+  GitHubLink,
   HeaderLink,
 } from "@briefs/web-shared";
 
-import { fetchBriefsHealth } from "@/lib/briefs-api";
 import { dailyUrl } from "@/lib/urls";
 
 export async function AppShell({
@@ -16,18 +15,17 @@ export async function AppShell({
   className?: string;
   variant?: "default" | "hero";
 }) {
-  const health = await fetchBriefsHealth();
-  const apiOnline = health?.status === "ok";
-
   return (
     <SharedAppShell
       variant={variant}
       className={className}
       brandLabel="Briefs SDK"
-      actions={defaultHeaderActions({
-        apiOnline,
-        extra: <HeaderLink href={dailyUrl()} label="Briefs Daily" external />,
-      })}
+      actions={
+        <>
+          <HeaderLink href={dailyUrl()} label="Briefs Daily" external />
+          <GitHubLink />
+        </>
+      }
     >
       {children}
     </SharedAppShell>

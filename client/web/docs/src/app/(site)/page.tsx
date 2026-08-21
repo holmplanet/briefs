@@ -206,6 +206,12 @@ client/plugin/       Cursor/Codex skills`}
               — install, run locally, first requests
             </li>
             <li>
+              <Link href="/walkthrough" className="text-blue-300 hover:text-blue-200">
+                Developer walkthrough
+              </Link>{" "}
+              — request to durable work
+            </li>
+            <li>
               <Link href="/api" className="text-blue-300 hover:text-blue-200">
                 API reference
               </Link>{" "}
@@ -216,6 +222,12 @@ client/plugin/       Cursor/Codex skills`}
                 Schemas
               </Link>{" "}
               — imports from @briefs/shared
+            </li>
+            <li>
+              <Link href="/protocols" className="text-blue-300 hover:text-blue-200">
+                Protocols
+              </Link>{" "}
+              — MCP, OAuth, and schema boundaries
             </li>
             <li>
               <Link href="/build" className="text-blue-300 hover:text-blue-200">

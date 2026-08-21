@@ -4,7 +4,7 @@ export type BriefsMcpAuth = {
   token: string;
 };
 
-/** Matches the requireAccessToken tool-deps pattern (see mcp-oauth-stack for reference). */
+/** Supplies the authenticated token and request dependencies used by Briefs tools. */
 export type BriefsToolDeps = {
   requireAccessToken: (extra: unknown) => Promise<BriefsMcpAuth>;
 };

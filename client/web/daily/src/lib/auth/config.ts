@@ -1,5 +1,5 @@
 export type AuthConfig = {
-  /** OAuth issuer URL (reference patterns: mcp-oauth-stack MCP_PUBLIC_URL). */
+  /** OAuth issuer URL used for authorization and token validation. */
   issuer: string | null;
   clientId: string;
   clientSecret: string | null;

@@ -2,7 +2,7 @@
 
 MCP tools for the Briefs items spine. Ships with a standalone dev server in this repo — no changes to external repos required.
 
-Auth and tool patterns follow the same shape as [mcp-oauth-stack](https://github.com/holmplanet/mcp-oauth-stack) (reference only).
+The MCP adapter uses OAuth bearer tokens in production and an explicit development bypass only for local work.
 
 ## Tools
 
@@ -56,7 +56,7 @@ The smoke command expects all three local services to be running. Set
 
 ## Tool registration contract
 
-`registerBriefsTools(server, deps)` expects the same `requireAccessToken` hook used in mcp-oauth-stack — useful if Briefs later hosts its own OAuth-backed MCP server. The tool implementations live entirely in this repo.
+`registerBriefsTools(server, deps)` receives a Briefs-owned `requireAccessToken` dependency so each tool can resolve the authenticated user before calling the System API. The tool implementations live entirely in this repo.
 
 ## Architecture
 
@@ -73,4 +73,4 @@ Briefs Daily (:3000) ──session──┘  (read-only)
 Daily sign-in uses OAuth 2.1 + PKCE against a configurable issuer (`OAUTH_ISSUER`). The
 system package now includes a local development issuer at `/oauth`; its email field is a local
 identity stub, not production OTP delivery. Connect a real email provider before production.
-mcp-oauth-stack documents one compatible deployment pattern — Briefs does not fork or patch that repo.
+Briefs owns this MCP adapter and its OAuth integration; no external repository is required to run it.

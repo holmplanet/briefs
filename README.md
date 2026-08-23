@@ -3,7 +3,7 @@
 <table>
   <tr>
     <td align="center" bgcolor="#0b0f16">
-      <img src="./client/web/docs/public/briefs-logo-white.svg" alt="Briefs" width="320" />
+      <img src="./client/web/docs/public/briefs-project-image.png" alt="Briefs" width="360" />
     </td>
   </tr>
 </table>

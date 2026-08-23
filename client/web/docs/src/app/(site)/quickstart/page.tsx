@@ -1,5 +1,6 @@
 import { CodeBlock } from "@/components/docs/code-block";
 import { DocPageHeader, DocSection } from "@/components/docs/doc-section";
+import { dailyUrl } from "@/lib/site-config";
 import {
   curlActorMe,
   curlCreateItem,
@@ -76,17 +77,23 @@ NEXT_PUBLIC_DOCS_URL=http://localhost:3001`}
 
         <DocSection id="daily" title="Briefs Daily">
           <p>
-            Open{" "}
-            <a
-              href={process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000"}
-              className="text-blue-300 hover:text-blue-200"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Briefs Daily
-            </a>{" "}
-            to use the default web client — capture items, update status, and inspect activity logs
-            against your local API.
+            {dailyUrl ? (
+              <>
+                Open{" "}
+                <a
+                  href={dailyUrl}
+                  className="text-blue-300 hover:text-blue-200"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Briefs Daily
+                </a>{" "}
+                to use the default web client — capture items, update status, and inspect activity logs
+                against your local API.
+              </>
+            ) : (
+              "Set NEXT_PUBLIC_DAILY_URL to link to the default web client."
+            )}
           </p>
         </DocSection>
       </div>

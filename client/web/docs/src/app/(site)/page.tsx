@@ -5,6 +5,7 @@ import { CodeBlock } from "@/components/docs/code-block";
 import { DocPageHeader, DocSection, DocTable } from "@/components/docs/doc-section";
 import { fetchBriefsHealth } from "@/lib/briefs-api";
 import { curlHealth } from "@/lib/docs-snippets";
+import { dailyUrl } from "@/lib/site-config";
 
 export default async function DocsHomePage() {
   const health = await fetchBriefsHealth();
@@ -26,14 +27,16 @@ export default async function DocsHomePage() {
           Get started
           <ArrowRight className="size-4" />
         </Link>
-        <a
-          href={process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000"}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/40 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-card/70 hover:text-foreground"
-        >
-          Briefs Daily
-        </a>
+        {dailyUrl ? (
+          <a
+            href={dailyUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/40 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-card/70 hover:text-foreground"
+          >
+            Briefs Daily
+          </a>
+        ) : null}
       </div>
 
       <div className="mb-12 grid gap-4 sm:grid-cols-3">
@@ -167,15 +170,19 @@ client/plugin/       Cursor/Codex skills`}
               — vertical app on @briefs/web-shared
             </li>
             <li>
-              <a
-                href={process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000"}
-                className="text-blue-300 hover:text-blue-200"
-                target="_blank"
-                rel="noreferrer"
-              >
-                Briefs Daily
-              </a>{" "}
-              — default web client against your local API
+              {dailyUrl ? (
+                <>
+                  <a
+                    href={dailyUrl}
+                    className="text-blue-300 hover:text-blue-200"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Briefs Daily
+                  </a>{" "}
+                  — default web client against your local API
+                </>
+              ) : null}
             </li>
           </ul>
           <p className="flex items-center gap-2 pt-2">

@@ -5,8 +5,7 @@ import {
 } from "@briefs/web-shared";
 
 import { fetchBriefsHealth } from "@/lib/briefs-api";
-
-const dailyUrl = process.env.NEXT_PUBLIC_DAILY_URL ?? "http://localhost:3000";
+import { dailyUrl } from "@/lib/site-config";
 
 export async function AppShell({
   children,
@@ -27,7 +26,7 @@ export async function AppShell({
       brandLabel="Briefs SDK"
       actions={defaultHeaderActions({
         apiOnline,
-        extra: <HeaderLink href={dailyUrl} label="Briefs Daily" external />,
+        extra: dailyUrl ? <HeaderLink href={dailyUrl} label="Briefs Daily" external /> : undefined,
       })}
     >
       {children}

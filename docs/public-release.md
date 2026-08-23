@@ -22,7 +22,9 @@ Configure protection on `main`:
 
 - Require pull requests; prohibit direct pushes.
 - Require the CI workflow to pass before merge.
-- Require Carter's approval for merges.
+- Keep merge authority with the repository owner. When additional maintainers
+  are added, require at least one independent approving review; while Carter is
+  the sole maintainer, PR review plus required CI is the merge gate.
 - Disable force pushes and branch deletion for `main`.
 - Enable automatic deletion of merged feature branches.
 

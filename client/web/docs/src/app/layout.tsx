@@ -19,21 +19,21 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "Briefs SDK",
-  description: "Documentation and playground for building on Holmplanet Briefs.",
+  description: "A schema-first work spine for agents, applications, and people.",
   alternates: {
     canonical: "/",
   },
   openGraph: {
     type: "website",
     url: "/",
-    siteName: "Holmplanet Briefs",
+    siteName: "Briefs",
     title: "Briefs SDK",
-    description: "Documentation and playground for building on Holmplanet Briefs.",
+    description: "A schema-first work spine for agents, applications, and people.",
   },
   twitter: {
     card: "summary",
     title: "Briefs SDK",
-    description: "Documentation and playground for building on Holmplanet Briefs.",
+    description: "A schema-first work spine for agents, applications, and people.",
   },
 };
 

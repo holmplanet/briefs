@@ -1,16 +1,24 @@
-# Holmplanet Briefs
+# Briefs
 
-Schema-first platform for durable **items**, **actors**, and **activities**.
+One shape for work. Whatever work means in your system.
 
-Briefs is the system of record for things that matter — tasks, notes, ingest from assistants, vertical workflows — with an append-only activity log for every change. Schemas live in `@briefs/shared`; the Express API and Postgres stores enforce them at write time.
+Briefs gives people, agents, and applications a shared shape for tracking work.
+A task, note, support issue, research lead, calendar event, or something your
+product has not named yet can move through the same schema, API, and history.
+The shape stays stable while the meaning stays yours.
+
+It is schema-first by design: import the shared Zod contracts, send work through
+the REST API or MCP, and build the client your users actually need. Briefs is
+small enough to adopt without reorganizing your whole product, and flexible
+enough to grow into one.
 
 
-Briefs is public-source software. The hosted Holmplanet deployment, its database,
-email delivery, and environment secrets are private and are not required to run
-the project locally.
+Briefs is public-source software. The public SDK docs are hosted at
+`briefs.holmplanet.com`; databases, email delivery, and environment secrets are
+not required to run the project locally.
 
 **Branching:** trunk-based — `main` only. See [CONTRIBUTING.md](./CONTRIBUTING.md).
-Before making the repository public, follow the [public release checklist](./docs/public-release.md).
+The public release history and deployment boundary are captured in the [public release checklist](./docs/public-release.md).
 
 ```
 shared/              Item + Actor + Activity schemas — single source of truth
@@ -25,23 +33,33 @@ docker/              Dockerfile + compose
 
 ## Why Briefs
 
-Briefs is a durable work substrate for applications where assistants, people,
-and automations need to create, update, and review the same body of work.
-It solves the gap between ephemeral assistant conversations and the durable
-systems developers need to build around them: identity, persistence, shared
-schemas, and an audit history of change.
+Most software turns work into islands. Tasks live in one model, research in
+another, agent runs in a third, and every integration becomes a translation
+project.
+
+Briefs gives those things a common skeleton. Agents get predictable fields to
+read and write. Applications get room to define their own kinds and workflows.
+People get a durable record instead of a trail of half-finished conversations.
+
+The trick is that an Item does not need to know what your business is. `kind`
+can mean `task`, `note`, `issue`, `lead`, `appointment`, or a type you invent
+tomorrow. Identity, ownership, lifecycle, timestamps, sources, and activity
+history remain consistent around it.
+
+That makes Briefs useful as a work spine: one shared shape at the center, with
+many clients and domains growing around it.
 
 The core flow is:
 
 ```text
-natural-language request → MCP write → Item + Activity → REST API → Daily or custom client
+natural-language request → MCP write → Item + Activity → REST API → reference or custom client
 ```
 
 Use Briefs when you are building an assistant workflow, an agent-operated
 process, or a custom application that needs shared work records without
-inventing a new task model and activity log.
+inventing a new task model and activity log every time.
 
-Start with the [developer walkthrough](https://briefs-docs-holmplanet.vercel.app/walkthrough)
+Start with the [developer walkthrough](https://briefs.holmplanet.com/walkthrough)
 or inspect the [Briefs Daily reference client](./client/web/daily).
 
 ## Data model

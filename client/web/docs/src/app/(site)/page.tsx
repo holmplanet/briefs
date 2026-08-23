@@ -9,9 +9,9 @@ export default async function DocsHomePage() {
   return (
     <>
       <DocPageHeader
-        eyebrow="Holmplanet Briefs"
-        title="Build on a durable work spine"
-        description="Briefs is a durable work substrate for applications where assistants, people, and automations need to create, update, and review the same body of work."
+        eyebrow="Briefs SDK"
+        title="Give every piece of work a shape"
+        description="Briefs gives agents, applications, and people one shared way to track work. Keep the schema predictable, make the meaning yours, and build the client your domain needs."
       />
 
       <div className="mb-10 flex flex-wrap gap-2">
@@ -28,30 +28,35 @@ export default async function DocsHomePage() {
           rel="noreferrer"
           className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/40 px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-card/70 hover:text-foreground"
         >
-          Briefs Daily
+          Daily reference client
         </a>
       </div>
 
       <div className="mb-12 space-y-10">
         <DocSection id="why" title="Why Briefs exists">
           <p>
-            Assistants are good at turning conversations into action, but that work should not disappear when the
-            conversation ends. Briefs gives developers a durable system of record for work that can be shared across
-            assistants, applications, and people.
+            Most software turns work into islands. Tasks live in one model, research in another, and agent runs in a
+            third. Then every integration becomes a translation project.
           </p>
           <p>
-            Instead of rebuilding persistence, identity, activity history, schemas, and MCP integration for every
-            product, developers can build on one work contract and choose the clients that fit their users.
+            Briefs gives those things a common skeleton. An <code className="text-foreground">Item</code> can be a
+            task, note, support issue, research lead, calendar event, or a kind your product invents tomorrow. Its
+            identity, ownership, lifecycle, timestamps, sources, and history still follow the same shape.
+          </p>
+          <p>
+            That is the point: the contract stays boring and dependable so your domain can stay interesting. Build a
+            vertical client, wire in an assistant, or let several products share the same work records without
+            rebuilding the foundation each time.
           </p>
         </DocSection>
 
         <DocSection id="flow" title="How it works">
           <p>
             A natural-language request becomes a structured item through MCP. The System API stores the item and its
-            activity history, and Daily or a custom client gives people a place to review what changed.
+            activity history, and a reference client or your own UI gives people a place to review what changed.
           </p>
           <p className="font-mono text-xs text-foreground/90 sm:text-sm">
-            conversation → MCP write → item + activity → API → Daily or custom client
+            conversation → MCP write → item + activity → API → reference or custom client
           </p>
         </DocSection>
 

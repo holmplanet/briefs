@@ -33,6 +33,7 @@ export async function AppShell({
       variant={variant}
       className={className}
       brandLabel="Briefs Daily"
+      brandLabelClassName="font-extrabold lowercase tracking-[-0.08em]"
       brandInitial="D"
       nav={<HeaderNav items={[...navItems]} />}
       actions={defaultHeaderActions({

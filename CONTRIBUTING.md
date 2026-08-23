@@ -56,3 +56,9 @@ Examples:
 - `npm run test`
 - `npm run typecheck` when types change
 - No secrets in commits
+
+## Public release
+
+Briefs is developed as an open-source core with optional hosted clients. Use
+[`docs/public-release.md`](./docs/public-release.md) for the visibility,
+history, GitHub protection, and hosted-deployment release gates.

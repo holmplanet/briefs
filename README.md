@@ -1,5 +1,13 @@
 # Briefs
 
+<table>
+  <tr>
+    <td align="center" bgcolor="#0b0f16">
+      <img src="./client/web/docs/public/briefs-logo-white.svg" alt="Briefs" width="320" />
+    </td>
+  </tr>
+</table>
+
 One shape for work. Whatever work means in your system.
 
 Briefs gives people, agents, and applications a shared shape for tracking work.

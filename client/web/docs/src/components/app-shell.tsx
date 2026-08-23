@@ -20,8 +20,8 @@ export async function AppShell({
       variant={variant}
       className={className}
       brandLabel="Briefs SDK"
-      brandLogoSrc="/holmplanet-logo.png"
-      brandLogoAlt="Holmplanet"
+      brandLogoSrc="/briefs-logo-white.svg"
+      brandLogoAlt="Briefs"
       actions={
         <>
           <HeaderLink href={dailyUrl()} label="Briefs Daily" external />

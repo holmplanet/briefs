@@ -10,6 +10,7 @@ email delivery, and environment secrets are private and are not required to run
 the project locally.
 
 **Branching:** trunk-based — `main` only. See [CONTRIBUTING.md](./CONTRIBUTING.md).
+Before making the repository public, follow the [public release checklist](./docs/public-release.md).
 
 ```
 shared/              Item + Actor + Activity schemas — single source of truth

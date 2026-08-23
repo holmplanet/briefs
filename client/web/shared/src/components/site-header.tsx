@@ -8,6 +8,7 @@ export type SiteHeaderBrandProps = {
   initial?: string;
   logoSrc?: string;
   logoAlt?: string;
+  labelClassName?: string;
   className?: string;
 };
 
@@ -17,6 +18,7 @@ export function SiteHeaderBrand({
   initial = "B",
   logoSrc,
   logoAlt = "",
+  labelClassName,
   className,
 }: SiteHeaderBrandProps) {
   return (
@@ -30,7 +32,7 @@ export function SiteHeaderBrand({
           {initial}
         </span>
       )}
-      <span className="text-[15px] font-semibold tracking-[-0.02em]">{label}</span>
+      <span className={cn("text-[15px] font-semibold tracking-[-0.02em]", labelClassName)}>{label}</span>
     </Link>
   );
 }
@@ -41,6 +43,7 @@ export type SiteHeaderProps = {
   brandInitial?: string;
   brandLogoSrc?: string;
   brandLogoAlt?: string;
+  brandLabelClassName?: string;
   /** Site-specific navigation — pass a client nav, link list, or null to omit. */
   nav?: React.ReactNode;
   /** Site-specific header actions — status badges, external links, menus, etc. */
@@ -54,6 +57,7 @@ export function SiteHeader({
   brandInitial = "B",
   brandLogoSrc,
   brandLogoAlt,
+  brandLabelClassName,
   nav,
   actions,
   className,
@@ -68,6 +72,7 @@ export function SiteHeader({
             initial={brandInitial}
             logoSrc={brandLogoSrc}
             logoAlt={brandLogoAlt}
+            labelClassName={brandLabelClassName}
           />
           {nav ? <div className="min-w-0">{nav}</div> : null}
         </div>

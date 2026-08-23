@@ -20,6 +20,7 @@ export async function AppShell({
       variant={variant}
       className={className}
       brandLabel="Briefs SDK"
+      brandLabelClassName="font-extrabold lowercase tracking-[-0.08em]"
       brandLogoSrc="/briefs-logo-white.svg"
       brandLogoAlt="Briefs"
       actions={

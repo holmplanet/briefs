@@ -31,4 +31,9 @@ Optional `client/web/docs/.env.local`:
 
 ```bash
 NEXT_PUBLIC_DAILY_URL=http://localhost:3000
+NEXT_PUBLIC_SITE_URL=http://localhost:3001
 ```
+
+Production should set `NEXT_PUBLIC_SITE_URL=https://briefs.holmplanet.com`.
+`NEXT_PUBLIC_DAILY_URL` is optional; without it, the docs link to the Daily
+source on GitHub so the SDK docs do not depend on a hosted Daily deployment.

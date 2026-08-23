@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { SkyBackground } from "@briefs/web-shared";
 
+import { siteUrl } from "@/lib/site-config";
+
 import "./globals.css";
 
 const inter = Inter({
@@ -15,8 +17,24 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Briefs SDK",
   description: "Documentation and playground for building on Holmplanet Briefs.",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "Holmplanet Briefs",
+    title: "Briefs SDK",
+    description: "Documentation and playground for building on Holmplanet Briefs.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Briefs SDK",
+    description: "Documentation and playground for building on Holmplanet Briefs.",
+  },
 };
 
 export const viewport: Viewport = {

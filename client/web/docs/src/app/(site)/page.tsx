@@ -81,7 +81,7 @@ export default async function DocsHomePage() {
             ].map(({ icon: Icon, title, body }) => (
               <div key={title} className="glass-panel rounded-2xl p-4 sm:rounded-3xl">
                 <Icon className="mb-3 size-4 text-blue-300" />
-                <h3 className="font-medium text-foreground">{title}</h3>
+            <h3 className="font-extrabold tracking-[-0.035em] text-foreground">{title}</h3>
                 <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{body}</p>
               </div>
             ))}

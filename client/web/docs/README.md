@@ -1,6 +1,7 @@
-# @briefs/docs
+# Briefs SDK docs
 
-SDK documentation for **Holmplanet Briefs** — API reference, schemas, quickstart, and guides for building clients.
+SDK documentation for **Briefs** — the schema-first work spine for agents,
+applications, and people building around the same durable records.
 
 Runs at **http://localhost:3001** (`npm run dev:docs`).
 

@@ -3,6 +3,7 @@ import { ZodError } from "zod";
 
 import { isApiError } from "./errors.js";
 import { verifyAccessToken } from "@briefs/shared/auth";
+import { isProductionEnvironment } from "../config.js";
 
 const USER_HEADER = "x-briefs-user-id";
 
@@ -24,7 +25,7 @@ export async function userMiddleware(req: Request, res: Response, next: NextFunc
     return;
   }
 
-  const devBypass = process.env.API_DEV_BYPASS !== "false" && (process.env.APP_ENV ?? "development") !== "production";
+  const devBypass = process.env.API_DEV_BYPASS !== "false" && !isProductionEnvironment();
   if (!devBypass) {
     res.status(401).json({ error: "unauthorized", error_description: "Valid bearer token required" });
     return;

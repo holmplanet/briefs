@@ -22,10 +22,23 @@ function readPort(value: string | undefined, fallback: number): number {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
+export function isProductionEnvironment(): boolean {
+  return process.env.APP_ENV === "production"
+    || process.env.NODE_ENV === "production"
+    || process.env.VERCEL_ENV === "production";
+}
+
+function resolveEnvironment(): string {
+  if (isProductionEnvironment()) return "production";
+  if (process.env.APP_ENV) return process.env.APP_ENV;
+  if (process.env.VERCEL_ENV === "preview") return "preview";
+  return "development";
+}
+
 export function loadConfig(): BriefsConfig {
   loadFileSecrets();
 
-  const env = process.env.APP_ENV ?? "development";
+  const env = resolveEnvironment();
   const oauthAllowedEmails = (process.env.AUTH_ALLOWED_EMAILS ?? "")
     .split(",")
     .map((value) => value.trim().toLowerCase())
@@ -41,7 +54,7 @@ export function loadConfig(): BriefsConfig {
     databaseUrl: process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL,
     authSecret: process.env.AUTH_SECRET ?? "dev-briefs-auth-secret",
     oauthIssuer: (process.env.OAUTH_ISSUER ?? `http://localhost:${readPort(process.env.APP_PORT, 8001)}/oauth`).replace(/\/$/, ""),
-    authDevBypass: process.env.API_DEV_BYPASS !== "false" && (process.env.APP_ENV ?? "development") !== "production",
+    authDevBypass: process.env.API_DEV_BYPASS !== "false" && !isProductionEnvironment(),
     oauthClientId: process.env.OAUTH_CLIENT_ID ?? "briefs-daily",
     oauthRedirectUris: (process.env.OAUTH_REDIRECT_URIS ?? "http://localhost:3000/auth/callback").split(",").map((value) => value.trim()).filter(Boolean),
     oauthAllowedEmails,

@@ -6,6 +6,7 @@ import { ItemStatus, itemCreateInputSchema, itemUpdateInputSchema } from "@brief
 
 import type { AppContext } from "./bootstrap.js";
 import { isApiError } from "./api/errors.js";
+import { isProductionEnvironment } from "./config.js";
 
 const USER_HEADER = "x-briefs-user-id";
 
@@ -17,7 +18,7 @@ export async function authenticateWebRequest(request: Request): Promise<string |
   const claims = bearer ? await verifyAccessToken(bearer, secret, issuer.replace(/\/$/, "")) : null;
   if (claims) return claims.sub;
 
-  const devBypass = process.env.API_DEV_BYPASS !== "false" && (process.env.APP_ENV ?? "development") !== "production";
+  const devBypass = process.env.API_DEV_BYPASS !== "false" && !isProductionEnvironment();
   if (!devBypass) return null;
   return request.headers.get(USER_HEADER)?.trim() || process.env.DEFAULT_USER_ID || "default";
 }

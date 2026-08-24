@@ -41,4 +41,17 @@ describe("production configuration", () => {
       "AUTH_ALLOWED_EMAILS",
     );
   });
+
+  it("treats Vercel production as production without APP_ENV", async () => {
+    delete process.env.APP_ENV;
+    process.env.NODE_ENV = "production";
+    process.env.VERCEL_ENV = "production";
+    process.env.AUTH_ALLOWED_EMAILS = "carter@example.com";
+
+    const { loadConfig } = await import("../src/config.js");
+    const config = loadConfig();
+
+    expect(config.env).toBe("production");
+    expect(config.authDevBypass).toBe(false);
+  });
 });

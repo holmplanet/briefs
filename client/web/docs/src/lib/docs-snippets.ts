@@ -20,7 +20,7 @@ export function curlListItems(): string {
 export function curlCreateItem(): string {
   return `curl -H "X-Briefs-User-Id: ${docsUserHeader()}" \\
   -H "Content-Type: application/json" \\
-  -d '{"name":"Ship items UI","kind":"task"}' \\
+  -d '{"name":"Ship items UI","kind":"task","description":"## Outcome\\n\\nPublish the item docs.\\n\\n- [ ] Add examples"}' \\
   ${docsApiBase()}/api/v1/items`;
 }
 

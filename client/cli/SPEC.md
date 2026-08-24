@@ -20,8 +20,8 @@ Single repo-level CLI at `client/cli/` that exercises `@briefs/system` over HTTP
 briefs health
 briefs items list [--status <status>]
 briefs items get <id>
-briefs items create --name <name> --kind <kind> [--description <text>]
-briefs items update <id> [--status <status>] [--name <name>]
+briefs items create --name <name> --kind <kind> [--description <markdown>]
+briefs items update <id> [--status <status>] [--name <name>] [--description <markdown>]
 briefs items activities <id>
 briefs actors me
 briefs smoke [--keep] [--json]

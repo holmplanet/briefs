@@ -38,6 +38,7 @@ import { Actor } from "@briefs/shared/actor";`}
             <tbody className="divide-y divide-border/50 text-foreground/90">
               {[
                 ["name", "Display title"],
+                ["description", "Markdown-formatted body for humans and agents"],
                 ["kind", "Vertical type — task, note, etc."],
                 ["status", "open | in_progress | done | cancelled"],
                 ["ownerActorId", "Person actor who owns the item"],

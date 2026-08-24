@@ -11,6 +11,7 @@ export const itemCreateInputSchema = z.object({
   dueAt: z.string().optional(),
   scheduledAt: z.string().optional(),
   priority: z.nativeEnum(ItemPriority).optional(),
+  /** Markdown-formatted body for humans and agents. */
   description: z.string().optional(),
   kind: z.string().min(1).optional(),
   context: z.string().min(1).optional(),
@@ -33,6 +34,7 @@ export const itemUpdateInputSchema = z.object({
   scheduledAt: z.string().nullable().optional(),
   completedAt: z.string().nullable().optional(),
   priority: z.nativeEnum(ItemPriority).nullable().optional(),
+  /** Markdown-formatted body for humans and agents. */
   description: z.string().nullable().optional(),
   context: z.string().min(1).optional(),
   tags: z.array(z.string().min(1)).nullable().optional(),

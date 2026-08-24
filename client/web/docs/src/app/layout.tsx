@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "Briefs SDK",
   description: "A schema-first work spine for agents, applications, and people.",
+  icons: {
+    icon: [{ url: "/briefs-logo-white.svg", type: "image/svg+xml" }],
+    shortcut: ["/briefs-logo-white.svg"],
+  },
   alternates: {
     canonical: "/",
   },

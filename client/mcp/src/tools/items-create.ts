@@ -24,7 +24,8 @@ export function registerItemsCreateTool(
   server.registerTool(
     "items_create",
     {
-      description: "Create a durable Briefs item (task, note, commitment, etc.).",
+      description:
+        "Create a durable Briefs item (task, note, commitment, etc.). Use description for the Markdown-formatted body that humans and agents should read.",
       inputSchema,
     },
     async (args, extra) => {

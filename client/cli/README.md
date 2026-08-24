@@ -39,14 +39,16 @@ Flags override env: `--api-url`, `--user-id`, `--json`, `--quiet`.
 briefs health
 briefs items list [--status <status>]
 briefs items get <id>
-briefs items create --name <name> [--kind <kind>] [--description <text>]
-briefs items update <id> [--status <status>] [--name <name>] [--lifecycle <lifecycle>]
+briefs items create --name <name> [--kind <kind>] [--description <markdown>]
+briefs items update <id> [--status <status>] [--name <name>] [--description <markdown>] [--lifecycle <lifecycle>]
 briefs items activities <id>
 briefs actors me
 briefs smoke [--keep] [--json]
 ```
 
 ## Related
+
+`--description` accepts the item’s Markdown-formatted body. Keep the short display title in `--name`.
 
 - [SPEC.md](./SPEC.md) — design spec
 - `../web/daily/` — Briefs Daily UI

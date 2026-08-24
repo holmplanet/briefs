@@ -4,7 +4,8 @@ import { z } from "zod";
 import { createItem } from "../lib/system-client.js";
 
 export default defineTool({
-  description: "Create one durable Briefs item after the user has clearly asked to capture it.",
+  description:
+    "Create one durable Briefs item after the user has clearly asked to capture it. Use description for the Markdown-formatted body that humans and agents should read.",
   inputSchema: z.object({
     name: z.string().min(1).max(500),
     kind: z.string().min(1).optional(),

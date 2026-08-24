@@ -27,7 +27,8 @@ export type ItemRef = z.infer<typeof itemRefSchema>;
 /**
  * Item — the durable entity in Briefs.
  *
- * `name` is the display title; `description` is the write-up body.
+ * `name` is the display title; `description` is the Markdown-formatted write-up body.
+ * `context` identifies the vertical or scope around the item; it is not a second body field.
  * Workflow fields remain top-level for query convenience; they should only
  * change via Activities in the write path.
  */
@@ -49,6 +50,7 @@ export const itemSchema = z
     priority: z
       .enum([ItemPriority.LOW, ItemPriority.NORMAL, ItemPriority.HIGH, ItemPriority.URGENT])
       .optional(),
+    /** Markdown-formatted body for humans and agents. */
     description: z.string().optional(),
     kind: z.string().min(1).default("task"),
     ownerActorId: z.string().uuid(),

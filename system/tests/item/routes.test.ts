@@ -23,7 +23,10 @@ describe("item API", () => {
       const createResponse = await fetch(`${base}/api/v1/items`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ name: "Ship schema overhaul" }),
+        body: JSON.stringify({
+          name: "Ship schema overhaul",
+          description: "## Outcome\\n\\nPublish the schema update.\\n\\n- [ ] Ship it",
+        }),
       });
       expect(createResponse.status).toBe(201);
       const created = await createResponse.json();
@@ -35,6 +38,7 @@ describe("item API", () => {
         context: "core",
         lifecycle: "active",
         kind: "task",
+        description: "## Outcome\\n\\nPublish the schema update.\\n\\n- [ ] Ship it",
       });
 
       const activitiesResponse = await fetch(
@@ -61,11 +65,15 @@ describe("item API", () => {
       const patchResponse = await fetch(`${base}/api/v1/items/${created.item.id}`, {
         method: "PATCH",
         headers,
-        body: JSON.stringify({ status: "done" }),
+        body: JSON.stringify({
+          status: "done",
+          description: "## Outcome\\n\\nPublished the schema update.",
+        }),
       });
       expect(patchResponse.status).toBe(200);
       const updated = await patchResponse.json();
       expect(updated.item.status).toBe("done");
+      expect(updated.item.description).toBe("## Outcome\\n\\nPublished the schema update.");
       expect(updated.item.completedAt).toBeTruthy();
 
       const activitiesAfterUpdate = await fetch(

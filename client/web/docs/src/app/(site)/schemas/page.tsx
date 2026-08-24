@@ -47,7 +47,7 @@ import { Actor } from "@briefs/shared/actor";`}
                 ["scheduledAt", "ISO datetime?", "Optional planned time"],
                 ["completedAt", "ISO datetime?", "Optional completion time"],
                 ["priority", "enum?", "low | normal | high | urgent"],
-                ["description", "string?", "Optional write-up body"],
+                ["description", "string?", "Markdown-formatted body for humans and agents"],
                 ["kind", "string", "Item type — task, note, ingest, etc."],
                 ["ownerActorId", "UUID", "Actor who owns the item"],
                 ["context", "string", "Domain scope — defaults to core"],

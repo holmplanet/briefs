@@ -10,8 +10,8 @@ The MCP adapter uses OAuth bearer tokens in production and an explicit developme
 |------|-------------|
 | `items_list` | List items (`status` optional) |
 | `items_get` | Get one item by `item_id` |
-| `items_create` | Create item (`name`, optional `kind`, `description`, `status`) |
-| `items_update` | Patch item fields / status / lifecycle |
+| `items_create` | Create item (`name`, optional `kind`, Markdown `description`, `status`) |
+| `items_update` | Patch item fields / Markdown `description` / status / lifecycle |
 | `items_list_activities` | Append-only activity log for an item |
 | `ingest_context` | Ingest normalized external nodes with source-based deduplication |
 | `brief_me` | Persist a summary of active tasks and ingested context |

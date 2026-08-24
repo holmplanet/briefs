@@ -70,6 +70,10 @@ export default function ApiReferencePage() {
             The database enforces uniqueness per user on{" "}
             <code className="text-foreground">(userId, source.system, source.externalId)</code>.
           </p>
+          <p>
+            The optional <code className="text-foreground">description</code> is a Markdown-formatted body for
+            humans and agents. Use <code className="text-foreground">context</code> for vertical or scope metadata.
+          </p>
         </DocSection>
 
         <DocSection id="activities" title="Activities">
@@ -82,7 +86,7 @@ export default function ApiReferencePage() {
         <DocSection id="patch" title="Update body">
           <p>
             PATCH accepts partial updates — <code className="text-foreground">status</code>,{" "}
-            <code className="text-foreground">name</code>, <code className="text-foreground">description</code>,{" "}
+            <code className="text-foreground">name</code>, Markdown-formatted <code className="text-foreground">description</code>,{" "}
             <code className="text-foreground">tags</code>, <code className="text-foreground">lifecycle</code>, and
             more. Validated with <code className="text-foreground">itemUpdateInputSchema</code> from @briefs/shared.
           </p>

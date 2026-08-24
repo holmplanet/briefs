@@ -25,3 +25,7 @@ production; local development may use the explicit System dev bypass.
 
 `brief_me` persists a compact brief record. Calendar and email connections come after the item
 loop is proven.
+
+Item content contract: use `name` for the short title and `description` for the Markdown-formatted
+body that humans and agents should read. Use `context` for vertical or scope metadata, not for a
+second body.

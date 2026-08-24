@@ -25,7 +25,8 @@ export function registerItemsUpdateTool(
   server.registerTool(
     "items_update",
     {
-      description: "Update a Briefs item's fields or status.",
+      description:
+        "Update a Briefs item's fields or status. Use description for the Markdown-formatted body; set it to null to clear the body.",
       inputSchema,
     },
     async (args, extra) => {

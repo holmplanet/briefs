@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@briefs/shared": "*",
-    "eve": "0.29.5",
+    "eve": "0.42.0",
     "zod": "^4.0.0"
   },
   "devDependencies": {

@@ -14,7 +14,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
-    "next": ">=16",
+    "next": "^16.3.1",
     "react": ">=19",
     "react-dom": ">=19"
   },

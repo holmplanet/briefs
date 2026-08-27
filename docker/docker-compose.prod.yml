@@ -77,10 +77,12 @@ services:
     environment:
       API_URL: http://system:8000
       MCP_HEALTH_URL: http://mcp:3334/mcp
+      AUTH_SECRET_FILE: /run/secrets/auth_secret
       SESSION_SECRET_FILE: /run/secrets/session_secret
     ports:
       - "127.0.0.1:${DAILY_PORT:-3000}:3000"
     secrets:
+      - auth_secret
       - session_secret
     networks:
       - private

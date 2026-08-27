@@ -1,93 +1,117 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-INFISICAL_ENV="${INFISICAL_ENV:-prod}"
-DROPLET_IP="${DROPLET_IP:?DROPLET_IP is required}"
-SSH_KNOWN_HOSTS_FILE="${SSH_KNOWN_HOSTS_FILE:?SSH_KNOWN_HOSTS_FILE is required}"
-INFISICAL_PROJECT_ID="${INFISICAL_PROJECT_ID:?INFISICAL_PROJECT_ID is required}"
-INFISICAL_CLIENT_ID="${INFISICAL_CLIENT_ID:?INFISICAL_CLIENT_ID is required}"
-INFISICAL_CLIENT_SECRET="${INFISICAL_CLIENT_SECRET:?INFISICAL_CLIENT_SECRET is required}"
-export INFISICAL_CLIENT_ID INFISICAL_CLIENT_SECRET
-INFISICAL_SITE_URL="${INFISICAL_SITE_URL:-https://app.infisical.com}"
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
 APP_DIR="${APP_DIR:-/opt/briefs}"
+INFISICAL_ENV="${INFISICAL_ENV:-prod}"
+INFISICAL_API_URL="${INFISICAL_API_URL:-https://app.infisical.com}"
+INFISICAL_SECRET_PATH="${INFISICAL_SECRET_PATH:-/}"
+RUNTIME_ENV_FILE="${RUNTIME_ENV_FILE:-$ROOT_DIR/deploy/docker.production.env}"
+SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/hive}"
+SSH_KNOWN_HOSTS_FILE="${SSH_KNOWN_HOSTS_FILE:-$HOME/.ssh/known_hosts}"
 
-for image in SYSTEM_IMAGE MCP_IMAGE DAILY_IMAGE; do
-  [[ -n "${!image:-}" ]] || { echo "ERROR: $image is required" >&2; exit 1; }
+: "${DROPLET_IP:?DROPLET_IP is required}"
+: "${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}"
+: "${NEXT_PUBLIC_MCP_URL:?NEXT_PUBLIC_MCP_URL is required}"
+
+command -v docker >/dev/null || { echo "ERROR: docker is required" >&2; exit 1; }
+command -v infisical >/dev/null || { echo "ERROR: infisical CLI is required" >&2; exit 1; }
+[[ -f "$RUNTIME_ENV_FILE" ]] || { echo "ERROR: RUNTIME_ENV_FILE does not exist: $RUNTIME_ENV_FILE" >&2; exit 1; }
+[[ -f "$SSH_KNOWN_HOSTS_FILE" ]] || { echo "ERROR: SSH_KNOWN_HOSTS_FILE does not exist" >&2; exit 1; }
+[[ -f "$SSH_KEY_PATH" ]] || { echo "ERROR: SSH_KEY_PATH does not exist" >&2; exit 1; }
+
+if grep -Eq '^[[:space:]]*(export[[:space:]]+)?(DATABASE_URL|AUTH_SECRET|SESSION_SECRET|RESEND_API_KEY|POSTGRES_PASSWORD)=' "$RUNTIME_ENV_FILE"; then
+  echo "ERROR: runtime env must not contain secret variables" >&2
+  exit 1
+fi
+
+SSH=(ssh -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$SSH_KNOWN_HOSTS_FILE" -i "$SSH_KEY_PATH" "$DEPLOY_USER@$DROPLET_IP")
+SCP=(scp -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$SSH_KNOWN_HOSTS_FILE" -i "$SSH_KEY_PATH")
+WORK_DIR="$(mktemp -d)"
+trap 'rm -rf "$WORK_DIR"' EXIT
+
+if [[ -z "${INFISICAL_TOKEN:-}" ]]; then
+  : "${INFISICAL_PROJECT_ID:?INFISICAL_PROJECT_ID is required}"
+  : "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:?INFISICAL_UNIVERSAL_AUTH_CLIENT_ID is required}"
+  : "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:?INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET is required}"
+  INFISICAL_TOKEN="$(INFISICAL_API_URL="$INFISICAL_API_URL" INFISICAL_DISABLE_UPDATE_CHECK=true infisical login \
+    --method=universal-auth \
+    --client-id="$INFISICAL_UNIVERSAL_AUTH_CLIENT_ID" \
+    --client-secret="$INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET" \
+    --silent --plain)"
+  export INFISICAL_TOKEN
+fi
+export INFISICAL_API_URL INFISICAL_DISABLE_UPDATE_CHECK=true
+
+SECRET_JSON="$WORK_DIR/secrets.json"
+infisical export \
+  --projectId="$INFISICAL_PROJECT_ID" \
+  --env="$INFISICAL_ENV" \
+  --path="$INFISICAL_SECRET_PATH" \
+  --format=json \
+  --output-file="$SECRET_JSON" >/dev/null
+
+SECRET_DIR="$WORK_DIR/secrets"
+mkdir -m 700 "$SECRET_DIR"
+node - "$SECRET_JSON" "$SECRET_DIR" <<'NODE'
+const fs = require("node:fs");
+const path = require("node:path");
+
+const [jsonPath, outputDir] = process.argv.slice(2);
+const raw = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+const values = raw.secrets ?? raw;
+const get = (name) => {
+  if (Array.isArray(values)) {
+    const entry = values.find((item) => item.secretKey === name || item.key === name || item.name === name);
+    return entry?.secretValue ?? entry?.value;
+  }
+  return values[name];
+};
+
+const required = ["POSTGRES_PASSWORD", "AUTH_SECRET", "SESSION_SECRET", "RESEND_API_KEY"];
+for (const name of required) {
+  const value = get(name);
+  if (typeof value !== "string" || value.length === 0) throw new Error(`Missing Infisical secret: ${name}`);
+  fs.writeFileSync(path.join(outputDir, name.toLowerCase()), value, { mode: 0o600 });
+}
+
+const password = get("POSTGRES_PASSWORD");
+const databaseUrl = `postgresql://briefs:${encodeURIComponent(password)}@postgres:5432/briefs`;
+fs.writeFileSync(path.join(outputDir, "database_url"), databaseUrl, { mode: 0o600 });
+NODE
+
+IMAGE_TAG="${IMAGE_TAG:-$(git -C "$ROOT_DIR" rev-parse --short=12 HEAD)}"
+docker build -f "$ROOT_DIR/docker/Dockerfile" -t "briefs-system:$IMAGE_TAG" "$ROOT_DIR"
+docker build -f "$ROOT_DIR/docker/Dockerfile.mcp" -t "briefs-mcp:$IMAGE_TAG" "$ROOT_DIR"
+docker build -f "$ROOT_DIR/docker/Dockerfile.daily" \
+  --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
+  --build-arg NEXT_PUBLIC_MCP_URL="$NEXT_PUBLIC_MCP_URL" \
+  -t "briefs-daily:$IMAGE_TAG" "$ROOT_DIR"
+
+sed -E \
+  -e "s#^SYSTEM_IMAGE=.*#SYSTEM_IMAGE=briefs-system:$IMAGE_TAG#" \
+  -e "s#^MCP_IMAGE=.*#MCP_IMAGE=briefs-mcp:$IMAGE_TAG#" \
+  -e "s#^DAILY_IMAGE=.*#DAILY_IMAGE=briefs-daily:$IMAGE_TAG#" \
+  "$RUNTIME_ENV_FILE" > "$WORK_DIR/.env"
+
+docker save -o "$WORK_DIR/system.tar" "briefs-system:$IMAGE_TAG"
+docker save -o "$WORK_DIR/mcp.tar" "briefs-mcp:$IMAGE_TAG"
+docker save -o "$WORK_DIR/daily.tar" "briefs-daily:$IMAGE_TAG"
+
+"${SSH[@]}" "mkdir -p '$APP_DIR/secrets' /tmp/briefs-deploy && chmod 700 '$APP_DIR/secrets'"
+"${SCP[@]}" "$ROOT_DIR/docker/docker-compose.prod.yml" "$WORK_DIR/.env" "$DEPLOY_USER@$DROPLET_IP:/tmp/briefs-deploy/"
+"${SSH[@]}" "install -m 600 /tmp/briefs-deploy/.env '$APP_DIR/.env' && install -m 644 /tmp/briefs-deploy/docker-compose.prod.yml '$APP_DIR/docker-compose.prod.yml' && rm -rf /tmp/briefs-deploy"
+
+for image in system mcp daily; do
+  "${SCP[@]}" "$WORK_DIR/$image.tar" "$DEPLOY_USER@$DROPLET_IP:/tmp/briefs-$image.tar"
+  "${SSH[@]}" "docker load -i /tmp/briefs-$image.tar >/dev/null && rm -f /tmp/briefs-$image.tar"
 done
 
-SSH_BASE=(ssh -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$SSH_KNOWN_HOSTS_FILE")
-SCP_BASE=(scp -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$SSH_KNOWN_HOSTS_FILE")
-if [[ -n "${SSH_KEY_PATH:-}" ]]; then
-  SSH_BASE+=(-i "$SSH_KEY_PATH")
-  SCP_BASE+=(-i "$SSH_KEY_PATH")
-fi
-SSH_CMD=("${SSH_BASE[@]}" "$DEPLOY_USER@$DROPLET_IP")
+for secret in postgres_password auth_secret session_secret resend_api_key database_url; do
+  "${SCP[@]}" "$SECRET_DIR/$secret" "$DEPLOY_USER@$DROPLET_IP:$APP_DIR/secrets/.$secret.tmp"
+  "${SSH[@]}" "install -m 600 '$APP_DIR/secrets/.$secret.tmp' '$APP_DIR/secrets/$secret' && rm -f '$APP_DIR/secrets/.$secret.tmp'"
+done
 
-echo "Fetching production secrets from Infisical …"
-INFISICAL_TOKEN=$(curl -sf -X POST "$INFISICAL_SITE_URL/api/v1/auth/universal-auth/login" \
-  -H "Content-Type: application/json" \
-  --data-binary @- <<'JSON' | jq -r '.accessToken'
-$(jq -n '{clientId: env.INFISICAL_CLIENT_ID, clientSecret: env.INFISICAL_CLIENT_SECRET}')
-JSON
-)
-[[ -n "$INFISICAL_TOKEN" && "$INFISICAL_TOKEN" != "null" ]] || { echo "ERROR: Infisical auth failed" >&2; exit 1; }
-
-secret() {
-  curl -sf "$INFISICAL_SITE_URL/api/v3/secrets/raw/$1?workspaceId=$INFISICAL_PROJECT_ID&environment=$INFISICAL_ENV" \
-    -H "Authorization: Bearer $INFISICAL_TOKEN" | jq -r '.secret.secretValue'
-}
-
-POSTGRES_PASSWORD=$(secret POSTGRES_PASSWORD)
-AUTH_SECRET=$(secret AUTH_SECRET)
-SESSION_SECRET=$(secret SESSION_SECRET)
-RESEND_API_KEY=$(secret RESEND_API_KEY)
-DATABASE_URL="postgresql://briefs:${POSTGRES_PASSWORD}@postgres:5432/briefs"
-
-tmp_dir=$(mktemp -d)
-trap 'rm -rf "$tmp_dir"' EXIT
-
-cat > "$tmp_dir/.env" <<EOF
-APP_ENV=production
-NODE_ENV=production
-RUNTIME_ENV_FILE=$APP_DIR/.env
-SECRETS_DIR=$APP_DIR/secrets
-APP_HOST=0.0.0.0
-APP_PORT=8000
-MCP_PORT=3334
-DAILY_PORT=3000
-APP_URL=${APP_URL:?APP_URL is required}
-OAUTH_ISSUER=${OAUTH_ISSUER:?OAUTH_ISSUER is required}
-OAUTH_CLIENT_ID=${OAUTH_CLIENT_ID:-briefs-daily}
-OAUTH_REDIRECT_URIS=${OAUTH_REDIRECT_URIS:?OAUTH_REDIRECT_URIS is required}
-OTP_MAILER=resend
-EMAIL_FROM=${EMAIL_FROM:?EMAIL_FROM is required}
-MCP_DEV_SKIP_AUTH=false
-API_DEV_BYPASS=false
-AUTH_DEV_BYPASS=false
-SYSTEM_IMAGE=$SYSTEM_IMAGE
-MCP_IMAGE=$MCP_IMAGE
-DAILY_IMAGE=$DAILY_IMAGE
-EOF
-
-bundle="$tmp_dir/briefs-bundle.tar.gz"
-tar -czf "$bundle" docker/docker-compose.prod.yml docker/entrypoint-secrets.sh remote-cmd.sh
-
-"${SSH_CMD[@]}" "docker --version >/dev/null && mkdir -p '$APP_DIR' '$APP_DIR/secrets' && chmod 700 '$APP_DIR/secrets'"
-"${SCP_BASE[@]}" "$bundle" "$DEPLOY_USER@$DROPLET_IP:$APP_DIR/.deploy-bundle.tar.gz"
-"${SSH_CMD[@]}" "cd '$APP_DIR' && tar -xzf .deploy-bundle.tar.gz && rm -f .deploy-bundle.tar.gz"
-"${SCP_BASE[@]}" "$tmp_dir/.env" "$DEPLOY_USER@$DROPLET_IP:$APP_DIR/.env"
-
-deliver_secret() {
-  printf '%s' "$2" | "${SSH_CMD[@]}" "cat > '$APP_DIR/secrets/$1' && chmod 600 '$APP_DIR/secrets/$1'"
-}
-
-deliver_secret postgres_password "$POSTGRES_PASSWORD"
-deliver_secret database_url "$DATABASE_URL"
-deliver_secret auth_secret "$AUTH_SECRET"
-deliver_secret session_secret "$SESSION_SECRET"
-deliver_secret resend_api_key "$RESEND_API_KEY"
-deliver_secret email_from "${EMAIL_FROM:?EMAIL_FROM is required}"
-
-"${SSH_CMD[@]}" "cd '$APP_DIR' && docker compose --env-file .env -f docker-compose.prod.yml up -d --remove-orphans"
-echo "Deploy complete. Run: npm run remote:status"
+"${SSH[@]}" "cd '$APP_DIR' && docker compose --env-file .env -f docker-compose.prod.yml config --quiet && docker compose --env-file .env -f docker-compose.prod.yml up -d"
+echo "Deployed Briefs images at $IMAGE_TAG to $DROPLET_IP"

@@ -29,14 +29,12 @@ services:
       DATABASE_URL_FILE: /run/secrets/database_url
       AUTH_SECRET_FILE: /run/secrets/auth_secret
       RESEND_API_KEY_FILE: /run/secrets/resend_api_key
-      EMAIL_FROM_FILE: /run/secrets/email_from
     ports:
       - "127.0.0.1:${APP_PORT:-8001}:8000"
     secrets:
       - database_url
       - auth_secret
       - resend_api_key
-      - email_from
     networks:
       - private
     depends_on:
@@ -115,5 +113,3 @@ secrets:
     file: ${SECRETS_DIR:-./secrets}/session_secret
   resend_api_key:
     file: ${SECRETS_DIR:-./secrets}/resend_api_key
-  email_from:
-    file: ${SECRETS_DIR:-./secrets}/email_from

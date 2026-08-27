@@ -57,3 +57,16 @@ export function isOAuthEnabled(config: AuthConfig): boolean {
 export function redirectUri(config: AuthConfig): string {
   return `${config.appUrl}/auth/callback`;
 }
+
+export function safeNextPath(value: string | undefined): string {
+  if (!value || !value.startsWith("/") || value.startsWith("//") || value.includes("\\")) {
+    return "/";
+  }
+
+  try {
+    const candidate = new URL(value, "https://briefs.invalid");
+    return candidate.origin === "https://briefs.invalid" ? value : "/";
+  } catch {
+    return "/";
+  }
+}

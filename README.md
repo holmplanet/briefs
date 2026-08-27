@@ -193,7 +193,7 @@ Schema exports use entity-first names: `itemSchema`, `itemCreateInputSchema`, `a
 npm run docker:up
 ```
 
-Postgres + `@briefs/system` on port 8001. The production image compiles `shared` and `system` with `tsc` and runs `node system/dist/index.js` (no Next.js, no `tsx` in runtime). See `docker/README.md` and `docker/production.env.example`.
+Postgres + `@briefs/system` on port 8001. The production image compiles `shared` and `system` with `tsc` and runs `node system/dist/index.js` (no Next.js, no `tsx` in runtime). See `docker/README.md` and `deploy/docker.production.env.example`.
 
 ## Package docs
 

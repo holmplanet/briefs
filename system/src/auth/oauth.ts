@@ -8,6 +8,22 @@ import type { AuthStore } from "./store.js";
 import type { OtpMailer } from "./mailer.js";
 
 const MAX_OTP_ATTEMPTS = 5;
+const OTP_REQUEST_WINDOW_MS = 15 * 60_000;
+const MAX_OTP_REQUESTS_PER_IP = 5;
+const otpRequestsByIp = new Map<string, number[]>();
+
+function allowOtpRequest(req: Request): boolean {
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
+  const now = Date.now();
+  const recent = (otpRequestsByIp.get(ip) ?? []).filter((timestamp) => now - timestamp < OTP_REQUEST_WINDOW_MS);
+  if (recent.length >= MAX_OTP_REQUESTS_PER_IP) {
+    otpRequestsByIp.set(ip, recent);
+    return false;
+  }
+  recent.push(now);
+  otpRequestsByIp.set(ip, recent);
+  return true;
+}
 
 function hash(value: string): string {
   return createHash("sha256").update(value).digest("hex");
@@ -120,6 +136,11 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
       const email = normalizeEmail(String(req.body.email ?? ""));
       if (values.response_type !== "code" || values.code_challenge_method !== "S256" || !values.code_challenge || !(await isAllowedClient(config, auth, values.client_id, values.redirect_uri)) || !isValidEmail(email) || !isAllowedEmail(config, email)) {
         res.status(400).send("Invalid OAuth authorization request");
+        return;
+      }
+
+      if (!allowOtpRequest(req)) {
+        res.status(429).send("Too many sign-in requests. Please try again later.");
         return;
       }
 

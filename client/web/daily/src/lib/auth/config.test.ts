@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 
-import { loadAuthConfig } from "./config";
+import { loadAuthConfig, safeNextPath } from "./config";
 
 const originalEnv = { ...process.env };
 
@@ -43,5 +43,12 @@ describe("Daily auth configuration", () => {
     delete process.env.AUTH_DEV_BYPASS;
 
     expect(loadAuthConfig().devBypass).toBe(true);
+  });
+
+  it("only allows same-origin relative post-login paths", () => {
+    expect(safeNextPath("/items?filter=open")).toBe("/items?filter=open");
+    expect(safeNextPath("https://attacker.example/")).toBe("/");
+    expect(safeNextPath("//attacker.example/")).toBe("/");
+    expect(safeNextPath("\\\\attacker.example\\")).toBe("/");
   });
 });

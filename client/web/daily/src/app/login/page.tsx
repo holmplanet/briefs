@@ -8,6 +8,7 @@ import {
   getSession,
   isOAuthEnabled,
   loadAuthConfig,
+  safeNextPath,
 } from "@/lib/auth";
 import { getInProcessOAuthFetch } from "@/lib/auth/in-process-oauth";
 
@@ -20,6 +21,7 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const params = await searchParams;
+  const nextPath = safeNextPath(params.next);
   const config = loadAuthConfig();
   const session = await getSession(config);
 
@@ -56,7 +58,7 @@ export default async function LoginPage({
     const authConfig = loadAuthConfig();
     const state = createOAuthState();
     const { verifier, challenge } = createPkcePair();
-    const next = String(formData.get("next") ?? "/");
+    const next = safeNextPath(String(formData.get("next") ?? "/"));
     const authorizeUrl = await buildAuthorizeUrl(
       authConfig,
       state,
@@ -102,7 +104,7 @@ export default async function LoginPage({
         ) : null}
 
         <form action={startLogin}>
-          <input type="hidden" name="next" value={params.next ?? "/"} />
+            <input type="hidden" name="next" value={nextPath} />
           <button
             type="submit"
             className="w-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-500/20"

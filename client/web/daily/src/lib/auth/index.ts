@@ -4,7 +4,7 @@ import { getSession } from "./session";
 export { buildAuthorizeUrl, exchangeCodeForUser, refreshAccessToken } from "./oauth";
 export { clearSession, getSession, setSession, SESSION_COOKIE } from "./session";
 export { createOAuthState, createPkcePair } from "./pkce";
-export { loadAuthConfig, isOAuthEnabled, redirectUri } from "./config";
+export { loadAuthConfig, isOAuthEnabled, redirectUri, safeNextPath } from "./config";
 export type { AuthConfig } from "./config";
 export type { DailySession } from "./session";
 

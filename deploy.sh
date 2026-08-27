@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
 APP_DIR="${APP_DIR:-/opt/briefs}"
-INFISICAL_ENV="${INFISICAL_ENV:-prod}"
+INFISICAL_ENV="${INFISICAL_ENV:-production}"
 INFISICAL_API_URL="${INFISICAL_API_URL:-${INFISICAL_SITE_URL:-https://app.infisical.com}}"
 INFISICAL_SECRET_PATH="${INFISICAL_SECRET_PATH:-/}"
 RUNTIME_ENV_FILE="${RUNTIME_ENV_FILE:-$ROOT_DIR/deploy/docker.production.env}"
@@ -32,21 +32,31 @@ SCP=(scp -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$SSH_KNOWN_HOSTS_FI
 WORK_DIR="$(mktemp -d)"
 trap 'rm -rf "$WORK_DIR"' EXIT
 
+: "${INFISICAL_PROJECT_ID:?INFISICAL_PROJECT_ID is required}"
+
 if [[ -z "${INFISICAL_TOKEN:-}" ]]; then
-  : "${INFISICAL_PROJECT_ID:?INFISICAL_PROJECT_ID is required}"
-  : "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:?INFISICAL_UNIVERSAL_AUTH_CLIENT_ID is required}"
-  : "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:?INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET is required}"
-  INFISICAL_TOKEN="$(INFISICAL_API_URL="$INFISICAL_API_URL" INFISICAL_DISABLE_UPDATE_CHECK=true infisical login \
-    --method=universal-auth \
-    --client-id="$INFISICAL_UNIVERSAL_AUTH_CLIENT_ID" \
-    --client-secret="$INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET" \
-    --silent --plain)"
-  export INFISICAL_TOKEN
+  if [[ -n "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:-}" || -n "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:-}" ]]; then
+    : "${INFISICAL_UNIVERSAL_AUTH_CLIENT_ID:?INFISICAL_UNIVERSAL_AUTH_CLIENT_ID is required when using Universal Auth}"
+    : "${INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET:?INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET is required when using Universal Auth}"
+    INFISICAL_TOKEN="$(INFISICAL_API_URL="$INFISICAL_API_URL" INFISICAL_DISABLE_UPDATE_CHECK=true infisical login \
+      --method=universal-auth \
+      --client-id="$INFISICAL_UNIVERSAL_AUTH_CLIENT_ID" \
+      --client-secret="$INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET" \
+      --silent --plain)"
+    export INFISICAL_TOKEN
+  else
+    echo "Using the existing human Infisical CLI session." >&2
+  fi
 fi
 export INFISICAL_API_URL INFISICAL_DISABLE_UPDATE_CHECK=true
 
 SECRET_JSON="$WORK_DIR/secrets.json"
-infisical export \
+INFISICAL_EXPORT_ARGS=()
+if [[ -n "${INFISICAL_TOKEN:-}" ]]; then
+  INFISICAL_EXPORT_ARGS+=(--token="$INFISICAL_TOKEN")
+fi
+
+infisical export "${INFISICAL_EXPORT_ARGS[@]}" \
   --projectId="$INFISICAL_PROJECT_ID" \
   --env="$INFISICAL_ENV" \
   --path="$INFISICAL_SECRET_PATH" \

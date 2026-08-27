@@ -3,7 +3,7 @@
 Production deploys keep runtime configuration and secrets separate:
 
 - `deploy/docker.production.env.example` documents non-secret runtime configuration.
-- Infisical stores deploy credentials and runtime secrets in the `dev` or `prod` environment.
+- Infisical stores runtime secrets in the `production` environment.
 - `deploy.sh` fetches secrets on the deploy machine and delivers them to the droplet as Docker
   secret files. Secrets are never written to the repository or copied into `.env`.
 
@@ -11,19 +11,21 @@ Production deploys keep runtime configuration and secrets separate:
 
 There are two separate credential groups:
 
-1. **Local deploy credentials** authenticate `deploy.sh` to Infisical. Keep these only in the
-   deployer's local shell or password manager:
+1. **Human CLI authentication** authenticates `deploy.sh` to Infisical. Sign in with the
+   Infisical CLI as your user; the CLI keeps its session in the local system keyring. Keep the
+   project ID only in the local shell or password manager:
 
    ```text
    INFISICAL_PROJECT_ID
-   INFISICAL_UNIVERSAL_AUTH_CLIENT_ID
-   INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET
    ```
 
-   Do not put them in Git, Pulumi config/state, `deploy/docker.production.env`, Docker Compose,
-   or the DigitalOcean host.
+   Do not put the user session, project ID, or optional machine credentials in Git, Pulumi
+   config/state, `deploy/docker.production.env`, Docker Compose, or the DigitalOcean host.
 
-2. **Application secrets** live in Infisical's `prod` environment and are materialized by
+   Universal Auth remains an explicit fallback for unattended automation, but is not used by the
+   normal local deployment path.
+
+2. **Application secrets** live in Infisical's `production` environment and are materialized by
    `deploy.sh` as mode `0600` Docker secret files:
 
    ```text
@@ -52,27 +54,23 @@ not contain `DATABASE_URL`, `POSTGRES_PASSWORD`, `AUTH_SECRET`, `SESSION_SECRET`
 
 ## Local setup
 
-Install and authenticate the Infisical CLI, then export:
+Install and authenticate the Infisical CLI, then sign in through the browser:
 
 ```bash
-INFISICAL_API_URL=https://app.infisical.com
-INFISICAL_PROJECT_ID=replace-me
-INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=replace-me
-INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=replace-me
+infisical login
+export INFISICAL_API_URL=https://app.infisical.com
+export INFISICAL_PROJECT_ID=replace-me
+export INFISICAL_ENV=production
 ```
 
 Use `npm run bootstrap:secrets` to seed or validate the selected environment. The script never
-prints secret values. For deployment, export the local machine-identity credentials in the same
-terminal that runs `npm run deploy`:
+prints secret values. For deployment, use the existing human CLI session in the same terminal:
 
 ```bash
 export INFISICAL_PROJECT_ID="..."
-export INFISICAL_UNIVERSAL_AUTH_CLIENT_ID="..."
-read -rsp "Infisical client secret: " INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET
-echo
-export INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET
+export INFISICAL_ENV=production
+npm run deploy
 ```
 
-The deploy script exchanges these credentials for a short-lived access token, fetches the `prod`
-secrets, removes temporary files on exit, and does not transfer the credentials or token to the
-droplet.
+The deploy script uses the current human CLI session, fetches the `production` secrets, removes
+temporary files on exit, and does not transfer the session or token to the droplet.

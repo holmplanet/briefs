@@ -9,7 +9,7 @@ bind to loopback; Caddy is the only public application ingress.
 - A DigitalOcean droplet with Docker and Compose installed.
 - A deploy user with SSH access.
 - Strict SSH host verification via `SSH_KNOWN_HOSTS_FILE`.
-- Infisical Universal Auth credentials with access to the Briefs project.
+- An authenticated Infisical CLI session with access to the Briefs project.
 - Production OAuth redirect URI and Resend sender/API key.
 - A local production runtime file at `deploy/docker.production.env`.
 
@@ -28,15 +28,17 @@ export SSH_KEY_PATH="$HOME/.ssh/briefs"
 export SSH_KNOWN_HOSTS_FILE="$HOME/.ssh/known_hosts"
 export INFISICAL_API_URL=https://app.infisical.com
 export INFISICAL_PROJECT_ID=...
-export INFISICAL_UNIVERSAL_AUTH_CLIENT_ID=...
-export INFISICAL_UNIVERSAL_AUTH_CLIENT_SECRET=...
+export INFISICAL_ENV=production
 ```
 
-The Infisical project ID and Universal Auth client credentials are local deploy credentials, not
-application runtime settings. Store them in a password manager or local shell environment. Never
-commit them, put them in Pulumi config/state, copy them to the droplet, or add them to
-`deploy/docker.production.env`. The application secrets remain in Infisical's `prod` environment
-and are installed by `deploy.sh` as `0600` Docker secret files.
+Authenticate the Infisical CLI as your human user before deploying with `infisical login`. The
+CLI preserves the session in the local system keyring. The project ID is local deploy context;
+do not commit it with credentials or add it to `deploy/docker.production.env`. The application
+secrets remain in Infisical's `production` environment and are installed by `deploy.sh` as
+`0600` Docker secret files.
+
+For unattended automation, `INFISICAL_TOKEN` or Universal Auth variables remain supported as an
+explicit fallback. They are not required for the normal human deployment path.
 
 Seed or validate the Infisical environment with `npm run bootstrap:secrets`, then run
 `npm run deploy`. The deploy script fetches secrets, uploads the Compose bundle, writes Docker

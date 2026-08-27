@@ -31,8 +31,10 @@ droplet.
 ## Setup
 
 Install Pulumi and dependencies, then authenticate the DigitalOcean provider with
-`DIGITALOCEAN_TOKEN`. Pulumi state can use the Pulumi service backend or a team-approved
-self-hosted backend; do not put provider tokens in this repository.
+`DIGITALOCEAN_TOKEN`. The local backend is suitable only for initial experimentation. Before
+the first production provisioning, move the stack to a recoverable backend—Pulumi Cloud is the
+recommended default for this personal deployment, while a team-approved DigitalOcean Spaces
+backend is also supported. Do not put provider tokens in this repository.
 
 Pulumi only provisions the host. Infisical deploy credentials belong in the local deployment
 shell/password manager and application secrets belong in Infisical; neither belongs in Pulumi
@@ -40,6 +42,7 @@ configuration or state.
 
 ```bash
 npm install
+pulumi login
 pulumi stack init dev
 pulumi config set sshKeyName hive
 pulumi config set region nyc3
@@ -53,4 +56,6 @@ The SSH key name must already exist in the DigitalOcean account. Review the prev
 approving `pulumi up`; the default stack creates a new droplet and firewall.
 
 Weekly Droplet backups are enabled by default and add 20% to the Droplet cost. Set `backups
-false` only if you have another tested PostgreSQL backup destination.
+false` only if you have another tested PostgreSQL backup destination. A backup is not considered
+verified until a fresh disposable restore has been completed and the Briefs health, login, and
+MCP smoke checks pass against the restored database.

@@ -54,6 +54,15 @@ npm run remote:stop
 npm run remote:start
 ```
 
+## Recovery gates
+
+Before provisioning, use a recoverable Pulumi backend; the local backend is a bootstrap aid and
+is not sufficient as the only copy of infrastructure state. DigitalOcean Droplet backups are
+enabled by default, but schedule a disposable restore test before treating the deployment as
+production-ready. The restore test must confirm database connectivity, migrations, Daily login,
+OTP delivery, and MCP bearer authentication. Record the restore date and result outside Git; do
+not put database dumps or provider credentials in this repository.
+
 ## Smoke checklist
 
 1. `npm run remote:status` shows Postgres, System, MCP, Daily, and Caddy healthy.

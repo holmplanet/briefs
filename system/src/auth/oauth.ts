@@ -15,6 +15,13 @@ const otpRequestsByIp = new Map<string, number[]>();
 function allowOtpRequest(req: Request): boolean {
   const ip = req.ip || req.socket.remoteAddress || "unknown";
   const now = Date.now();
+  if (otpRequestsByIp.size > 10_000) {
+    for (const [knownIp, timestamps] of otpRequestsByIp) {
+      if (timestamps.every((timestamp) => now - timestamp >= OTP_REQUEST_WINDOW_MS)) {
+        otpRequestsByIp.delete(knownIp);
+      }
+    }
+  }
   const recent = (otpRequestsByIp.get(ip) ?? []).filter((timestamp) => now - timestamp < OTP_REQUEST_WINDOW_MS);
   if (recent.length >= MAX_OTP_REQUESTS_PER_IP) {
     otpRequestsByIp.set(ip, recent);

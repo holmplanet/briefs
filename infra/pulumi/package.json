@@ -1,0 +1,19 @@
+{
+  "name": "@briefs/infrastructure",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "preview": "pulumi preview",
+    "up": "pulumi up",
+    "destroy": "pulumi destroy"
+  },
+  "dependencies": {
+    "@pulumi/digitalocean": "^4.78.1",
+    "@pulumi/pulumi": "^3.196.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.0.0"
+  }
+}
+

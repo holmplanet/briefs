@@ -39,7 +39,7 @@ npm install
 pulumi stack init dev
 pulumi config set sshKeyName hive
 pulumi config set region nyc3
-pulumi config set size s-2vcpu-4gb
+pulumi config set size s-1vcpu-2gb
 pulumi preview
 pulumi up
 ```

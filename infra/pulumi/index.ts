@@ -4,7 +4,7 @@ import * as pulumi from "@pulumi/pulumi";
 const config = new pulumi.Config();
 const name = config.get("name") ?? "briefs-daily";
 const region = config.get("region") ?? "nyc3";
-const size = config.get("size") ?? "s-2vcpu-4gb";
+const size = config.get("size") ?? "s-1vcpu-2gb";
 const sshKeyName = config.require("sshKeyName");
 const dropletUser = config.get("dropletUser") ?? "deploy";
 

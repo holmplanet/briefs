@@ -37,7 +37,7 @@ const droplet = new digitalocean.Droplet(name, {
   region,
   size,
   image: "ubuntu-24-04-x64",
-  sshKeys: [sshKey.then((key) => key.id)],
+  sshKeys: [sshKey.then((key) => String(key.id))],
   monitoring: true,
   ipv6: true,
   tags: ["briefs-prod", "briefs-daily"],
@@ -46,7 +46,7 @@ const droplet = new digitalocean.Droplet(name, {
 
 const firewall = new digitalocean.Firewall(`${name}-firewall`, {
   name: `${name}-firewall`,
-  dropletIds: [droplet.id],
+  dropletIds: [droplet.id.apply(Number)],
   inboundRules: [
     { protocol: "tcp", portRange: "22", sourceAddresses: ["0.0.0.0/0", "::/0"] },
     { protocol: "tcp", portRange: "80", sourceAddresses: ["0.0.0.0/0", "::/0"] },

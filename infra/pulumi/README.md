@@ -34,6 +34,10 @@ Install Pulumi and dependencies, then authenticate the DigitalOcean provider wit
 `DIGITALOCEAN_TOKEN`. Pulumi state can use the Pulumi service backend or a team-approved
 self-hosted backend; do not put provider tokens in this repository.
 
+Pulumi only provisions the host. Infisical deploy credentials belong in the local deployment
+shell/password manager and application secrets belong in Infisical; neither belongs in Pulumi
+configuration or state.
+
 ```bash
 npm install
 pulumi stack init dev

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
+umask 077
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
@@ -120,8 +121,7 @@ for image in system mcp daily; do
 done
 
 for secret in postgres_password auth_secret session_secret resend_api_key database_url; do
-  "${SCP[@]}" "$SECRET_DIR/$secret" "$DEPLOY_USER@$DROPLET_IP:$APP_DIR/secrets/.$secret.tmp"
-  "${SSH[@]}" "install -m 600 '$APP_DIR/secrets/.$secret.tmp' '$APP_DIR/secrets/$secret' && rm -f '$APP_DIR/secrets/.$secret.tmp'"
+  "${SSH[@]}" "umask 077; tmp=\$(mktemp '$APP_DIR/secrets/.$secret.tmp.XXXXXX'); trap 'rm -f \"\$tmp\"' EXIT; cat > \"\$tmp\"; install -m 600 \"\$tmp\" '$APP_DIR/secrets/$secret'" < "$SECRET_DIR/$secret"
 done
 
 "${SSH[@]}" "cd '$APP_DIR' && docker compose --env-file .env -f docker-compose.prod.yml config --quiet && docker compose --env-file .env -f docker-compose.prod.yml up -d"

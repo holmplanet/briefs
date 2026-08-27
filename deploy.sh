@@ -14,6 +14,7 @@ SSH_KNOWN_HOSTS_FILE="${SSH_KNOWN_HOSTS_FILE:-$HOME/.ssh/known_hosts}"
 : "${DROPLET_IP:?DROPLET_IP is required}"
 : "${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}"
 : "${NEXT_PUBLIC_MCP_URL:?NEXT_PUBLIC_MCP_URL is required}"
+: "${APP_DOMAIN:?APP_DOMAIN is required}"
 
 command -v docker >/dev/null || { echo "ERROR: docker is required" >&2; exit 1; }
 command -v infisical >/dev/null || { echo "ERROR: infisical CLI is required" >&2; exit 1; }
@@ -100,8 +101,8 @@ docker save -o "$WORK_DIR/mcp.tar" "briefs-mcp:$IMAGE_TAG"
 docker save -o "$WORK_DIR/daily.tar" "briefs-daily:$IMAGE_TAG"
 
 "${SSH[@]}" "mkdir -p '$APP_DIR/secrets' /tmp/briefs-deploy && chmod 700 '$APP_DIR/secrets'"
-"${SCP[@]}" "$ROOT_DIR/docker/docker-compose.prod.yml" "$WORK_DIR/.env" "$DEPLOY_USER@$DROPLET_IP:/tmp/briefs-deploy/"
-"${SSH[@]}" "install -m 600 /tmp/briefs-deploy/.env '$APP_DIR/.env' && install -m 644 /tmp/briefs-deploy/docker-compose.prod.yml '$APP_DIR/docker-compose.prod.yml' && rm -rf /tmp/briefs-deploy"
+"${SCP[@]}" "$ROOT_DIR/docker/docker-compose.prod.yml" "$ROOT_DIR/docker/Caddyfile" "$WORK_DIR/.env" "$DEPLOY_USER@$DROPLET_IP:/tmp/briefs-deploy/"
+"${SSH[@]}" "install -m 600 /tmp/briefs-deploy/.env '$APP_DIR/.env' && install -m 644 /tmp/briefs-deploy/docker-compose.prod.yml '$APP_DIR/docker-compose.prod.yml' && install -m 644 /tmp/briefs-deploy/Caddyfile '$APP_DIR/Caddyfile' && rm -rf /tmp/briefs-deploy"
 
 for image in system mcp daily; do
   "${SCP[@]}" "$WORK_DIR/$image.tar" "$DEPLOY_USER@$DROPLET_IP:/tmp/briefs-$image.tar"

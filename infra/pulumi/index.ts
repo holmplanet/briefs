@@ -5,6 +5,7 @@ const config = new pulumi.Config();
 const name = config.get("name") ?? "briefs-daily";
 const region = config.get("region") ?? "nyc3";
 const size = config.get("size") ?? "s-1vcpu-2gb";
+const backups = config.getBoolean("backups") ?? true;
 const sshKeyName = config.require("sshKeyName");
 const dropletUser = config.get("dropletUser") ?? "deploy";
 const sshAllowedCidrs = config.requireObject<string[]>("sshAllowedCidrs");
@@ -60,6 +61,7 @@ const droplet = new digitalocean.Droplet(name, {
   name,
   region,
   size,
+  backups,
   image: "ubuntu-24-04-x64",
   sshKeys: [sshKey.then((key) => String(key.id))],
   monitoring: true,

@@ -40,9 +40,13 @@ pulumi stack init dev
 pulumi config set sshKeyName hive
 pulumi config set region nyc3
 pulumi config set size s-1vcpu-2gb
+pulumi config set backups true
 pulumi preview
 pulumi up
 ```
 
 The SSH key name must already exist in the DigitalOcean account. Review the preview before
 approving `pulumi up`; the default stack creates a new droplet and firewall.
+
+Weekly Droplet backups are enabled by default and add 20% to the Droplet cost. Set `backups
+false` only if you have another tested PostgreSQL backup destination.

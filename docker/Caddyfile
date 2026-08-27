@@ -1,0 +1,4 @@
+{$APP_DOMAIN} {
+  encode gzip
+  reverse_proxy daily:3000
+}

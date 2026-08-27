@@ -3,7 +3,7 @@
 Production deploys keep runtime configuration and secrets separate:
 
 - `deploy/docker.production.env.example` documents non-secret runtime configuration.
-- Infisical stores runtime secrets in the `production` environment.
+- Infisical stores runtime secrets in the `prod` environment, displayed as Production in the UI.
 - `deploy.sh` fetches secrets on the deploy machine and delivers them to the droplet as Docker
   secret files. Secrets are never written to the repository or copied into `.env`.
 
@@ -25,7 +25,7 @@ There are two separate credential groups:
    Universal Auth remains an explicit fallback for unattended automation, but is not used by the
    normal local deployment path.
 
-2. **Application secrets** live in Infisical's `production` environment and are materialized by
+2. **Application secrets** live in Infisical's `prod` environment and are materialized by
    `deploy.sh` as mode `0600` Docker secret files:
 
    ```text
@@ -60,7 +60,7 @@ Install and authenticate the Infisical CLI, then sign in through the browser:
 infisical login
 export INFISICAL_API_URL=https://app.infisical.com
 export INFISICAL_PROJECT_ID=replace-me
-export INFISICAL_ENV=production
+export INFISICAL_ENV=prod
 ```
 
 Use `npm run bootstrap:secrets` to seed or validate the selected environment. The script never
@@ -68,9 +68,9 @@ prints secret values. For deployment, use the existing human CLI session in the 
 
 ```bash
 export INFISICAL_PROJECT_ID="..."
-export INFISICAL_ENV=production
+export INFISICAL_ENV=prod
 npm run deploy
 ```
 
-The deploy script uses the current human CLI session, fetches the `production` secrets, removes
+The deploy script uses the current human CLI session, fetches the `prod` secrets, removes
 temporary files on exit, and does not transfer the session or token to the droplet.

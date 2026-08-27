@@ -28,13 +28,13 @@ export SSH_KEY_PATH="$HOME/.ssh/briefs"
 export SSH_KNOWN_HOSTS_FILE="$HOME/.ssh/known_hosts"
 export INFISICAL_API_URL=https://app.infisical.com
 export INFISICAL_PROJECT_ID=...
-export INFISICAL_ENV=production
+export INFISICAL_ENV=prod
 ```
 
 Authenticate the Infisical CLI as your human user before deploying with `infisical login`. The
 CLI preserves the session in the local system keyring. The project ID is local deploy context;
 do not commit it with credentials or add it to `deploy/docker.production.env`. The application
-secrets remain in Infisical's `production` environment and are installed by `deploy.sh` as
+secrets remain in Infisical's `prod` environment (displayed as Production) and are installed by `deploy.sh` as
 `0600` Docker secret files.
 
 For unattended automation, `INFISICAL_TOKEN` or Universal Auth variables remain supported as an

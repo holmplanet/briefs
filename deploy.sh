@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
 APP_DIR="${APP_DIR:-/opt/briefs}"
-INFISICAL_ENV="${INFISICAL_ENV:-production}"
+INFISICAL_ENV="${INFISICAL_ENV:-prod}"
 INFISICAL_API_URL="${INFISICAL_API_URL:-${INFISICAL_SITE_URL:-https://app.infisical.com}}"
 INFISICAL_SECRET_PATH="${INFISICAL_SECRET_PATH:-/}"
 RUNTIME_ENV_FILE="${RUNTIME_ENV_FILE:-$ROOT_DIR/deploy/docker.production.env}"

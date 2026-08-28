@@ -28,7 +28,7 @@ The deploy script builds the application images for `linux/amd64`, matching the 
 DigitalOcean Droplet architecture. Set `TARGET_PLATFORM` explicitly only when deploying to a
 different architecture.
 
-Application images are tagged with the full Git commit identifier used for the deployment and
+Application images are tagged with the 12-character Git commit identifier used for the deployment and
 transferred directly to the Droplet; the base images are pinned by digest in the Dockerfiles. If
 a registry is introduced later, promote the same images by immutable OCI digest and verify the
 digest after pull before starting Compose.

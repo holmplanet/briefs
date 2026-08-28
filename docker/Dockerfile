@@ -30,7 +30,7 @@ FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a55
 
 WORKDIR /repo
 
-RUN addgroup -g 1000 -S briefs \
+RUN addgroup -g 1001 -S briefs \
   && adduser -S briefs -u 1000 -G briefs
 
 COPY --from=prod-deps /repo/node_modules ./node_modules

@@ -4,6 +4,30 @@ Briefs production is an image-only Docker Compose deployment on a DigitalOcean d
 droplet runs Postgres, System, MCP, and Daily on a private Docker network. The application ports
 bind to loopback; Caddy is the only public application ingress.
 
+This runbook intentionally uses placeholders. Replace values locally; never commit a real
+hostname, IP address, email allowlist, fingerprint, token, or secret to this public repository.
+
+## Deployment sequence
+
+The safe order is:
+
+1. Log in to Pulumi Cloud and select the intended stack.
+2. Configure a pinned DigitalOcean image ID, region, size, existing SSH key, backups, and a
+   narrowly scoped SSH CIDR.
+3. Run `pulumi preview`, review the firewall and resource plan, then explicitly approve
+   `pulumi up`.
+4. Record the returned Droplet addresses privately. Pulumi does not manage DNS.
+5. In the DNS provider, create A and AAAA records for `<obscure-host>.holmplanet.com` pointing
+   to those addresses. A short TTL such as 300 seconds is useful during initial setup.
+6. Verify the SSH host fingerprint from the Droplet Console before trusting it locally.
+7. Configure the ignored runtime file and authenticate the Infisical CLI as the human deploy
+   operator.
+8. Run `npm run deploy`, then perform the smoke checks below.
+
+An obscure subdomain reduces casual scanning and accidental discovery. It is not security:
+authentication, exact OAuth redirect validation, the email allowlist, TLS, and the firewall are
+the actual controls.
+
 ## Prerequisites
 
 - A DigitalOcean droplet with Docker and Compose installed.
@@ -29,6 +53,14 @@ export SSH_KNOWN_HOSTS_FILE="$HOME/.ssh/known_hosts"
 export INFISICAL_API_URL=https://app.infisical.com
 export INFISICAL_PROJECT_ID=...
 export INFISICAL_ENV=prod
+```
+
+`INFISICAL_PROJECT_ID` identifies the project and belongs in the local shell/password manager,
+not in the repository or production runtime env file. The normal path is the human CLI session:
+
+```bash
+infisical login
+npm run deploy
 ```
 
 Authenticate the Infisical CLI as your human user before deploying with `infisical login`. The
@@ -71,3 +103,27 @@ not put database dumps or provider credentials in this repository.
 4. MCP accepts a valid bearer token and rejects missing/invalid tokens.
 5. System ignores `X-Briefs-User-Id` in production.
 6. Create an item through MCP and verify it plus its activity in Daily.
+
+Also verify:
+
+```text
+https://<obscure-host>.holmplanet.com/api/health
+https://<obscure-host>.holmplanet.com/.well-known/oauth-protected-resource
+https://<obscure-host>.holmplanet.com/.well-known/oauth-authorization-server
+```
+
+An unauthenticated request to `/mcp` should receive an authentication challenge and protected
+resource metadata, not an open MCP session. Confirm HTTPS certificate validity, both DNS record
+families, persistence after container restart, and a documented backup/restore test.
+
+## Troubleshooting gates
+
+- A 401 from the DigitalOcean API during preview/up usually means the token is missing, expired,
+  or lacks a required custom scope. A 403 naming `tag:create` means the program is trying to use
+  tags; remove optional tags or grant that scope intentionally.
+- A Droplet Console that hangs does not prove the firewall is blocking SSH. Check Droplet status,
+  agent health, cloud-init progress, and whether TCP/22 is reachable from the configured CIDR.
+- If SSH reports an unknown or changed host key, stop and verify it out of band; do not disable
+  strict host checking.
+- If DNS resolves but TLS is not ready, wait for A/AAAA propagation and Caddy issuance before
+  changing application auth or firewall settings.

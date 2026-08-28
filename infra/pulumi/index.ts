@@ -67,7 +67,6 @@ const droplet = new digitalocean.Droplet(name, {
   sshKeys: [sshKey.then((key) => String(key.id))],
   monitoring: true,
   ipv6: true,
-  tags: ["briefs-prod", "briefs-daily"],
   userData: cloudInit,
 });
 

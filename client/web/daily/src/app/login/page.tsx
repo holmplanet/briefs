@@ -26,7 +26,7 @@ export default async function LoginPage({
   const session = await getSession(config);
 
   if (session && (!isOAuthEnabled(config) || session.accessToken)) {
-    redirect(params.next ?? "/");
+    redirect(nextPath);
   }
 
   if (!isOAuthEnabled(config)) {
@@ -42,7 +42,7 @@ export default async function LoginPage({
             to the Briefs OAuth issuer to enable sign-in.
           </p>
           <a
-            href={params.next ?? "/"}
+            href={nextPath}
             className="inline-flex w-fit rounded-full border border-border bg-card/50 px-4 py-2 text-sm font-medium hover:bg-card/80"
           >
             Continue to Daily

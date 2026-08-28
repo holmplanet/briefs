@@ -44,7 +44,7 @@ describe("production configuration", () => {
     delete process.env.APP_ENV;
     process.env.NODE_ENV = "production";
     process.env.VERCEL_ENV = "production";
-    process.env.AUTH_ALLOWED_EMAILS = "carter@example.com,wife@example.com";
+    process.env.AUTH_ALLOWED_EMAILS = "first-user@example.com,second-user@example.com";
 
     const { loadConfig } = await import("../src/config.js");
     const config = loadConfig();
@@ -55,7 +55,7 @@ describe("production configuration", () => {
 
   it("rejects duplicate or malformed production allowlist entries", async () => {
     process.env.APP_ENV = "production";
-    process.env.AUTH_ALLOWED_EMAILS = "carter@example.com,carter@example.com";
+    process.env.AUTH_ALLOWED_EMAILS = "first-user@example.com,first-user@example.com";
 
     const { loadConfig } = await import("../src/config.js");
     expect(() => loadConfig()).toThrow("exactly two");

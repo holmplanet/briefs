@@ -50,11 +50,12 @@ export function loadConfig(): BriefsConfig {
     .filter(Boolean);
   if (
     env === "production" &&
-    (oauthAllowedEmails.length !== 2 ||
-      new Set(oauthAllowedEmails).size !== 2 ||
+    (oauthAllowedEmails.length < 1 ||
+      oauthAllowedEmails.length > 2 ||
+      new Set(oauthAllowedEmails).size !== oauthAllowedEmails.length ||
       oauthAllowedEmails.some((email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))
   ) {
-    throw new Error("Production Briefs requires exactly two unique valid AUTH_ALLOWED_EMAILS entries");
+    throw new Error("Production Briefs requires one or two unique valid AUTH_ALLOWED_EMAILS entries");
   }
 
   return {

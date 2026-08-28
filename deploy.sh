@@ -23,6 +23,12 @@ command -v infisical >/dev/null || { echo "ERROR: infisical CLI is required" >&2
 [[ -f "$SSH_KNOWN_HOSTS_FILE" ]] || { echo "ERROR: SSH_KNOWN_HOSTS_FILE does not exist" >&2; exit 1; }
 [[ -f "$SSH_KEY_PATH" ]] || { echo "ERROR: SSH_KEY_PATH does not exist" >&2; exit 1; }
 
+if [[ -n "$(git -C "$ROOT_DIR" status --porcelain)" ]]; then
+  echo "ERROR: working tree must be clean before deployment" >&2
+  git -C "$ROOT_DIR" status --short >&2
+  exit 1
+fi
+
 if grep -Eq '^[[:space:]]*(export[[:space:]]+)?(DATABASE_URL|AUTH_SECRET|SESSION_SECRET|RESEND_API_KEY|POSTGRES_PASSWORD)=' "$RUNTIME_ENV_FILE"; then
   echo "ERROR: runtime env must not contain secret variables" >&2
   exit 1
@@ -53,7 +59,7 @@ export INFISICAL_API_URL INFISICAL_DISABLE_UPDATE_CHECK=true
 
 SECRET_JSON="$WORK_DIR/secrets.json"
 if [[ -n "${INFISICAL_TOKEN:-}" ]]; then
-  infisical export --token="$INFISICAL_TOKEN" \
+  infisical export \
     --projectId="$INFISICAL_PROJECT_ID" \
     --env="$INFISICAL_ENV" \
     --path="$INFISICAL_SECRET_PATH" \

@@ -41,6 +41,7 @@ COPY shared/package.json shared/
 COPY --from=build /repo/shared/dist shared/dist
 COPY client/web/shared/package.json client/web/shared/
 COPY --from=build /repo/client/web/shared/src client/web/shared/src
+COPY db db
 COPY client/web/daily/package.json client/web/daily/
 COPY --from=build /repo/client/web/daily/.next client/web/daily/.next
 COPY --from=build /repo/client/web/daily/next.config.ts client/web/daily/

@@ -105,11 +105,11 @@ docker build -f "$ROOT_DIR/docker/Dockerfile.daily" \
   --build-arg NEXT_PUBLIC_MCP_URL="$NEXT_PUBLIC_MCP_URL" \
   -t "briefs-daily:$IMAGE_TAG" "$ROOT_DIR"
 
-sed -E \
-  -e "s#^SYSTEM_IMAGE=.*#SYSTEM_IMAGE=briefs-system:$IMAGE_TAG#" \
-  -e "s#^MCP_IMAGE=.*#MCP_IMAGE=briefs-mcp:$IMAGE_TAG#" \
-  -e "s#^DAILY_IMAGE=.*#DAILY_IMAGE=briefs-daily:$IMAGE_TAG#" \
-  "$RUNTIME_ENV_FILE" > "$WORK_DIR/.env"
+sed -E '/^(SYSTEM_IMAGE|MCP_IMAGE|DAILY_IMAGE)=/d' "$RUNTIME_ENV_FILE" > "$WORK_DIR/.env"
+printf '%s\n' \
+  "SYSTEM_IMAGE=briefs-system:$IMAGE_TAG" \
+  "MCP_IMAGE=briefs-mcp:$IMAGE_TAG" \
+  "DAILY_IMAGE=briefs-daily:$IMAGE_TAG" >> "$WORK_DIR/.env"
 
 docker save -o "$WORK_DIR/system.tar" "briefs-system:$IMAGE_TAG"
 docker save -o "$WORK_DIR/mcp.tar" "briefs-mcp:$IMAGE_TAG"

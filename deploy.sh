@@ -4,7 +4,7 @@ umask 077
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
-APP_DIR="${APP_DIR:-/opt/briefs}"
+APP_DIR="${APP_DIR:-/home/${DEPLOY_USER}/briefs}"
 INFISICAL_ENV="${INFISICAL_ENV:-prod}"
 INFISICAL_API_URL="${INFISICAL_API_URL:-${INFISICAL_SITE_URL:-https://app.infisical.com}}"
 INFISICAL_SECRET_PATH="${INFISICAL_SECRET_PATH:-/}"

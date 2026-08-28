@@ -5,7 +5,7 @@ CMD="${1:-help}"
 DROPLET_IP="${DROPLET_IP:?DROPLET_IP is required}"
 SSH_KNOWN_HOSTS_FILE="${SSH_KNOWN_HOSTS_FILE:?SSH_KNOWN_HOSTS_FILE is required}"
 DEPLOY_USER="${DEPLOY_USER:-deploy}"
-APP_DIR="${APP_DIR:-/opt/briefs}"
+APP_DIR="${APP_DIR:-/home/${DEPLOY_USER}/briefs}"
 
 SSH_BASE=(ssh -o StrictHostKeyChecking=yes -o "UserKnownHostsFile=$SSH_KNOWN_HOSTS_FILE")
 [[ -n "${SSH_KEY_PATH:-}" ]] && SSH_BASE+=(-i "$SSH_KEY_PATH")

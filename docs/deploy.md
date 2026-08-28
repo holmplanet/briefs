@@ -24,6 +24,10 @@ The safe order is:
    operator.
 8. Run `npm run deploy`, then perform the smoke checks below.
 
+The deploy script builds the application images for `linux/amd64`, matching the default
+DigitalOcean Droplet architecture. Set `TARGET_PLATFORM` explicitly only when deploying to a
+different architecture.
+
 An obscure subdomain reduces casual scanning and accidental discovery. It is not security:
 authentication, exact OAuth redirect validation, the email allowlist, TLS, and the firewall are
 the actual controls.

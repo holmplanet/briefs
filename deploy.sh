@@ -98,9 +98,10 @@ fs.writeFileSync(path.join(outputDir, "database_url"), databaseUrl, { mode: 0o60
 NODE
 
 IMAGE_TAG="${IMAGE_TAG:-$(git -C "$ROOT_DIR" rev-parse --short=12 HEAD)}"
-docker build -f "$ROOT_DIR/docker/Dockerfile" -t "briefs-system:$IMAGE_TAG" "$ROOT_DIR"
-docker build -f "$ROOT_DIR/docker/Dockerfile.mcp" -t "briefs-mcp:$IMAGE_TAG" "$ROOT_DIR"
-docker build -f "$ROOT_DIR/docker/Dockerfile.daily" \
+TARGET_PLATFORM="${TARGET_PLATFORM:-linux/amd64}"
+docker build --platform "$TARGET_PLATFORM" -f "$ROOT_DIR/docker/Dockerfile" -t "briefs-system:$IMAGE_TAG" "$ROOT_DIR"
+docker build --platform "$TARGET_PLATFORM" -f "$ROOT_DIR/docker/Dockerfile.mcp" -t "briefs-mcp:$IMAGE_TAG" "$ROOT_DIR"
+docker build --platform "$TARGET_PLATFORM" -f "$ROOT_DIR/docker/Dockerfile.daily" \
   --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
   --build-arg NEXT_PUBLIC_MCP_URL="$NEXT_PUBLIC_MCP_URL" \
   -t "briefs-daily:$IMAGE_TAG" "$ROOT_DIR"

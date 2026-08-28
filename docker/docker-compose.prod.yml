@@ -2,7 +2,7 @@ name: briefs
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
     restart: unless-stopped
     environment:
       POSTGRES_USER: briefs
@@ -93,7 +93,7 @@ services:
         condition: service_healthy
 
   caddy:
-    image: caddy:2.10.2-alpine
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
     restart: unless-stopped
     environment:
       APP_DOMAIN: ${APP_DOMAIN:?APP_DOMAIN is required}

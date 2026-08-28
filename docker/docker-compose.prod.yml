@@ -80,12 +80,14 @@ services:
       DATABASE_URL_FILE: /run/secrets/database_url
       AUTH_SECRET_FILE: /run/secrets/auth_secret
       SESSION_SECRET_FILE: /run/secrets/session_secret
+      RESEND_API_KEY_FILE: /run/secrets/resend_api_key
     ports:
       - "127.0.0.1:${DAILY_PORT:-3000}:3000"
     secrets:
       - database_url
       - auth_secret
       - session_secret
+      - resend_api_key
     networks:
       - private
     depends_on:

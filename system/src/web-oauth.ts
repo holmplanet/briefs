@@ -40,12 +40,20 @@ async function registerClient(request: Request, context: AppContext): Promise<Re
   const redirectUris = Array.isArray(body?.redirect_uris)
     ? body.redirect_uris.filter((value): value is string => typeof value === "string" && value.length > 0)
     : [];
-  if (redirectUris.length === 0) return json({ error: "invalid_client_metadata" }, 400);
+  const clientName = typeof body?.client_name === "string" ? body.client_name.trim().slice(0, 120) : undefined;
+  if (
+    redirectUris.length === 0 ||
+    redirectUris.length > 10 ||
+    new Set(redirectUris).size !== redirectUris.length ||
+    redirectUris.some((redirectUri) => !isSafeRedirectUri(redirectUri, context))
+  ) {
+    return json({ error: "invalid_client_metadata" }, 400);
+  }
 
   const client = await context.auth.registerOAuthClient({
     clientId: `briefs-${randomUUID()}`,
     redirectUris,
-    clientName: typeof body?.client_name === "string" ? body.client_name : undefined,
+    clientName,
   });
   return json({
     client_id: client.clientId,
@@ -60,10 +68,12 @@ async function registerClient(request: Request, context: AppContext): Promise<Re
 async function authorizePage(url: URL, context: AppContext): Promise<Response> {
   const values = queryValues(url.searchParams);
   if (!(await validAuthorization(values, context))) return text("Invalid OAuth authorization request", 400);
+  const client = await getOAuthClient(context, values.client_id);
+  if (!client) return text("Invalid OAuth authorization request", 400);
 
   return html(formPage(
     "Sign in to Briefs",
-    `<h1>Sign in to Briefs</h1><p>We’ll email you a one-time sign-in code.</p><form method="post" action="${context.config.oauthIssuer}/authorize/request">${hiddenFields(values)}<label>Email<input name="email" type="email" autocomplete="email" required></label><button>Send code</button></form>`,
+    `<h1>Sign in to Briefs</h1><p><strong>${escapeHtml(client.clientName)}</strong> is requesting access for <code>${escapeHtml(new URL(values.redirect_uri).origin)}</code>.</p><p>We’ll email you a one-time sign-in code.</p><form method="post" action="${context.config.oauthIssuer}/authorize/request">${hiddenFields(values)}<label><input name="consent" type="checkbox" value="on" required> I recognize this client and approve access.</label><label>Email<input name="email" type="email" autocomplete="email" required></label><button>Send code</button></form>`,
   ));
 }
 
@@ -74,6 +84,9 @@ async function requestOtp(request: Request, context: AppContext): Promise<Respon
 
   if (!(await validAuthorization(values, context))) {
     return text("Invalid OAuth authorization request", 400);
+  }
+  if (form.get("consent") !== "on") {
+    return html(authorizeForm(values, context.config.oauthIssuer, email, "Confirm that you recognize this client before continuing."), 400);
   }
   if (!isValidEmail(email)) {
     return html(authorizeForm(values, context.config.oauthIssuer, email, "Enter a valid email address."), 400);
@@ -204,9 +217,9 @@ function formKeys(read: (key: string) => string | null): Record<string, string> 
 }
 
 async function isAllowedClient(context: AppContext, clientId: string, redirectUri: string): Promise<boolean> {
-  if (clientId === context.config.oauthClientId) return context.config.oauthRedirectUris.includes(redirectUri);
+  if (clientId === context.config.oauthClientId) return context.config.oauthRedirectUris.includes(redirectUri) && isSafeRedirectUri(redirectUri, context);
   const client = await context.auth.getOAuthClient(clientId);
-  return Boolean(client?.redirectUris.includes(redirectUri));
+  return Boolean(client?.redirectUris.includes(redirectUri) && isSafeRedirectUri(redirectUri, context));
 }
 
 async function validAuthorization(values: Record<string, string>, context: AppContext): Promise<boolean> {
@@ -223,6 +236,28 @@ function isValidEmail(value: string): boolean {
 
 function isAllowedEmail(context: AppContext, email: string): boolean {
   return context.config.oauthAllowedEmails.length === 0 || context.config.oauthAllowedEmails.includes(email);
+}
+
+async function getOAuthClient(context: AppContext, clientId: string): Promise<{ clientName: string; redirectUris: string[] } | undefined> {
+  if (clientId === context.config.oauthClientId) {
+    return { clientName: "Briefs Daily", redirectUris: context.config.oauthRedirectUris };
+  }
+  const client = await context.auth.getOAuthClient(clientId);
+  return client
+    ? { clientName: client.clientName ?? `OAuth client ${clientId}`, redirectUris: client.redirectUris }
+    : undefined;
+}
+
+function isSafeRedirectUri(value: string, context: AppContext): boolean {
+  if (context.config.oauthAllowedRedirectUris.includes(value) || context.config.oauthRedirectUris.includes(value)) return true;
+
+  try {
+    const url = new URL(value);
+    const loopback = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
+    return loopback && url.protocol === "http:" && Boolean(url.port) && !url.username && !url.password && !url.hash;
+  } catch {
+    return false;
+  }
 }
 
 function hash(value: string): string {
@@ -247,7 +282,7 @@ function authorizeForm(values: Record<string, string>, issuer: string, email = "
   const errorMarkup = error ? `<p class="error" role="alert">${escapeHtml(error)}</p>` : "";
   return formPage(
     "Sign in to Briefs",
-    `<h1>Sign in to Briefs</h1><p>We’ll email you a one-time sign-in code.</p>${errorMarkup}<form method="post" action="${escapeHtml(issuer)}/authorize/request">${hiddenFields(values)}<label>Email<input name="email" type="email" autocomplete="email" value="${escapeHtml(email)}" required></label><button>Send code</button></form>`,
+    `<h1>Sign in to Briefs</h1><p>We’ll email you a one-time sign-in code.</p>${errorMarkup}<form method="post" action="${escapeHtml(issuer)}/authorize/request">${hiddenFields(values)}<label><input name="consent" type="checkbox" value="on" required> I recognize this client and approve access.</label><label>Email<input name="email" type="email" autocomplete="email" value="${escapeHtml(email)}" required></label><button>Send code</button></form>`,
   );
 }
 

@@ -52,6 +52,11 @@ explicit secret is provided by the deployment operator. The runtime environment 
 not contain `DATABASE_URL`, `POSTGRES_PASSWORD`, `AUTH_SECRET`, `SESSION_SECRET`, or
 `RESEND_API_KEY`.
 
+`OAUTH_ALLOWED_REDIRECT_URIS` is also non-secret runtime configuration. It is a comma-separated
+allowlist of exact remote OAuth callbacks for dynamic MCP clients. Loopback HTTP callbacks are
+allowed for local desktop clients; arbitrary public callbacks are rejected. Keep only callbacks
+for clients you intentionally use.
+
 ## Local setup
 
 Install and authenticate the Infisical CLI, then sign in through the browser:

@@ -10,6 +10,7 @@ export type BriefsConfig = {
   authDevBypass: boolean;
   oauthClientId: string;
   oauthRedirectUris: string[];
+  oauthAllowedRedirectUris: string[];
   oauthAllowedEmails: string[];
   otpMailer: "console" | "resend";
   resendApiKey?: string;
@@ -43,6 +44,10 @@ export function loadConfig(): BriefsConfig {
     .split(",")
     .map((value) => value.trim().toLowerCase())
     .filter(Boolean);
+  const oauthAllowedRedirectUris = (process.env.OAUTH_ALLOWED_REDIRECT_URIS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
   if (env === "production" && oauthAllowedEmails.length === 0) {
     throw new Error("Production Briefs requires AUTH_ALLOWED_EMAILS or an explicit public-signup policy");
   }
@@ -57,6 +62,7 @@ export function loadConfig(): BriefsConfig {
     authDevBypass: process.env.API_DEV_BYPASS !== "false" && !isProductionEnvironment(),
     oauthClientId: process.env.OAUTH_CLIENT_ID ?? "briefs-daily",
     oauthRedirectUris: (process.env.OAUTH_REDIRECT_URIS ?? "http://localhost:3000/auth/callback").split(",").map((value) => value.trim()).filter(Boolean),
+    oauthAllowedRedirectUris,
     oauthAllowedEmails,
     otpMailer: process.env.OTP_MAILER === "resend" ? "resend" : "console",
     resendApiKey: process.env.RESEND_API_KEY,

@@ -16,6 +16,7 @@ function createContext(): AppContext {
       authDevBypass: false,
       oauthClientId: "briefs-daily",
       oauthRedirectUris: ["https://preview.example.com/auth/callback"],
+      oauthAllowedRedirectUris: ["https://claude.ai/api/mcp/auth_callback"],
       oauthAllowedEmails: ["owner@example.com"],
       otpMailer: "resend",
       resendApiKey: "re_example",
@@ -58,6 +59,7 @@ describe("Vercel OAuth adapter", () => {
       redirect_uri: "https://preview.example.com/auth/callback",
       code_challenge: "challenge",
       code_challenge_method: "S256",
+      consent: "on",
       email: "other@example.com",
     });
     const response = await handleWebOAuthRequest(
@@ -80,6 +82,7 @@ describe("Vercel OAuth adapter", () => {
       redirect_uri: "https://preview.example.com/auth/callback",
       code_challenge: "challenge",
       code_challenge_method: "S256",
+      consent: "on",
       email: "not-an-email",
     });
     const response = await handleWebOAuthRequest(

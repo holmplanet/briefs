@@ -27,6 +27,9 @@ export async function bootstrap(): Promise<AppContext> {
   if (config.env === "production" && !config.databaseUrl) {
     throw new Error("Production requires DATABASE_URL for durable OAuth storage");
   }
+  if (config.env === "production" && config.oauthAllowedRedirectUris.length === 0) {
+    throw new Error("Production requires OAUTH_ALLOWED_REDIRECT_URIS for dynamic OAuth clients");
+  }
   if (config.env === "production" && config.authSecret === "dev-briefs-auth-secret") {
     throw new Error("Production requires a non-default AUTH_SECRET");
   }

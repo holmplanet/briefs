@@ -48,8 +48,13 @@ export function loadConfig(): BriefsConfig {
     .split(",")
     .map((value) => value.trim())
     .filter(Boolean);
-  if (env === "production" && oauthAllowedEmails.length === 0) {
-    throw new Error("Production Briefs requires AUTH_ALLOWED_EMAILS or an explicit public-signup policy");
+  if (
+    env === "production" &&
+    (oauthAllowedEmails.length !== 2 ||
+      new Set(oauthAllowedEmails).size !== 2 ||
+      oauthAllowedEmails.some((email) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)))
+  ) {
+    throw new Error("Production Briefs requires exactly two unique valid AUTH_ALLOWED_EMAILS entries");
   }
 
   return {

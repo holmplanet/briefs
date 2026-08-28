@@ -39,7 +39,7 @@ describe("OAuth email OTP flow", () => {
       const request = await fetch(`${base}/oauth/authorize/request`, {
         method: "POST",
         headers: { "content-type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({ ...oauth, email: "auth-test@example.com" }),
+        body: new URLSearchParams({ ...oauth, consent: "on", email: "auth-test@example.com" }),
       });
       expect(request.status).toBe(200);
       const requestHtml = await request.text();

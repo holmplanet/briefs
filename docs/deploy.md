@@ -28,6 +28,11 @@ The deploy script builds the application images for `linux/amd64`, matching the 
 DigitalOcean Droplet architecture. Set `TARGET_PLATFORM` explicitly only when deploying to a
 different architecture.
 
+Application images are tagged with the full Git commit identifier used for the deployment and
+transferred directly to the Droplet; the base images are pinned by digest in the Dockerfiles. If
+a registry is introduced later, promote the same images by immutable OCI digest and verify the
+digest after pull before starting Compose.
+
 An obscure subdomain reduces casual scanning and accidental discovery. It is not security:
 authentication, exact OAuth redirect validation, the email allowlist, TLS, and the firewall are
 the actual controls.
@@ -98,6 +103,40 @@ enabled by default, but schedule a disposable restore test before treating the d
 production-ready. The restore test must confirm database connectivity, migrations, Daily login,
 OTP delivery, and MCP bearer authentication. Record the restore date and result outside Git; do
 not put database dumps or provider credentials in this repository.
+
+## Maintenance window
+
+Apply Ubuntu updates only during an announced maintenance window with console access available:
+
+1. Confirm a current DigitalOcean backup or snapshot and record the current commit/image tag.
+2. Confirm users are not actively signing in or using MCP.
+3. From a privileged session, run `sudo apt-get update && sudo apt-get dist-upgrade`, review any
+   configuration prompts, then reboot when requested.
+4. After reboot, verify Docker, UFW, SSH host identity, all five Compose services, DNS, TLS, OAuth
+   metadata, and the smoke checklist below.
+5. If checks fail, stop ingress and restore the documented prior Droplet/image state; do not
+   disable SSH verification or authentication controls to recover.
+
+Do not run this procedure automatically from `deploy.sh`.
+
+## Backup and restore drill
+
+Use a disposable replacement Droplet or provider restore target; never test by overwriting the
+only production instance. Record the result privately:
+
+1. Confirm the backup timestamp and restore it to the disposable target.
+2. Verify the Postgres volume, container health, migrations, Daily login/OTP delivery, and MCP
+   authentication.
+3. Create and read a test item, confirm its activity record, then destroy the disposable target.
+4. Record backup age, restore duration, data-loss point, and any manual recovery steps.
+
+## Monitoring acceptance criteria
+
+At minimum, alert on failed container health checks, low disk space, sustained memory pressure,
+TLS renewal/expiry failures, and a missed or stale provider backup. A scheduled HTTPS probe should
+check `/api/health`, OAuth metadata, and protected-resource metadata. Alerts must go to an
+out-of-band destination and must not include secrets or authorization headers. Choose the alert
+provider and retention period before adding credentials or automation.
 
 ## Smoke checklist
 

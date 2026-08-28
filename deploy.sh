@@ -52,17 +52,21 @@ fi
 export INFISICAL_API_URL INFISICAL_DISABLE_UPDATE_CHECK=true
 
 SECRET_JSON="$WORK_DIR/secrets.json"
-INFISICAL_EXPORT_ARGS=()
 if [[ -n "${INFISICAL_TOKEN:-}" ]]; then
-  INFISICAL_EXPORT_ARGS+=(--token="$INFISICAL_TOKEN")
+  infisical export --token="$INFISICAL_TOKEN" \
+    --projectId="$INFISICAL_PROJECT_ID" \
+    --env="$INFISICAL_ENV" \
+    --path="$INFISICAL_SECRET_PATH" \
+    --format=json \
+    --output-file="$SECRET_JSON" >/dev/null
+else
+  infisical export \
+    --projectId="$INFISICAL_PROJECT_ID" \
+    --env="$INFISICAL_ENV" \
+    --path="$INFISICAL_SECRET_PATH" \
+    --format=json \
+    --output-file="$SECRET_JSON" >/dev/null
 fi
-
-infisical export "${INFISICAL_EXPORT_ARGS[@]}" \
-  --projectId="$INFISICAL_PROJECT_ID" \
-  --env="$INFISICAL_ENV" \
-  --path="$INFISICAL_SECRET_PATH" \
-  --format=json \
-  --output-file="$SECRET_JSON" >/dev/null
 
 SECRET_DIR="$WORK_DIR/secrets"
 mkdir -m 700 "$SECRET_DIR"

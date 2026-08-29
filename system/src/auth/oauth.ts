@@ -245,7 +245,7 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
       const { grant_type: grantType, code, client_id: clientId, redirect_uri: redirectUri, code_verifier: verifier, refresh_token: refreshToken } = req.body as Record<string, string>;
       if (grantType === "refresh_token") {
         const claims = await verifyAccessToken(refreshToken ?? "", config.authSecret, issuer, "refresh");
-        if (!claims || clientId !== config.oauthClientId) {
+        if (!claims || (claims.clientId ?? config.oauthClientId) !== clientId) {
           res.status(400).json({ error: "invalid_grant" });
           return;
         }
@@ -265,7 +265,7 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
         return;
       }
       const accessToken = await issueAccessToken({ sub: authorization.userId, email: authorization.email, iss: issuer }, config.authSecret);
-      const issuedRefreshToken = await issueAccessToken({ sub: authorization.userId, email: authorization.email, iss: issuer, tokenUse: "refresh" }, config.authSecret, 30 * 24 * 60 * 60);
+      const issuedRefreshToken = await issueAccessToken({ sub: authorization.userId, email: authorization.email, iss: issuer, clientId: authorization.clientId, tokenUse: "refresh" }, config.authSecret, 30 * 24 * 60 * 60);
       res.json({ access_token: accessToken, refresh_token: issuedRefreshToken, token_type: "Bearer", expires_in: 3600, scope: "openid email profile" });
     } catch (error) {
       next(error);

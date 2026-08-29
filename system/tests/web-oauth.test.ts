@@ -123,4 +123,32 @@ describe("Vercel OAuth adapter", () => {
     );
     expect(profile.status).toBe(401);
   });
+
+  it("binds hosted refresh tokens to their issuing dynamic client", async () => {
+    const clientId = "briefs-dynamic-client";
+    const refreshToken = await issueAccessToken(
+      { sub: "owner@example.com", email: "owner@example.com", iss: "https://preview.example.com/oauth", clientId, tokenUse: "refresh" },
+      "preview-auth-secret",
+      3600,
+    );
+
+    const matchingClient = await handleWebOAuthRequest(
+      new Request("https://preview.example.com/oauth/token", {
+        method: "POST",
+        body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: clientId }),
+      }),
+      createContext(),
+    );
+    expect(matchingClient.status).toBe(200);
+
+    const differentClient = await handleWebOAuthRequest(
+      new Request("https://preview.example.com/oauth/token", {
+        method: "POST",
+        body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: "briefs-other-client" }),
+      }),
+      createContext(),
+    );
+    expect(differentClient.status).toBe(400);
+    await expect(differentClient.json()).resolves.toEqual({ error: "invalid_grant" });
+  });
 });

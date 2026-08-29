@@ -154,7 +154,7 @@ async function exchangeToken(request: Request, context: AppContext): Promise<Res
   const clientId = String(form.get("client_id") ?? "");
   if (grantType === "refresh_token") {
     const claims = await verifyAccessToken(incomingRefreshToken, context.config.authSecret, context.config.oauthIssuer, "refresh");
-    if (!claims || clientId !== context.config.oauthClientId) return json({ error: "invalid_grant" }, 400);
+    if (!claims || (claims.clientId ?? context.config.oauthClientId) !== clientId) return json({ error: "invalid_grant" }, 400);
     const accessToken = await issueAccessToken(
       { sub: claims.sub, email: claims.email, iss: context.config.oauthIssuer },
       context.config.authSecret,
@@ -183,7 +183,7 @@ async function exchangeToken(request: Request, context: AppContext): Promise<Res
     context.config.authSecret,
   );
   const refreshToken = await issueAccessToken(
-    { sub: authorization.userId, email: authorization.email, iss: context.config.oauthIssuer, tokenUse: "refresh" },
+    { sub: authorization.userId, email: authorization.email, iss: context.config.oauthIssuer, clientId: authorization.clientId, tokenUse: "refresh" },
     context.config.authSecret,
     30 * 24 * 60 * 60,
   );

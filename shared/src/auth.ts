@@ -3,6 +3,7 @@ export type AccessTokenClaims = {
   email?: string;
   iss: string;
   exp: number;
+  clientId?: string;
   tokenUse?: "access" | "refresh";
 };
 

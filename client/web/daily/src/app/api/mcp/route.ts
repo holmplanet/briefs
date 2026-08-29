@@ -4,6 +4,7 @@ import { verifyAccessToken } from "@briefs/shared/auth";
 import { getSystemRuntime } from "@briefs/system/runtime";
 import { handleWebApiRequest } from "@briefs/system/web";
 import { loadAuthConfig } from "@/lib/auth/config";
+import { getMcpResourceMetadataUrl } from "@/lib/mcp-resource";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -11,18 +12,11 @@ export const maxDuration = 60;
 export async function POST(request: Request): Promise<Response> {
   const user = await resolveAuth(request);
   if (!user) {
-    const requestPath = new URL(request.url).pathname;
-    const resourceMetadata = new URL(
-      requestPath === "/api/mcp"
-        ? "/api/mcp/.well-known/oauth-protected-resource"
-        : "/.well-known/oauth-protected-resource",
-      request.url,
-    );
     return Response.json(
       { error: "unauthorized", error_description: "Bearer token required" },
       {
         status: 401,
-        headers: { "WWW-Authenticate": `Bearer resource_metadata="${resourceMetadata.toString()}"` },
+        headers: { "WWW-Authenticate": `Bearer resource_metadata="${getMcpResourceMetadataUrl(request)}"` },
       },
     );
   }

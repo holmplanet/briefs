@@ -1,0 +1,4 @@
+name: briefs-infrastructure
+runtime: nodejs
+description: Isolated DigitalOcean infrastructure for a private Briefs Daily instance
+

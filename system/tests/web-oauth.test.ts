@@ -16,6 +16,7 @@ function createContext(): AppContext {
       authDevBypass: false,
       oauthClientId: "briefs-daily",
       oauthRedirectUris: ["https://preview.example.com/auth/callback"],
+      oauthAllowedRedirectUris: ["https://claude.ai/api/mcp/auth_callback"],
       oauthAllowedEmails: ["owner@example.com"],
       otpMailer: "resend",
       resendApiKey: "re_example",
@@ -58,6 +59,7 @@ describe("Vercel OAuth adapter", () => {
       redirect_uri: "https://preview.example.com/auth/callback",
       code_challenge: "challenge",
       code_challenge_method: "S256",
+      consent: "on",
       email: "other@example.com",
     });
     const response = await handleWebOAuthRequest(
@@ -80,6 +82,7 @@ describe("Vercel OAuth adapter", () => {
       redirect_uri: "https://preview.example.com/auth/callback",
       code_challenge: "challenge",
       code_challenge_method: "S256",
+      consent: "on",
       email: "not-an-email",
     });
     const response = await handleWebOAuthRequest(
@@ -119,5 +122,33 @@ describe("Vercel OAuth adapter", () => {
       createContext(),
     );
     expect(profile.status).toBe(401);
+  });
+
+  it("binds hosted refresh tokens to their issuing dynamic client", async () => {
+    const clientId = "briefs-dynamic-client";
+    const refreshToken = await issueAccessToken(
+      { sub: "owner@example.com", email: "owner@example.com", iss: "https://preview.example.com/oauth", clientId, tokenUse: "refresh" },
+      "preview-auth-secret",
+      3600,
+    );
+
+    const matchingClient = await handleWebOAuthRequest(
+      new Request("https://preview.example.com/oauth/token", {
+        method: "POST",
+        body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: clientId }),
+      }),
+      createContext(),
+    );
+    expect(matchingClient.status).toBe(200);
+
+    const differentClient = await handleWebOAuthRequest(
+      new Request("https://preview.example.com/oauth/token", {
+        method: "POST",
+        body: new URLSearchParams({ grant_type: "refresh_token", refresh_token: refreshToken, client_id: "briefs-other-client" }),
+      }),
+      createContext(),
+    );
+    expect(differentClient.status).toBe(400);
+    await expect(differentClient.json()).resolves.toEqual({ error: "invalid_grant" });
   });
 });

@@ -31,3 +31,7 @@ Daily login, MCP bearer auth, and a real OTP delivery before calling the deploym
 
 For the DigitalOcean/Infisical production path, see [`docs/deploy.md`](../docs/deploy.md),
 [`INFISICAL.md`](../INFISICAL.md), and `docker-compose.prod.yml`.
+
+The production images are pinned to immutable digests for Postgres, Caddy, and the Node build
+base. Update a digest deliberately, test it, and commit the reviewable change. The Pulumi host
+image is likewise configured with an explicit DigitalOcean image ID rather than a moving alias.

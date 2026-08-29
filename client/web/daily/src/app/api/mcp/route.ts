@@ -11,7 +11,13 @@ export const maxDuration = 60;
 export async function POST(request: Request): Promise<Response> {
   const user = await resolveAuth(request);
   if (!user) {
-    const resourceMetadata = new URL("/.well-known/oauth-protected-resource", request.url);
+    const requestPath = new URL(request.url).pathname;
+    const resourceMetadata = new URL(
+      requestPath === "/api/mcp"
+        ? "/api/mcp/.well-known/oauth-protected-resource"
+        : "/.well-known/oauth-protected-resource",
+      request.url,
+    );
     return Response.json(
       { error: "unauthorized", error_description: "Bearer token required" },
       {

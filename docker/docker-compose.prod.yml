@@ -2,7 +2,7 @@ name: briefs
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
     restart: unless-stopped
     environment:
       POSTGRES_USER: briefs
@@ -29,14 +29,12 @@ services:
       DATABASE_URL_FILE: /run/secrets/database_url
       AUTH_SECRET_FILE: /run/secrets/auth_secret
       RESEND_API_KEY_FILE: /run/secrets/resend_api_key
-      EMAIL_FROM_FILE: /run/secrets/email_from
     ports:
       - "127.0.0.1:${APP_PORT:-8001}:8000"
     secrets:
       - database_url
       - auth_secret
       - resend_api_key
-      - email_from
     networks:
       - private
     depends_on:
@@ -79,11 +77,17 @@ services:
     environment:
       API_URL: http://system:8000
       MCP_HEALTH_URL: http://mcp:3334/mcp
+      DATABASE_URL_FILE: /run/secrets/database_url
+      AUTH_SECRET_FILE: /run/secrets/auth_secret
       SESSION_SECRET_FILE: /run/secrets/session_secret
+      RESEND_API_KEY_FILE: /run/secrets/resend_api_key
     ports:
       - "127.0.0.1:${DAILY_PORT:-3000}:3000"
     secrets:
+      - database_url
+      - auth_secret
       - session_secret
+      - resend_api_key
     networks:
       - private
     depends_on:
@@ -91,8 +95,26 @@ services:
         condition: service_healthy
       mcp:
         condition: service_healthy
+
+  caddy:
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    restart: unless-stopped
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?APP_DOMAIN is required}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    networks:
+      - private
+    depends_on:
+      daily:
+        condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/ >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:2019/config/ >/dev/null || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -103,6 +125,8 @@ networks:
 
 volumes:
   briefs-postgres:
+  caddy-data:
+  caddy-config:
 
 secrets:
   postgres_password:
@@ -115,5 +139,3 @@ secrets:
     file: ${SECRETS_DIR:-./secrets}/session_secret
   resend_api_key:
     file: ${SECRETS_DIR:-./secrets}/resend_api_key
-  email_from:
-    file: ${SECRETS_DIR:-./secrets}/email_from

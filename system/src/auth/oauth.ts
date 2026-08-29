@@ -8,18 +8,41 @@ import type { AuthStore } from "./store.js";
 import type { OtpMailer } from "./mailer.js";
 
 const MAX_OTP_ATTEMPTS = 5;
+const OTP_REQUEST_WINDOW_MS = 15 * 60_000;
+const MAX_OTP_REQUESTS_PER_IP = 5;
+const otpRequestsByIp = new Map<string, number[]>();
+
+function allowOtpRequest(req: Request): boolean {
+  const ip = req.ip || req.socket.remoteAddress || "unknown";
+  const now = Date.now();
+  if (otpRequestsByIp.size > 10_000) {
+    for (const [knownIp, timestamps] of otpRequestsByIp) {
+      if (timestamps.every((timestamp) => now - timestamp >= OTP_REQUEST_WINDOW_MS)) {
+        otpRequestsByIp.delete(knownIp);
+      }
+    }
+  }
+  const recent = (otpRequestsByIp.get(ip) ?? []).filter((timestamp) => now - timestamp < OTP_REQUEST_WINDOW_MS);
+  if (recent.length >= MAX_OTP_REQUESTS_PER_IP) {
+    otpRequestsByIp.set(ip, recent);
+    return false;
+  }
+  recent.push(now);
+  otpRequestsByIp.set(ip, recent);
+  return true;
+}
 
 function hash(value: string): string {
   return createHash("sha256").update(value).digest("hex");
 }
 
 function formPage(title: string, body: string): string {
-  return `<!doctype html><meta name="viewport" content="width=device-width"><title>${title}</title><style>body{font:16px system-ui;max-width:420px;margin:15vh auto;padding:24px}input{width:100%;box-sizing:border-box;padding:10px;margin:8px 0 16px}button{padding:10px 16px}</style>${body}`;
+  return `<!doctype html><meta name="viewport" content="width=device-width"><title>${escapeHtml(title)}</title><style>body{font:16px system-ui;max-width:420px;margin:15vh auto;padding:24px}input{width:100%;box-sizing:border-box;padding:10px;margin:8px 0 16px}button{padding:10px 16px}</style>${body}`;
 }
 
 function hiddenFields(values: Record<string, string>): string {
   return Object.entries(values)
-    .map(([key, value]) => `<input type="hidden" name="${key}" value="${value.replaceAll('"', "&quot;")}">`)
+    .map(([key, value]) => `<input type="hidden" name="${escapeHtml(key)}" value="${escapeHtml(value)}">`)
     .join("");
 }
 
@@ -40,9 +63,27 @@ function isAllowedEmail(config: BriefsConfig, email: string): boolean {
 }
 
 async function isAllowedClient(config: BriefsConfig, auth: AuthStore, clientId: string, redirectUri: string): Promise<boolean> {
-  if (clientId === config.oauthClientId) return config.oauthRedirectUris.includes(redirectUri);
+  if (clientId === config.oauthClientId) return config.oauthRedirectUris.includes(redirectUri) && isSafeRedirectUri(redirectUri, config);
   const client = await auth.getOAuthClient(clientId);
-  return Boolean(client?.redirectUris.includes(redirectUri));
+  return Boolean(client?.redirectUris.includes(redirectUri) && isSafeRedirectUri(redirectUri, config));
+}
+
+function isSafeRedirectUri(value: string, config: BriefsConfig): boolean {
+  if (config.oauthAllowedRedirectUris.includes(value) || config.oauthRedirectUris.includes(value)) return true;
+  try {
+    const url = new URL(value);
+    const loopback = url.hostname === "localhost" || url.hostname === "127.0.0.1" || url.hostname === "[::1]";
+    return loopback && url.protocol === "http:" && Boolean(url.port) && !url.username && !url.password && !url.hash;
+  } catch {
+    return false;
+  }
+}
+
+async function validAuthorization(config: BriefsConfig, auth: AuthStore, values: Record<string, string>): Promise<boolean> {
+  return values.response_type === "code"
+    && values.code_challenge_method === "S256"
+    && Boolean(values.code_challenge)
+    && await isAllowedClient(config, auth, values.client_id, values.redirect_uri);
 }
 
 function challengeValues(req: Request): Record<string, string> {
@@ -75,15 +116,21 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
       const redirectUris = Array.isArray(req.body?.redirect_uris)
         ? req.body.redirect_uris.filter((value: unknown): value is string => typeof value === "string" && value.length > 0)
         : [];
-      if (redirectUris.length === 0) {
+      if (
+        redirectUris.length === 0
+        || redirectUris.length > 10
+        || new Set(redirectUris).size !== redirectUris.length
+        || redirectUris.some((redirectUri: string) => !isSafeRedirectUri(redirectUri, config))
+      ) {
         res.status(400).json({ error: "invalid_client_metadata" });
         return;
       }
+      const clientName = typeof req.body.client_name === "string" ? req.body.client_name.trim().slice(0, 120) : undefined;
       const clientId = `briefs-${randomUUID()}`;
       const client = await auth.registerOAuthClient({
         clientId,
         redirectUris,
-        clientName: typeof req.body.client_name === "string" ? req.body.client_name : undefined,
+        clientName,
       });
       res.status(201).json({
         client_id: client.clientId,
@@ -101,11 +148,15 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
   router.get("/authorize", async (req, res, next) => {
     const values = challengeValues(req);
     try {
-      if (values.response_type !== "code" || values.code_challenge_method !== "S256" || !values.code_challenge || !(await isAllowedClient(config, auth, values.client_id, values.redirect_uri))) {
+      if (!(await validAuthorization(config, auth, values))) {
         res.status(400).send("Invalid OAuth authorization request");
         return;
       }
-      res.type("html").send(formPage("Sign in to Briefs", `<h1>Sign in to Briefs</h1><p>We’ll email you a one-time sign-in code.</p><form method="post" action="${issuer}/authorize/request">${hiddenFields(values)}<label>Email<input name="email" type="email" autocomplete="email" required></label><button>Send code</button></form>`));
+      const client = values.client_id === config.oauthClientId
+        ? { clientName: "Briefs Daily" }
+        : await auth.getOAuthClient(values.client_id);
+      const origin = new URL(values.redirect_uri).origin;
+      res.type("html").send(formPage("Sign in to Briefs", `<h1>Sign in to Briefs</h1><p><strong>${escapeHtml(client?.clientName ?? "OAuth client")}</strong> is requesting access for <code>${escapeHtml(origin)}</code>.</p><p>We’ll email you a one-time sign-in code.</p><form method="post" action="${escapeHtml(issuer)}/authorize/request">${hiddenFields(values)}<label><input name="consent" type="checkbox" value="on" required> I recognize this client and approve access.</label><label>Email<input name="email" type="email" autocomplete="email" required></label><button>Send code</button></form>`));
     } catch (error) {
       next(error);
     }
@@ -118,8 +169,13 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
           .map((key) => [key, String(req.body[key] ?? "")]),
       );
       const email = normalizeEmail(String(req.body.email ?? ""));
-      if (values.response_type !== "code" || values.code_challenge_method !== "S256" || !values.code_challenge || !(await isAllowedClient(config, auth, values.client_id, values.redirect_uri)) || !isValidEmail(email) || !isAllowedEmail(config, email)) {
+      if (!(await validAuthorization(config, auth, values)) || req.body.consent !== "on" || !isValidEmail(email) || !isAllowedEmail(config, email)) {
         res.status(400).send("Invalid OAuth authorization request");
+        return;
+      }
+
+      if (!allowOtpRequest(req)) {
+        res.status(429).send("Too many sign-in requests. Please try again later.");
         return;
       }
 
@@ -147,6 +203,10 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
         ["response_type", "client_id", "redirect_uri", "scope", "state", "code_challenge", "code_challenge_method"]
           .map((key) => [key, String(req.body[key] ?? "")]),
       );
+      if (!(await validAuthorization(config, auth, values))) {
+        res.status(400).send("Invalid OAuth authorization request");
+        return;
+      }
       const challengeId = String(req.body.challenge_id ?? "");
       const challenge = await auth.getOtpChallenge(challengeId);
       const submitted = String(req.body.code ?? "");
@@ -185,7 +245,7 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
       const { grant_type: grantType, code, client_id: clientId, redirect_uri: redirectUri, code_verifier: verifier, refresh_token: refreshToken } = req.body as Record<string, string>;
       if (grantType === "refresh_token") {
         const claims = await verifyAccessToken(refreshToken ?? "", config.authSecret, issuer, "refresh");
-        if (!claims || clientId !== config.oauthClientId) {
+        if (!claims || (claims.clientId ?? config.oauthClientId) !== clientId) {
           res.status(400).json({ error: "invalid_grant" });
           return;
         }
@@ -205,7 +265,7 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
         return;
       }
       const accessToken = await issueAccessToken({ sub: authorization.userId, email: authorization.email, iss: issuer }, config.authSecret);
-      const issuedRefreshToken = await issueAccessToken({ sub: authorization.userId, email: authorization.email, iss: issuer, tokenUse: "refresh" }, config.authSecret, 30 * 24 * 60 * 60);
+      const issuedRefreshToken = await issueAccessToken({ sub: authorization.userId, email: authorization.email, iss: issuer, clientId: authorization.clientId, tokenUse: "refresh" }, config.authSecret, 30 * 24 * 60 * 60);
       res.json({ access_token: accessToken, refresh_token: issuedRefreshToken, token_type: "Bearer", expires_in: 3600, scope: "openid email profile" });
     } catch (error) {
       next(error);

@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import {
   exchangeCodeForUser,
   loadAuthConfig,
+  safeNextPath,
   setSession,
 } from "@/lib/auth";
 import { getInProcessOAuthFetch } from "@/lib/auth/in-process-oauth";
@@ -61,5 +62,5 @@ export async function GET(request: Request) {
     cookieStore.delete(OAUTH_VERIFIER_COOKIE);
   }
 
-  return NextResponse.redirect(new URL(nextPath || "/", config.appUrl));
+  return NextResponse.redirect(new URL(safeNextPath(nextPath), config.appUrl));
 }

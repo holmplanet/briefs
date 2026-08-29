@@ -37,21 +37,27 @@ describe("production configuration", () => {
     process.env.APP_ENV = "production";
     delete process.env.AUTH_ALLOWED_EMAILS;
 
-    await expect(import("../src/config.js").then(({ loadConfig }) => loadConfig())).rejects.toThrow(
-      "AUTH_ALLOWED_EMAILS",
-    );
+    await expect(import("../src/config.js").then(({ loadConfig }) => loadConfig())).rejects.toThrow("one or two");
   });
 
   it("treats Vercel production as production without APP_ENV", async () => {
     delete process.env.APP_ENV;
     process.env.NODE_ENV = "production";
     process.env.VERCEL_ENV = "production";
-    process.env.AUTH_ALLOWED_EMAILS = "carter@example.com";
+    process.env.AUTH_ALLOWED_EMAILS = "first-user@example.com";
 
     const { loadConfig } = await import("../src/config.js");
     const config = loadConfig();
 
     expect(config.env).toBe("production");
     expect(config.authDevBypass).toBe(false);
+  });
+
+  it("rejects duplicate or malformed production allowlist entries", async () => {
+    process.env.APP_ENV = "production";
+    process.env.AUTH_ALLOWED_EMAILS = "first-user@example.com,first-user@example.com";
+
+    const { loadConfig } = await import("../src/config.js");
+    expect(() => loadConfig()).toThrow("one or two");
   });
 });

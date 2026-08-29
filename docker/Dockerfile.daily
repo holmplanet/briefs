@@ -1,4 +1,4 @@
-FROM node:22-alpine AS deps
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS deps
 
 WORKDIR /repo
 
@@ -31,12 +31,9 @@ RUN npm run build -w @briefs/shared \
   && npm run build -w @briefs/mcp \
   && npm run build -w @briefs/daily
 
-FROM node:22-alpine AS runtime
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runtime
 
 WORKDIR /repo
-
-RUN addgroup -g 1001 -S briefs \
-  && adduser -S briefs -u 1001 -G briefs
 
 COPY --from=deps /repo/node_modules ./node_modules
 COPY package.json package-lock.json ./
@@ -44,13 +41,14 @@ COPY shared/package.json shared/
 COPY --from=build /repo/shared/dist shared/dist
 COPY client/web/shared/package.json client/web/shared/
 COPY --from=build /repo/client/web/shared/src client/web/shared/src
+COPY db db
 COPY client/web/daily/package.json client/web/daily/
 COPY --from=build /repo/client/web/daily/.next client/web/daily/.next
 COPY --from=build /repo/client/web/daily/next.config.ts client/web/daily/
 COPY docker/entrypoint-secrets.sh /usr/local/bin/briefs-entrypoint
 RUN chmod 755 /usr/local/bin/briefs-entrypoint
 
-USER briefs
+USER node
 
 ENV NODE_ENV=production
 ENV PORT=3000

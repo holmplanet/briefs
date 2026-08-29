@@ -1,4 +1,4 @@
-FROM node:22-alpine AS deps
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS deps
 
 WORKDIR /repo
 
@@ -16,7 +16,7 @@ COPY system/src system/src
 RUN npm run build -w @briefs/shared \
   && npm run build -w @briefs/system
 
-FROM node:22-alpine AS prod-deps
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS prod-deps
 
 WORKDIR /repo
 
@@ -26,12 +26,9 @@ COPY system/package.json system/
 
 RUN npm ci -w @briefs/system -w @briefs/shared --include-workspace-root --omit=dev
 
-FROM node:22-alpine AS runtime
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runtime
 
 WORKDIR /repo
-
-RUN addgroup -g 1001 -S briefs \
-  && adduser -S briefs -u 1001 -G briefs
 
 COPY --from=prod-deps /repo/node_modules ./node_modules
 COPY package.json package-lock.json tsconfig.base.json ./
@@ -43,7 +40,7 @@ COPY db db
 COPY docker/entrypoint-secrets.sh /usr/local/bin/briefs-entrypoint
 RUN chmod 755 /usr/local/bin/briefs-entrypoint
 
-USER briefs
+USER node
 
 ENV NODE_ENV=production
 ENV APP_HOST=0.0.0.0

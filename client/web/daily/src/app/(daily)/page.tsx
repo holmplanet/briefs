@@ -39,7 +39,7 @@ export default async function DailyHomePage() {
   return (
     <div className="flex flex-col gap-10 pb-16 pt-4">
       <section className="space-y-3">
-        <p className="text-sm font-medium text-blue-300/80">Briefs Daily</p>
+        <p className="text-sm font-medium text-blue-300/80">Today</p>
         <h1 className="text-glow text-3xl font-medium tracking-[-0.03em] sm:text-4xl">
           {session?.email ? `Welcome back` : "Your tasks"}
         </h1>

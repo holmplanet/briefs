@@ -26,7 +26,7 @@ export async function McpConnectPanel({ className }: { className?: string }) {
           <div className="space-y-1">
             <h2 className="text-lg font-medium tracking-[-0.01em]">Work through MCP</h2>
             <p className="text-sm text-muted-foreground">
-              Briefs Daily is read-focused. Create tasks, update status, and capture work from your
+              Briefs is read-focused. Create tasks, update status, and capture work from your
               assistant via MCP — then view changes here.
             </p>
           </div>

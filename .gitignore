@@ -10,6 +10,7 @@ dist/
 .vercel
 .env*
 deploy/docker.production.env
+deploy/.deploy.local
 *.pem
 *.key
 *.p12

@@ -53,19 +53,22 @@ Neon, Supabase, local, and self-hosted provider examples.
 
 Copy `deploy/docker.production.env.example` to `deploy/docker.production.env` and set the public
 URLs and sender configuration. This file is ignored by Git and must contain non-secret runtime
-configuration only. Export deploy-only variables in the same shell that runs the deploy:
+configuration only. Copy `deploy/.deploy.local.example` to `deploy/.deploy.local` and fill in
+the deploy-only values below. `deploy.sh` loads this ignored file automatically, and never
+copies it to the Droplet:
 
 ```bash
-export DROPLET_IP=203.0.113.10
-export SSH_KEY_PATH="$HOME/.ssh/briefs"
-export SSH_KNOWN_HOSTS_FILE="$HOME/.ssh/known_hosts"
-export INFISICAL_API_URL=https://app.infisical.com
-export INFISICAL_PROJECT_ID=...
-export INFISICAL_ENV=prod
+DROPLET_IP=203.0.113.10
+SSH_KEY_PATH=$HOME/.ssh/briefs
+SSH_KNOWN_HOSTS_FILE=$HOME/.ssh/known_hosts
+INFISICAL_API_URL=https://app.infisical.com
+INFISICAL_PROJECT_ID=...
+INFISICAL_ENV=prod
 ```
 
 `INFISICAL_PROJECT_ID` identifies the project and belongs in the local shell/password manager,
-not in the repository or production runtime env file. The normal path is the human CLI session:
+not in the repository or production runtime env file. The normal path is the human CLI session.
+The local deploy-context file is ignored by Git:
 
 ```bash
 infisical login

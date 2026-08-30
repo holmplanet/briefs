@@ -1,0 +1,8 @@
+# Copy this file to deploy/.deploy.local and fill in local deployment context.
+# This file must never contain application secrets or be committed.
+DROPLET_IP=203.0.113.10
+SSH_KEY_PATH="$HOME/.ssh/briefs"
+SSH_KNOWN_HOSTS_FILE=$HOME/.ssh/known_hosts
+INFISICAL_API_URL=https://app.infisical.com
+INFISICAL_PROJECT_ID=
+INFISICAL_ENV=prod

@@ -23,6 +23,7 @@ COPY system/src system/src
 COPY client/mcp/src client/mcp/src
 COPY client/web/shared/src client/web/shared/src
 COPY client/web/daily/src client/web/daily/src
+COPY client/web/daily/public client/web/daily/public
 COPY client/web/daily/next.config.ts client/web/daily/
 COPY client/web/daily/postcss.config.mjs client/web/daily/
 COPY client/web/daily/components.json client/web/daily/
@@ -43,6 +44,7 @@ COPY client/web/shared/package.json client/web/shared/
 COPY --from=build /repo/client/web/shared/src client/web/shared/src
 COPY db db
 COPY client/web/daily/package.json client/web/daily/
+COPY --from=build /repo/client/web/daily/public client/web/daily/public
 COPY --from=build /repo/client/web/daily/.next client/web/daily/.next
 COPY --from=build /repo/client/web/daily/next.config.ts client/web/daily/
 COPY docker/entrypoint-secrets.sh /usr/local/bin/briefs-entrypoint

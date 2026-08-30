@@ -9,8 +9,25 @@ INFISICAL_ENV="${INFISICAL_ENV:-prod}"
 INFISICAL_API_URL="${INFISICAL_API_URL:-${INFISICAL_SITE_URL:-https://app.infisical.com}}"
 INFISICAL_SECRET_PATH="${INFISICAL_SECRET_PATH:-/}"
 RUNTIME_ENV_FILE="${RUNTIME_ENV_FILE:-$ROOT_DIR/deploy/docker.production.env}"
+DEPLOY_CONTEXT_FILE="${DEPLOY_CONTEXT_FILE:-$ROOT_DIR/deploy/.deploy.local}"
 SSH_KEY_PATH="${SSH_KEY_PATH:-$HOME/.ssh/hive}"
 SSH_KNOWN_HOSTS_FILE="${SSH_KNOWN_HOSTS_FILE:-$HOME/.ssh/known_hosts}"
+
+[[ -f "$RUNTIME_ENV_FILE" ]] || { echo "ERROR: RUNTIME_ENV_FILE does not exist: $RUNTIME_ENV_FILE" >&2; exit 1; }
+
+RUNTIME_ENV_SOURCE_FILE="$RUNTIME_ENV_FILE"
+set -a
+# shellcheck disable=SC1090
+source "$RUNTIME_ENV_SOURCE_FILE"
+set +a
+RUNTIME_ENV_FILE="$RUNTIME_ENV_SOURCE_FILE"
+
+if [[ -f "$DEPLOY_CONTEXT_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$DEPLOY_CONTEXT_FILE"
+  set +a
+fi
 
 : "${DROPLET_IP:?DROPLET_IP is required}"
 : "${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}"
@@ -19,7 +36,6 @@ SSH_KNOWN_HOSTS_FILE="${SSH_KNOWN_HOSTS_FILE:-$HOME/.ssh/known_hosts}"
 
 command -v docker >/dev/null || { echo "ERROR: docker is required" >&2; exit 1; }
 command -v infisical >/dev/null || { echo "ERROR: infisical CLI is required" >&2; exit 1; }
-[[ -f "$RUNTIME_ENV_FILE" ]] || { echo "ERROR: RUNTIME_ENV_FILE does not exist: $RUNTIME_ENV_FILE" >&2; exit 1; }
 [[ -f "$SSH_KNOWN_HOSTS_FILE" ]] || { echo "ERROR: SSH_KNOWN_HOSTS_FILE does not exist" >&2; exit 1; }
 [[ -f "$SSH_KEY_PATH" ]] || { echo "ERROR: SSH_KEY_PATH does not exist" >&2; exit 1; }
 

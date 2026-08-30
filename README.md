@@ -195,6 +195,32 @@ npm run docker:up
 
 Postgres + `@briefs/system` on port 8001. The production image compiles `shared` and `system` with `tsc` and runs `node system/dist/index.js` (no Next.js, no `tsx` in runtime). See `docker/README.md` and `deploy/docker.production.env.example`.
 
+## Production deployment
+
+The reference self-hosted deployment uses three separate boundaries:
+
+- **Pulumi** provisions the DigitalOcean droplet, firewall, backups, and host bootstrap. It does
+  not manage DNS, application images, or runtime secrets.
+- **Infisical** is the production secret source. `deploy.sh` fetches the required application
+  secrets at deploy time and installs them as protected Docker secret files on the droplet.
+- **Docker Compose** runs Postgres, System, MCP, Daily, and Caddy on the droplet. The application
+  ports bind to loopback; Caddy is the public ingress.
+
+For a normal application release, Pulumi is not required. Configure the ignored
+`deploy/docker.production.env` runtime file and copy `deploy/.deploy.local.example` to the ignored
+`deploy/.deploy.local` deploy-context file, then authenticate Infisical and run:
+
+```bash
+infisical login
+npm run deploy
+npm run remote:status
+```
+
+The deploy-context file contains only local host and Infisical project settings. It is never
+committed or copied to the droplet. See [`docs/deploy.md`](./docs/deploy.md) for provisioning,
+deployment, recovery, and smoke-check details, and [`infra/pulumi/README.md`](./infra/pulumi/README.md)
+for the infrastructure stack.
+
 ## Package docs
 
 - `shared/README.md` — schema layout and imports

@@ -75,11 +75,13 @@ services:
       args:
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8001}
         NEXT_PUBLIC_MCP_URL: ${NEXT_PUBLIC_MCP_URL:-http://localhost:3334/mcp}
+        NEXT_PUBLIC_DOCS_URL: ${NEXT_PUBLIC_DOCS_URL:-http://localhost:3001}
     ports:
       - "${DAILY_PORT:-3000}:3000"
     environment:
       API_URL: http://system:8000
       MCP_HEALTH_URL: http://mcp:3334/mcp
+      NEXT_PUBLIC_DOCS_URL: ${NEXT_PUBLIC_DOCS_URL:-http://localhost:3001}
       APP_ENV: ${APP_ENV:-development}
       NODE_ENV: ${NODE_ENV:-development}
       OAUTH_ISSUER: ${OAUTH_ISSUER-}

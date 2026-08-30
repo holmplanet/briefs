@@ -53,8 +53,10 @@ describe("OAuth email OTP flow", () => {
         redirect: "manual",
       });
       expect(verified.status).toBe(302);
-      const code = new URL(verified.headers.get("location")!).searchParams.get("code");
+      const callback = new URL(verified.headers.get("location")!);
+      const code = callback.searchParams.get("code");
       expect(code).toBeTruthy();
+      expect(callback.searchParams.get("iss")).toBe("http://localhost:8001/oauth");
 
       const token = await fetch(`${base}/oauth/token`, {
         method: "POST",

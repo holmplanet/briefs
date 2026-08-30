@@ -33,7 +33,7 @@ export default async function LoginPage({
     return (
       <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-6 py-16">
         <div className="glass-panel space-y-4 rounded-3xl p-8">
-          <p className="text-sm font-medium text-blue-300/80">Briefs Daily</p>
+          <p className="text-sm font-medium text-blue-300/80">Briefs</p>
           <h1 className="text-2xl font-medium tracking-[-0.03em]">Development mode</h1>
           <p className="text-sm text-muted-foreground">
             OAuth is not configured. Daily is using the dev user{" "}
@@ -89,7 +89,7 @@ export default async function LoginPage({
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-6 py-16">
       <div className="glass-panel space-y-6 rounded-3xl p-8">
         <div className="space-y-2">
-          <p className="text-sm font-medium text-blue-300/80">Briefs Daily</p>
+          <p className="text-sm font-medium text-blue-300/80">Briefs</p>
           <h1 className="text-2xl font-medium tracking-[-0.03em]">Sign in</h1>
           <p className="text-sm text-muted-foreground">
             View your tasks here. Create and update them through your MCP client — the same OAuth

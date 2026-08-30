@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Briefs Daily",
+  title: "Briefs",
   description: "View your Briefs items and activity log. Create and update work through MCP.",
 };
 

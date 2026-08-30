@@ -32,16 +32,19 @@ export async function AppShell({
     <SharedAppShell
       variant={variant}
       className={className}
-      brandLabel="Briefs Daily"
-      brandLabelClassName="font-extrabold lowercase tracking-[-0.08em]"
-      brandInitial="D"
+      brandLabel="Briefs"
+      brandLogoSrc="/briefs-logo-white.svg"
+      brandLogoAlt="Briefs"
+      brandLabelClassName="font-extrabold tracking-[-0.06em]"
       nav={<HeaderNav items={[...navItems]} />}
       actions={defaultHeaderActions({
         apiOnline,
+        statusClassName: "hidden sm:inline-flex",
+        githubClassName: "hidden sm:inline-flex",
         extra: (
           <>
             <UserMenu />
-            <HeaderLink href={docsUrl} label="SDK docs" external />
+            <HeaderLink href={docsUrl} label="SDK docs" external className="hidden sm:inline-flex" />
           </>
         ),
       })}

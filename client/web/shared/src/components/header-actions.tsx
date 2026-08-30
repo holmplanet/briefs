@@ -4,7 +4,7 @@ import { Badge } from "./ui/badge";
 import { buttonVariants } from "./ui/button";
 import { cn } from "../lib/utils";
 
-export function ApiStatusBadge({ online = false }: { online?: boolean }) {
+export function ApiStatusBadge({ online = false, className }: { online?: boolean; className?: string }) {
   return (
     <Badge
       variant={online ? "default" : "secondary"}
@@ -12,7 +12,8 @@ export function ApiStatusBadge({ online = false }: { online?: boolean }) {
         "rounded-full border px-2.5",
         online
           ? "border-blue-500/30 bg-blue-500/15 text-blue-200"
-          : "border-border bg-card/50 text-muted-foreground",
+        : "border-border bg-card/50 text-muted-foreground",
+        className,
       )}
     >
       {online ? "API online" : "API offline"}
@@ -23,9 +24,11 @@ export function ApiStatusBadge({ online = false }: { online?: boolean }) {
 export function GitHubLink({
   href = "https://github.com/holmplanet/briefs",
   label = "GitHub",
+  className,
 }: {
   href?: string;
   label?: string;
+  className?: string;
 }) {
   return (
     <Link
@@ -35,6 +38,7 @@ export function GitHubLink({
       className={cn(
         buttonVariants({ variant: "outline", size: "sm" }),
         "rounded-full border-border bg-card/80 hover:bg-card",
+        className,
       )}
     >
       {label}
@@ -77,17 +81,21 @@ export function HeaderLink({
 export function defaultHeaderActions({
   apiOnline = false,
   githubHref,
+  statusClassName,
+  githubClassName,
   extra,
 }: {
   apiOnline?: boolean;
   githubHref?: string;
+  statusClassName?: string;
+  githubClassName?: string;
   extra?: React.ReactNode;
 } = {}) {
   return (
     <>
-      <ApiStatusBadge online={apiOnline} />
+      <ApiStatusBadge online={apiOnline} className={statusClassName} />
       {extra}
-      <GitHubLink href={githubHref} />
+      <GitHubLink href={githubHref} className={githubClassName} />
     </>
   );
 }

@@ -1,6 +1,6 @@
 # @briefs/daily
 
-**Briefs Daily** — read-focused dashboard for your Briefs items. Sign in with OAuth; create and update items through `@briefs/mcp`. The `/briefs/new` Questionnaire is the one deliberate human-intake exception and uses the same System item/activity contract.
+**Briefs** — read-focused dashboard for your Briefs items. Sign in with OAuth; create and update items through `@briefs/mcp`. The `/briefs/new` Questionnaire is the one deliberate human-intake exception and uses the same System item/activity contract.
 
 The Items page supports status filters through `/items?status=open`, `/items?status=in_progress`, `/items?status=done`, and `/items?status=cancelled`. The Connect page reports whether the configured MCP server is reachable.
 

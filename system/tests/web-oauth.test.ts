@@ -39,6 +39,8 @@ describe("Vercel OAuth adapter", () => {
       authorization_endpoint: "https://preview.example.com/oauth/authorize",
       token_endpoint: "https://preview.example.com/oauth/token",
       code_challenge_methods_supported: ["S256"],
+      authorization_response_iss_parameter_supported: true,
+      token_endpoint_auth_methods_supported: ["none"],
     });
   });
 

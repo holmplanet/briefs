@@ -106,6 +106,8 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
       response_types_supported: ["code"],
       grant_types_supported: ["authorization_code", "refresh_token"],
       code_challenge_methods_supported: ["S256"],
+      authorization_response_iss_parameter_supported: true,
+      token_endpoint_auth_methods_supported: ["none"],
       scopes_supported: ["openid", "email", "profile", "offline_access"],
       registration_endpoint: `${issuer}/register`,
     });
@@ -233,6 +235,7 @@ export function createOAuthRouter(config: BriefsConfig, auth: AuthStore, mailer:
       });
       const callback = new URL(values.redirect_uri);
       callback.searchParams.set("code", rawCode);
+      callback.searchParams.set("iss", issuer);
       if (values.state) callback.searchParams.set("state", values.state);
       res.redirect(callback.toString());
     } catch (error) {

@@ -32,6 +32,7 @@ fi
 : "${DROPLET_IP:?DROPLET_IP is required}"
 : "${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}"
 : "${NEXT_PUBLIC_MCP_URL:?NEXT_PUBLIC_MCP_URL is required}"
+: "${NEXT_PUBLIC_DOCS_URL:=https://briefs.holmplanet.com}"
 : "${APP_DOMAIN:?APP_DOMAIN is required}"
 
 command -v docker >/dev/null || { echo "ERROR: docker is required" >&2; exit 1; }
@@ -126,6 +127,7 @@ docker build --platform "$TARGET_PLATFORM" -f "$ROOT_DIR/docker/Dockerfile.mcp" 
 docker build --platform "$TARGET_PLATFORM" -f "$ROOT_DIR/docker/Dockerfile.daily" \
   --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
   --build-arg NEXT_PUBLIC_MCP_URL="$NEXT_PUBLIC_MCP_URL" \
+  --build-arg NEXT_PUBLIC_DOCS_URL="$NEXT_PUBLIC_DOCS_URL" \
   -t "briefs-daily:$IMAGE_TAG" "$ROOT_DIR"
 
 sed -E '/^(SYSTEM_IMAGE|MCP_IMAGE|DAILY_IMAGE)=/d' "$RUNTIME_ENV_FILE" > "$WORK_DIR/.env"

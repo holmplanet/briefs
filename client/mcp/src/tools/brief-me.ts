@@ -9,6 +9,7 @@ import type { BriefsToolDeps, BriefsToolsConfig } from "./types.js";
 
 const inputSchema = z.object({
   kind: z.enum(["morning", "on_demand"]).default("on_demand"),
+  timezone: z.string().min(1).default("UTC"),
 }).strict();
 
 const briefItemSchema = itemSchema.pick({
@@ -73,8 +74,24 @@ const priorityRank: Record<NonNullable<BriefItem["priority"]>, number> = {
   low: 3,
 };
 
-function dateKey(value: string | undefined): string | undefined {
-  return value?.slice(0, 10);
+function dateKey(value: string | undefined, timezone: string): string | undefined {
+  if (!value) return undefined;
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date(value));
+  const values = Object.fromEntries(parts.map(({ type, value: part }) => [type, part]));
+  return `${values.year}-${values.month}-${values.day}`;
+}
+
+function formatTime(value: string, timezone: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: timezone,
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
 }
 
 function sortItems(items: BriefItem[]): BriefItem[] {
@@ -95,21 +112,28 @@ function actionFor(item: BriefItem, reason: string) {
   return { itemId: item.id, label: item.name, reason };
 }
 
-function openActionReason(item: BriefItem) {
+function openActionReason(item: BriefItem, beforeEvent?: BriefItem, timezone = "UTC") {
   const priority = item.priority && item.priority !== "normal" ? `, ${item.priority} priority` : "";
+  if (beforeEvent?.scheduledAt) {
+    return `Open${priority} — do before ${beforeEvent.name} at ${formatTime(beforeEvent.scheduledAt, timezone)}`;
+  }
   return `Open${priority} and unscheduled`;
 }
 
-export function buildBriefSummary(items: BriefItem[], today: string) {
-  const now = new Date().toISOString();
+export function buildBriefSummary(
+  items: BriefItem[],
+  today: string,
+  now = new Date().toISOString(),
+  timezone = "UTC",
+) {
   const active = items.filter((item) => item.status === "open" || item.status === "in_progress");
   const inProgress = sortItems(active.filter((item) => item.status === "in_progress"));
-  const scheduledToday = sortItems(active.filter((item) => dateKey(item.scheduledAt) === today));
-  const dueToday = sortItems(active.filter((item) => dateKey(item.dueAt) === today));
-  const overdue = sortItems(active.filter((item) => item.dueAt !== undefined && item.dueAt < now && dateKey(item.dueAt) !== today));
+  const scheduledToday = sortItems(active.filter((item) => dateKey(item.scheduledAt, timezone) === today));
+  const dueToday = sortItems(active.filter((item) => dateKey(item.dueAt, timezone) === today));
+  const overdue = sortItems(active.filter((item) => item.dueAt !== undefined && item.dueAt < now && dateKey(item.dueAt, timezone) !== today));
   const upcoming = sortItems(active.filter((item) =>
-    (dateKey(item.scheduledAt) ?? "") > today
-    || (dateKey(item.dueAt) ?? "") > today,
+    (dateKey(item.scheduledAt, timezone) ?? "") > today
+    || (dateKey(item.dueAt, timezone) ?? "") > today,
   ));
   const used = new Set([
     ...inProgress.map((item) => item.id),
@@ -119,6 +143,11 @@ export function buildBriefSummary(items: BriefItem[], today: string) {
     ...upcoming.map((item) => item.id),
   ]);
   const open = sortOpenItems(active.filter((item) => !used.has(item.id)));
+  const nextScheduledToday = scheduledToday.find((item) => item.scheduledAt && item.scheduledAt > now);
+  const preEventOpen = nextScheduledToday
+    ? open.filter((item) => item.priority === "urgent" || item.priority === "high")
+    : [];
+  const remainingOpen = open.filter((item) => !preEventOpen.some((candidate) => candidate.id === item.id));
   const nextActions: Array<{ itemId: string; label: string; reason: string }> = [];
   const addActions = (candidates: BriefItem[], reason: string) => {
     for (const item of candidates) {
@@ -130,11 +159,12 @@ export function buildBriefSummary(items: BriefItem[], today: string) {
 
   addActions(inProgress, "Already in progress");
   addActions(overdue, "Overdue");
-  addActions(scheduledToday, "Scheduled today");
   addActions(dueToday, "Due today");
-  for (const item of open) {
-    addActions([item], openActionReason(item));
+  for (const item of preEventOpen) {
+    addActions([item], openActionReason(item, nextScheduledToday, timezone));
   }
+  addActions(scheduledToday, nextScheduledToday ? "Next scheduled today" : "Scheduled today");
+  for (const item of remainingOpen) addActions([item], openActionReason(item));
   addActions(upcoming, "Upcoming");
   nextActions.splice(5);
   const overviewParts = [
@@ -187,8 +217,9 @@ export function registerBriefMeTool(
           scheduledAt: item.scheduledAt,
           description: item.description,
         }));
-        const today = new Date().toISOString().slice(0, 10);
-        const details = buildBriefSummary(briefItems, today);
+        const now = new Date().toISOString();
+        const today = dateKey(now, args.timezone) as string;
+        const details = buildBriefSummary(briefItems, today, now, args.timezone);
         const prioritized = [
           ...details.sections.inProgress,
           ...details.sections.overdue,

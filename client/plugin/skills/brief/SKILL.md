@@ -65,11 +65,14 @@ Skip if no weather MCP — calendar + tasks still work.
 
 ```json
 {
-  "kind": "morning"
+  "kind": "morning",
+  "timezone": "<user timezone, e.g. America/Detroit>"
 }
 ```
 
-Use `"kind": "on_demand"` for non-morning requests.
+Use `"kind": "on_demand"` for non-morning requests. Pass the user's IANA timezone when known so
+Briefs can distinguish local-day deadlines, upcoming events, and work that should happen before
+the next scheduled event.
 
 ### 6. Present the brief
 

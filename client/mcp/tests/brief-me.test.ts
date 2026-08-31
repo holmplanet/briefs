@@ -23,7 +23,7 @@ describe("buildBriefSummary", () => {
       item("Pay rent", { priority: "high" }),
       item("Work", { status: "in_progress" }),
       item("Mail", { priority: "low" }),
-    ], "2026-08-31");
+    ], "2026-08-31", "2026-08-31T15:00:00.000Z");
 
     expect(result.nextActions).toEqual([
       { itemId: "work-0000-0000-0000-000000000000", label: "Work", reason: "Already in progress" },
@@ -39,9 +39,23 @@ describe("buildBriefSummary", () => {
         scheduledAt: "2026-08-31T16:00:00.000Z",
         dueAt: "2026-08-31T17:00:00.000Z",
       }),
-    ], "2026-08-31");
+    ], "2026-08-31", "2026-08-31T12:00:00.000Z");
 
     expect(result.nextActions).toHaveLength(1);
-    expect(result.nextActions[0]?.reason).toBe("Scheduled today");
+    expect(result.nextActions[0]?.reason).toBe("Due today");
+  });
+
+  it("puts high-priority open work before the next scheduled event", () => {
+    const result = buildBriefSummary([
+      item("Meeting with Dan S", { scheduledAt: "2026-08-31T20:00:00.000Z" }),
+      item("Pay rent", { priority: "high" }),
+      item("Mail"),
+    ], "2026-08-31", "2026-08-31T18:55:00.000Z");
+
+    expect(result.nextActions).toEqual([
+      { itemId: "pay-rent-0000-0000-0000-000000000000", label: "Pay rent", reason: "Open, high priority — do before Meeting with Dan S at 8:00 PM" },
+      { itemId: "meeting-with-dan-s-0000-0000-0000-000000000000", label: "Meeting with Dan S", reason: "Next scheduled today" },
+      { itemId: "mail-0000-0000-0000-000000000000", label: "Mail", reason: "Open and unscheduled" },
+    ]);
   });
 });

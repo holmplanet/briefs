@@ -17,6 +17,10 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Briefs",
   description: "View your Briefs items and activity log. Create and update work through MCP.",
+  icons: {
+    icon: [{ url: "/briefs-logo-white.svg", type: "image/svg+xml" }],
+    shortcut: ["/briefs-logo-white.svg"],
+  },
 };
 
 export const viewport: Viewport = {

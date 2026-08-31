@@ -73,7 +73,48 @@ Use `"kind": "on_demand"` for non-morning requests.
 
 ### 6. Present the brief
 
-Show the greeting and bullets (priority order). Call out overdue tasks, upcoming meetings, and weather conflicts. Offer `what_changed` if the user wants a delta.
+Use the structured `brief_me` output rather than repeating its raw item list. Present:
+
+1. The `overview` and a short read on the user's current state.
+2. `nextActions` in order, including each action's reason.
+3. `sections.inProgress`, `sections.overdue`, `sections.scheduledToday`, and `sections.dueToday` when non-empty.
+4. `sections.open` and `sections.upcoming` only after time-sensitive work is covered.
+5. Useful outcome, done-when, and context details from each item's Markdown description.
+
+Keep completed items out of the main brief. Call out overdue tasks, upcoming meetings, and weather conflicts. Offer `what_changed` if the user wants a delta.
+
+## `brief_me` output
+
+The tool returns a stable structured payload under `data`:
+
+```json
+{
+  "overview": "7 active items, 1 in progress, 1 scheduled today",
+  "nextActions": [
+    { "itemId": "...", "label": "Work", "reason": "Already in progress" }
+  ],
+  "sections": {
+    "inProgress": [],
+    "scheduledToday": [],
+    "dueToday": [],
+    "overdue": [],
+    "open": [],
+    "upcoming": []
+  },
+  "counts": {
+    "active": 7,
+    "open": 6,
+    "inProgress": 1,
+    "scheduledToday": 1,
+    "dueToday": 0,
+    "overdue": 0,
+    "completed": 0
+  },
+  "items": []
+}
+```
+
+Each item includes its identity, kind, status, priority, schedule/due fields, and Markdown description so the assistant can explain the work instead of only listing titles.
 
 ---
 

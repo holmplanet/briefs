@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, Layers } from "lucide-react";
 
 import { McpConnectPanel } from "@/components/mcp/connect-panel";
+import { ItemKindBadge } from "@/components/items/item-kind-badge";
 import { ItemStatusBadge } from "@/components/items/item-status-badge";
 import { fetchBriefsHealth, fetchItems, isBriefsAuthError } from "@/lib/briefs-api";
 import { getSession, loadAuthConfig } from "@/lib/auth";
@@ -127,20 +128,21 @@ export default async function DailyHomePage() {
             </Link>
           </div>
         ) : (
-          <ul className="glass-panel divide-y divide-border/60 overflow-hidden rounded-3xl">
+          <ul className="grid gap-3">
             {nextItems.map((item) => (
-              <li key={item.id}>
+              <li key={item.id} className="rounded-2xl border border-border/90 bg-card/90 shadow-[0_12px_30px_-24px_rgba(0,0,0,0.9)] transition hover:border-blue-300/35 hover:bg-card">
                 <Link
                   href={`/items/${item.id}`}
-                  className="flex items-center justify-between gap-4 px-5 py-4 transition-colors hover:bg-background/30"
+                  className="flex items-center justify-between gap-4 px-5 py-4"
                 >
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="truncate font-medium tracking-[-0.01em]">{item.name}</p>
+                      <ItemKindBadge kind={item.kind} />
                       <ItemStatusBadge status={item.status} />
                     </div>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {item.kind} · Updated {formatDateTime(item.updatedAt)}
+                      Updated {formatDateTime(item.updatedAt)}
                     </p>
                   </div>
                   <ArrowRight className="size-4 shrink-0 text-muted-foreground" />

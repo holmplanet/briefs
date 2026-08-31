@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
 import { McpHint } from "@/components/mcp/connect-panel";
+import { ItemKindBadge } from "@/components/items/item-kind-badge";
 import { ItemLifecycleBadge, ItemStatusBadge } from "@/components/items/item-status-badge";
 import { MarkdownContent } from "@/components/items/markdown-content";
 import { buttonVariants, cn } from "@briefs/web-shared";
@@ -110,21 +111,19 @@ export default async function ItemsPage({
             .
           </div>
         ) : (
-          <ul className="glass-panel divide-y divide-border/60 overflow-hidden rounded-2xl sm:rounded-3xl">
+          <ul className="grid gap-3">
             {items.map((item) => (
-              <li key={item.id}>
+              <li key={item.id} className="rounded-2xl border border-border/90 bg-card/90 shadow-[0_12px_30px_-24px_rgba(0,0,0,0.9)] transition hover:border-blue-300/35 hover:bg-card">
                 <Link
                   href={`/items/${item.id}`}
-                  className="flex items-start justify-between gap-4 px-4 py-4 transition-colors hover:bg-background/30 sm:px-5"
+                  className="flex items-start justify-between gap-4 px-4 py-4 sm:px-5"
                 >
                   <div className="min-w-0 space-y-1.5">
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="font-medium tracking-[-0.01em]">{item.name}</p>
+                      <ItemKindBadge kind={item.kind} />
                       <ItemStatusBadge status={item.status} />
                       <ItemLifecycleBadge lifecycle={item.lifecycle} />
-                      <span className="rounded-full bg-background/50 px-2 py-0.5 text-xs text-muted-foreground">
-                        {item.kind}
-                      </span>
                     </div>
                     {item.description ? (
                       <MarkdownContent className="line-clamp-2 text-sm text-muted-foreground">

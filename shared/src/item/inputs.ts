@@ -36,6 +36,7 @@ export const itemUpdateInputSchema = z.object({
   priority: z.nativeEnum(ItemPriority).nullable().optional(),
   /** Markdown-formatted body for humans and agents. */
   description: z.string().nullable().optional(),
+  kind: z.string().min(1).optional(),
   context: z.string().min(1).optional(),
   tags: z.array(z.string().min(1)).nullable().optional(),
   refs: z.array(itemRefSchema).nullable().optional(),

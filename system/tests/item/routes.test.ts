@@ -67,12 +67,14 @@ describe("item API", () => {
         headers,
         body: JSON.stringify({
           status: "done",
+          kind: "commitment",
           description: "## Outcome\\n\\nPublished the schema update.",
         }),
       });
       expect(patchResponse.status).toBe(200);
       const updated = await patchResponse.json();
       expect(updated.item.status).toBe("done");
+      expect(updated.item.kind).toBe("commitment");
       expect(updated.item.description).toBe("## Outcome\\n\\nPublished the schema update.");
       expect(updated.item.completedAt).toBeTruthy();
 

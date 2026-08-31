@@ -127,6 +127,7 @@ export class ItemService {
       priority: input.priority === null ? undefined : (input.priority ?? existing.priority),
       description:
         input.description === null ? undefined : (input.description ?? existing.description),
+      kind: input.kind ?? existing.kind,
       context: nextContext,
       tags: input.tags === null ? undefined : (input.tags ?? existing.tags),
       refs: input.refs === null ? undefined : (input.refs ?? existing.refs),

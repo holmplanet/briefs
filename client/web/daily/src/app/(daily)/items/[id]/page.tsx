@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { ActivityTimeline } from "@/components/items/activity-timeline";
+import { MarkdownContent } from "@/components/items/markdown-content";
 import { ItemLifecycleBadge, ItemStatusBadge } from "@/components/items/item-status-badge";
 import { McpHint } from "@/components/mcp/connect-panel";
 import { buttonVariants, cn } from "@briefs/web-shared";
@@ -53,9 +54,9 @@ export default async function ItemDetailPage({
           </div>
           <p className="text-sm text-muted-foreground">{item.context} context</p>
           {item.description ? (
-            <p className="max-w-3xl whitespace-pre-wrap leading-relaxed text-muted-foreground">
+            <MarkdownContent className="max-w-3xl leading-relaxed text-muted-foreground">
               {item.description}
-            </p>
+            </MarkdownContent>
           ) : null}
           <McpHint className="text-sm text-muted-foreground" />
         </div>

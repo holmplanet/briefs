@@ -11,6 +11,7 @@ const inputSchema = z
   .object({
     item_id: z.string().uuid(),
     name: z.string().min(1).optional(),
+    kind: z.string().min(1).optional(),
     description: z.string().nullable().optional(),
     status: z.nativeEnum(ItemStatus).optional(),
     lifecycle: z.enum(["active", "archived"]).optional(),
@@ -26,7 +27,7 @@ export function registerItemsUpdateTool(
     "items_update",
     {
       description:
-        "Update a Briefs item's fields or status. Use description for the Markdown-formatted body; set it to null to clear the body.",
+        "Update a Briefs item's fields or status, including its kind label. Use description for the Markdown-formatted body; set it to null to clear the body.",
       inputSchema,
     },
     async (args, extra) => {

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 
 import { ActivityTimeline } from "@/components/items/activity-timeline";
+import { ItemKindBadge } from "@/components/items/item-kind-badge";
 import { MarkdownContent } from "@/components/items/markdown-content";
 import { ItemLifecycleBadge, ItemStatusBadge } from "@/components/items/item-status-badge";
 import { McpHint } from "@/components/mcp/connect-panel";
@@ -41,11 +42,11 @@ export default async function ItemDetailPage({
           Items
         </Link>
 
-        <div className="space-y-4">
+        <div className="space-y-4 rounded-3xl border border-border/90 bg-card/90 p-5 shadow-[0_18px_48px_-30px_rgba(0,0,0,0.9)] sm:p-6">
           <div className="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.16em] text-muted-foreground">
             <span>Item detail</span>
             <span className="text-border">/</span>
-            <span>{item.kind}</span>
+            <ItemKindBadge kind={item.kind} />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-3xl font-medium tracking-[-0.03em] sm:text-4xl">{item.name}</h1>

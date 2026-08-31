@@ -66,6 +66,13 @@ const briefMeOutputSchema = z.object({
 
 type BriefItem = z.infer<typeof briefItemSchema>;
 
+const priorityRank: Record<NonNullable<BriefItem["priority"]>, number> = {
+  urgent: 0,
+  high: 1,
+  normal: 2,
+  low: 3,
+};
+
 function dateKey(value: string | undefined): string | undefined {
   return value?.slice(0, 10);
 }
@@ -77,7 +84,23 @@ function sortItems(items: BriefItem[]): BriefItem[] {
   );
 }
 
-function buildBriefSummary(items: BriefItem[], today: string) {
+function sortOpenItems(items: BriefItem[]): BriefItem[] {
+  return [...items].sort((left, right) =>
+    priorityRank[left.priority ?? "normal"] - priorityRank[right.priority ?? "normal"]
+    || left.name.localeCompare(right.name),
+  );
+}
+
+function actionFor(item: BriefItem, reason: string) {
+  return { itemId: item.id, label: item.name, reason };
+}
+
+function openActionReason(item: BriefItem) {
+  const priority = item.priority && item.priority !== "normal" ? `, ${item.priority} priority` : "";
+  return `Open${priority} and unscheduled`;
+}
+
+export function buildBriefSummary(items: BriefItem[], today: string) {
   const now = new Date().toISOString();
   const active = items.filter((item) => item.status === "open" || item.status === "in_progress");
   const inProgress = sortItems(active.filter((item) => item.status === "in_progress"));
@@ -95,13 +118,25 @@ function buildBriefSummary(items: BriefItem[], today: string) {
     ...overdue.map((item) => item.id),
     ...upcoming.map((item) => item.id),
   ]);
-  const open = sortItems(active.filter((item) => !used.has(item.id)));
-  const nextActions = [
-    ...inProgress.map((item) => ({ itemId: item.id, label: item.name, reason: "Already in progress" })),
-    ...overdue.map((item) => ({ itemId: item.id, label: item.name, reason: "Overdue" })),
-    ...scheduledToday.map((item) => ({ itemId: item.id, label: item.name, reason: "Scheduled today" })),
-    ...dueToday.map((item) => ({ itemId: item.id, label: item.name, reason: "Due today" })),
-  ].slice(0, 5);
+  const open = sortOpenItems(active.filter((item) => !used.has(item.id)));
+  const nextActions: Array<{ itemId: string; label: string; reason: string }> = [];
+  const addActions = (candidates: BriefItem[], reason: string) => {
+    for (const item of candidates) {
+      if (!nextActions.some((action) => action.itemId === item.id)) {
+        nextActions.push(actionFor(item, reason));
+      }
+    }
+  };
+
+  addActions(inProgress, "Already in progress");
+  addActions(overdue, "Overdue");
+  addActions(scheduledToday, "Scheduled today");
+  addActions(dueToday, "Due today");
+  for (const item of open) {
+    addActions([item], openActionReason(item));
+  }
+  addActions(upcoming, "Upcoming");
+  nextActions.splice(5);
   const overviewParts = [
     `${active.length} active item${active.length === 1 ? "" : "s"}`,
     inProgress.length > 0 ? `${inProgress.length} in progress` : null,

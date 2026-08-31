@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 
 import { McpHint } from "@/components/mcp/connect-panel";
 import { ItemLifecycleBadge, ItemStatusBadge } from "@/components/items/item-status-badge";
+import { MarkdownContent } from "@/components/items/markdown-content";
 import { buttonVariants, cn } from "@briefs/web-shared";
 
 import { fetchItems, getBriefsErrorMessage, isBriefsAuthError } from "@/lib/briefs-api";
@@ -126,7 +127,9 @@ export default async function ItemsPage({
                       </span>
                     </div>
                     {item.description ? (
-                      <p className="line-clamp-2 text-sm text-muted-foreground">{item.description}</p>
+                      <MarkdownContent className="line-clamp-2 text-sm text-muted-foreground">
+                        {item.description}
+                      </MarkdownContent>
                     ) : null}
                     <p className="text-xs text-muted-foreground">
                       Updated {formatDateTime(item.updatedAt)}

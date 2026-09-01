@@ -13,6 +13,8 @@ export type BriefsConfig = {
   oauthRedirectUris: string[];
   oauthAllowedRedirectUris: string[];
   oauthAllowedEmails: string[];
+  mcpResource: string;
+  apiResource: string;
   otpMailer: "console" | "resend";
   resendApiKey?: string;
   emailFrom?: string;
@@ -59,6 +61,8 @@ export function loadConfig(): BriefsConfig {
     throw new Error("Production Briefs requires one or two unique valid AUTH_ALLOWED_EMAILS entries");
   }
 
+  const mcpResource = process.env.MCP_RESOURCE ?? "http://localhost:3334/mcp";
+  const apiResource = process.env.API_RESOURCE ?? `${new URL((process.env.OAUTH_ISSUER ?? `http://localhost:${readPort(process.env.APP_PORT, 8001)}/oauth`).replace(/\/$/, "")).origin}/api`;
   return {
     env,
     authProvider: process.env.AUTH_PROVIDER === "better-auth" ? "better-auth" : "legacy",
@@ -72,6 +76,8 @@ export function loadConfig(): BriefsConfig {
     oauthRedirectUris: (process.env.OAUTH_REDIRECT_URIS ?? "http://localhost:3000/auth/callback").split(",").map((value) => value.trim()).filter(Boolean),
     oauthAllowedRedirectUris,
     oauthAllowedEmails,
+    mcpResource,
+    apiResource,
     otpMailer: process.env.OTP_MAILER === "resend" ? "resend" : "console",
     resendApiKey: process.env.RESEND_API_KEY,
     emailFrom: process.env.EMAIL_FROM,

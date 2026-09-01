@@ -57,6 +57,18 @@ describe("Better Auth runtime wiring", () => {
       expect(registration.status).toBe(201);
       const client = await registration.json() as { client_id: string };
 
+      const unsafeRegistration = await fetch(`${baseUrl}/oauth/oauth2/register`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          client_name: "Unexpected redirect client",
+          redirect_uris: ["https://attacker.example/callback"],
+          token_endpoint_auth_method: "none",
+          application_type: "web",
+        }),
+      });
+      expect(unsafeRegistration.status).toBe(400);
+
       const otpResponse = await fetch(`${baseUrl}/oauth/email-otp/send-verification-otp`, {
         method: "POST",
         headers: { "content-type": "application/json" },

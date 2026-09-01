@@ -28,7 +28,9 @@ export function createApp(context: AppContext): Express {
   });
 
   if (context.betterAuth) {
-    const betterAuthHandler = createBetterAuthCompatibilityHandler(context.betterAuth);
+    const betterAuthHandler = createBetterAuthCompatibilityHandler(context.betterAuth, {
+      allowedRedirectUris: [...context.config.oauthRedirectUris, ...context.config.oauthAllowedRedirectUris],
+    });
     app.use((request, response, next) => {
       if (request.path.startsWith("/oauth")) {
         void betterAuthHandler(request, response, next);
@@ -47,7 +49,7 @@ export function createApp(context: AppContext): Express {
     authMiddleware: context.betterAuth
       ? createBetterAuthResourceMiddleware({
         issuer: context.config.oauthIssuer,
-        audience: process.env.API_RESOURCE ?? `${new URL(context.config.oauthIssuer).origin}/api`,
+        audience: context.config.apiResource,
       })
       : undefined,
   });

@@ -38,6 +38,16 @@ export async function bootstrap(): Promise<AppContext> {
   if (config.env === "production" && config.authSecret === "dev-briefs-auth-secret") {
     throw new Error("Production requires a non-default AUTH_SECRET");
   }
+  if (config.env === "production" && config.authProvider === "better-auth") {
+    if (!process.env.OAUTH_ISSUER) throw new Error("Production Better Auth requires OAUTH_ISSUER");
+    if (new URL(config.oauthIssuer).protocol !== "https:") {
+      throw new Error("Production Better Auth requires OAUTH_ISSUER to use HTTPS");
+    }
+    for (const [name, value] of [["MCP_RESOURCE", config.mcpResource], ["API_RESOURCE", config.apiResource]] as const) {
+      if (!process.env[name]) throw new Error(`Production Better Auth requires ${name}`);
+      if (new URL(value).protocol !== "https:") throw new Error(`Production Better Auth requires ${name} to use HTTPS`);
+    }
+  }
   if (config.otpMailer === "resend" && (!config.resendApiKey || !config.emailFrom)) {
     throw new Error("Resend OTP mailer requires RESEND_API_KEY and EMAIL_FROM");
   }
@@ -59,8 +69,8 @@ export async function bootstrap(): Promise<AppContext> {
         issuer: config.oauthIssuer,
         secret: config.authSecret,
         allowedEmails: config.oauthAllowedEmails,
-        mcpResource: process.env.MCP_RESOURCE ?? "http://localhost:3334/mcp",
-        apiResource: process.env.API_RESOURCE ?? `${new URL(config.oauthIssuer).origin}/api`,
+        mcpResource: config.mcpResource,
+        apiResource: config.apiResource,
         sendOtp: (email, code) => mailer.sendOtp(email, code),
       })
       : undefined;

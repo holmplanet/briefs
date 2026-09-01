@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { bootstrap, createApp } from "../../src/index.js";
+import { handleWebApiRequest } from "../../src/web.js";
 
 describe("Better Auth runtime wiring", () => {
   it("boots the flagged provider and authenticates a real API request", async () => {
@@ -145,6 +146,15 @@ describe("Better Auth runtime wiring", () => {
       });
       expect(apiResponse.status).toBe(200);
       await expect(apiResponse.json()).resolves.toMatchObject({ actor: { identity: expect.any(String) } });
+
+      const webApiResponse = await handleWebApiRequest(
+        new Request(`${baseUrl}/api/v1/actors/me`, {
+          headers: { authorization: `Bearer ${tokenBody.access_token}` },
+        }),
+        context,
+      );
+      expect(webApiResponse.status).toBe(200);
+      await expect(webApiResponse.json()).resolves.toMatchObject({ actor: { identity: expect.any(String) } });
     } finally {
       console.log = originalLog;
       await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));

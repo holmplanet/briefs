@@ -72,6 +72,10 @@ export async function GET(request: Request) {
     });
     const response = NextResponse.redirect(new URL(safeNextPath(nextPath), config.appUrl));
     response.cookies.set(SESSION_COOKIE, sessionCookieValue, sessionCookieOptions());
+    console.info("[Briefs Daily] Daily session attached to callback response", {
+      cookieAttached: Boolean(response.cookies.get(SESSION_COOKIE)?.value),
+      cookieLength: sessionCookieValue.length,
+    });
     return response;
   } catch (callbackError) {
     const message =

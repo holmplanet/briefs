@@ -70,11 +70,14 @@ export async function GET(request: Request) {
       refreshToken: user.refreshToken,
       accessTokenExpiresAt: user.accessTokenExpiresAt,
     });
-    const response = NextResponse.redirect(new URL(safeNextPath(nextPath), config.appUrl));
+    const response = NextResponse.redirect(new URL(safeNextPath(nextPath), config.appUrl), 303);
     response.cookies.set(SESSION_COOKIE, sessionCookieValue, sessionCookieOptions());
+    const setCookieHeader = response.headers.get("set-cookie");
     console.info("[Briefs Daily] Daily session attached to callback response", {
       cookieAttached: Boolean(response.cookies.get(SESSION_COOKIE)?.value),
       cookieLength: sessionCookieValue.length,
+      serializedCookieAttached: Boolean(setCookieHeader?.includes(SESSION_COOKIE)),
+      serializedHeaderLength: setCookieHeader?.length ?? 0,
     });
     return response;
   } catch (callbackError) {

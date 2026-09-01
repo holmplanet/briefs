@@ -223,7 +223,11 @@ export default async function LoginPage({
     redirect(authorizeUrl);
   }
 
-  const betterAuthOtpPending = config.authProvider === "better-auth" && params.otp === "sent";
+  const isBetterAuthProviderLogin = config.authProvider === "better-auth"
+    && typeof params.client_id === "string"
+    && typeof params.response_type === "string"
+    && typeof params.redirect_uri === "string";
+  const betterAuthOtpPending = isBetterAuthProviderLogin && params.otp === "sent";
   const oauthQuery = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (["email", "error", "next", "otp"].includes(key)) continue;
@@ -263,7 +267,7 @@ export default async function LoginPage({
               Verify and continue
             </button>
           </form>
-        ) : config.authProvider === "better-auth" ? (
+        ) : isBetterAuthProviderLogin ? (
           <form action={sendBetterAuthOtp} className="space-y-3">
             <input type="hidden" name="next" value={nextPath} />
             <label className="block space-y-1 text-sm">

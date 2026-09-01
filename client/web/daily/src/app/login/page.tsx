@@ -189,7 +189,11 @@ export default async function LoginPage({
       redirect(`/login?error=Authentication%20session%20was%20not%20created&next=${encodeURIComponent(next)}`);
     }
 
-    const continuation = response.headers.get("location") ?? "";
+    let continuation = response.headers.get("location") ?? "";
+    if (!continuation && response.ok && response.headers.get("content-type")?.includes("application/json")) {
+      const result = await response.json() as { redirect?: boolean; url?: string };
+      if (result.redirect && result.url) continuation = result.url;
+    }
     if (continuation) {
       redirect(new URL(continuation, authConfig.issuer ?? "http://localhost").toString());
     }

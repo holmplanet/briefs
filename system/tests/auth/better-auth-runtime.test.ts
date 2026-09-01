@@ -4,6 +4,102 @@ import { bootstrap, createApp } from "../../src/index.js";
 import { handleWebApiRequest } from "../../src/web.js";
 
 describe("Better Auth runtime wiring", () => {
+  it("continues the real OAuth request after OTP login", async () => {
+    const environment = {
+      AUTH_PROVIDER: process.env.AUTH_PROVIDER,
+      AUTH_ALLOWED_EMAILS: process.env.AUTH_ALLOWED_EMAILS,
+      DATABASE_URL: process.env.DATABASE_URL,
+      AUTH_SECRET: process.env.AUTH_SECRET,
+      OAUTH_ISSUER: process.env.OAUTH_ISSUER,
+      API_RESOURCE: process.env.API_RESOURCE,
+    };
+    const issuer = "http://localhost:18002/oauth";
+    const email = `oauth-login-${Date.now()}@example.com`;
+
+    process.env.AUTH_PROVIDER = "better-auth";
+    process.env.AUTH_ALLOWED_EMAILS = email;
+    process.env.DATABASE_URL = process.env.DATABASE_URL ?? "postgres://briefs:briefs@127.0.0.1:5432/briefs";
+    process.env.AUTH_SECRET = "spike-auth-secret-0123456789-abcdef";
+    process.env.OAUTH_ISSUER = issuer;
+    process.env.API_RESOURCE = "http://localhost:18002/api";
+
+    const context = await bootstrap();
+    const app = createApp(context);
+    const server = app.listen(18002);
+    const baseUrl = "http://127.0.0.1:18002";
+    let otp = "";
+    const originalLog = console.log;
+    console.log = (...args: unknown[]) => {
+      const message = args.join(" ");
+      const match = message.match(new RegExp(`^\\[Briefs OAuth\\] OTP for ${email}: (\\d{6})$`));
+      if (match) otp = match[1];
+      originalLog(...args);
+    };
+
+    try {
+      const registration = await fetch(`${baseUrl}/oauth/oauth2/register`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          client_name: "Briefs OAuth login continuation test",
+          redirect_uris: ["http://localhost:3000/auth/callback"],
+          token_endpoint_auth_method: "none",
+          application_type: "native",
+        }),
+      });
+      const client = await registration.json() as { client_id: string };
+      const authorizeParams = new URLSearchParams({
+        response_type: "code",
+        client_id: client.client_id,
+        redirect_uri: "http://localhost:3000/auth/callback",
+        scope: "openid email profile offline_access",
+        state: "oauth-login-state",
+        code_challenge: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        code_challenge_method: "S256",
+        resource: "http://localhost:18002/api",
+      });
+
+      const authorization = await fetch(`${baseUrl}/oauth/oauth2/authorize?${authorizeParams}`, {
+        redirect: "manual",
+      });
+      expect([200, 302]).toContain(authorization.status);
+      const authorizationBody = authorization.status === 200
+        ? await authorization.json() as { url: string }
+        : undefined;
+      const loginLocation = new URL(
+        authorization.headers.get("location") ?? authorizationBody!.url,
+        baseUrl,
+      );
+      expect(loginLocation.pathname).toBe("/login");
+
+      const otpResponse = await fetch(`${baseUrl}/oauth/email-otp/send-verification-otp`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, type: "sign-in" }),
+      });
+      expect(otpResponse.status).toBe(200);
+      expect(otp).toMatch(/^\d{6}$/);
+
+      const signIn = await fetch(`${baseUrl}/oauth/sign-in/email-otp`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, otp, oauth_query: loginLocation.search.slice(1) }),
+      });
+      const signInBody = await signIn.text();
+      expect(signIn.status, signInBody).toBe(200);
+      const continuation = JSON.parse(signInBody) as { redirect?: boolean; url?: string };
+      expect(continuation.redirect).toBe(true);
+      expect(new URL(continuation.url!, baseUrl).pathname).not.toBe("/login");
+    } finally {
+      console.log = originalLog;
+      await new Promise<void>((resolve, reject) => server.close((error) => (error ? reject(error) : resolve())));
+      for (const [key, value] of Object.entries(environment)) {
+        if (value === undefined) delete process.env[key];
+        else process.env[key] = value;
+      }
+    }
+  });
+
   it("boots the flagged provider and authenticates a real API request", async () => {
     const environment = {
       AUTH_PROVIDER: process.env.AUTH_PROVIDER,

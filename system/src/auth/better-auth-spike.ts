@@ -20,12 +20,14 @@ export type BetterAuthSpikeConfig = {
  * before replacing the existing Briefs OAuth implementation.
  */
 export function createBetterAuthSpike(pool: Pool, config: BetterAuthSpikeConfig) {
+  const trustedOrigin = new URL(config.issuer).origin;
+
   return betterAuth({
     database: pool,
     baseURL: config.issuer,
     basePath: "/oauth",
     secret: config.secret,
-    trustedOrigins: [config.issuer],
+    trustedOrigins: [trustedOrigin],
     plugins: [
       jwt(),
       emailOTP({

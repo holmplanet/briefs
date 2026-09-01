@@ -71,10 +71,10 @@ function applyBetterAuthSessionCookies(response: Response, cookieStore: Awaited<
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string; otp?: string; email?: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await searchParams;
-  const nextPath = safeNextPath(params.next);
+  const nextPath = safeNextPath(typeof params.next === "string" ? params.next : undefined);
   const config = loadAuthConfig();
   const session = await getSession(config);
 
@@ -170,22 +170,28 @@ export default async function LoginPage({
     const email = String(formData.get("email") ?? "").trim().toLowerCase();
     const otp = String(formData.get("otp") ?? "").trim();
     const next = safeNextPath(String(formData.get("next") ?? "/"));
+    const oauthQuery = String(formData.get("oauth_query") ?? "");
     const response = await (await getInProcessOAuthFetch())(
       `${authConfig.issuer}/sign-in/email-otp`,
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, otp }),
+        body: JSON.stringify({ email, otp, ...(oauthQuery ? { oauth_query: oauthQuery } : {}) }),
       },
     );
-    if (!response.ok) {
+    if (!response.ok && !response.headers.get("location")) {
       const detail = await response.text();
       redirect(`/login?otp=sent&email=${encodeURIComponent(email)}&error=${encodeURIComponent(detail || "Invalid sign-in code")}&next=${encodeURIComponent(next)}`);
     }
 
     const cookieStore = await cookies();
-    if (!applyBetterAuthSessionCookies(response, cookieStore)) {
+    if (!applyBetterAuthSessionCookies(response, cookieStore) && !response.headers.get("location")) {
       redirect(`/login?error=Authentication%20session%20was%20not%20created&next=${encodeURIComponent(next)}`);
+    }
+
+    const continuation = response.headers.get("location") ?? "";
+    if (continuation) {
+      redirect(new URL(continuation, authConfig.issuer ?? "http://localhost").toString());
     }
 
     const state = createOAuthState();
@@ -214,6 +220,13 @@ export default async function LoginPage({
   }
 
   const betterAuthOtpPending = config.authProvider === "better-auth" && params.otp === "sent";
+  const oauthQuery = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (["email", "error", "next", "otp"].includes(key)) continue;
+    for (const item of Array.isArray(value) ? value : [value]) {
+      if (item !== undefined) oauthQuery.append(key, item);
+    }
+  }
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-6 py-16">
@@ -237,6 +250,7 @@ export default async function LoginPage({
           <form action={finishBetterAuthLogin} className="space-y-3">
             <input type="hidden" name="email" value={params.email ?? ""} />
             <input type="hidden" name="next" value={nextPath} />
+            <input type="hidden" name="oauth_query" value={oauthQuery.toString()} />
             <label className="block space-y-1 text-sm">
               <span className="text-muted-foreground">Email code</span>
               <input name="otp" inputMode="numeric" autoComplete="one-time-code" required className="w-full rounded-xl border border-border bg-background/60 px-3 py-2" />

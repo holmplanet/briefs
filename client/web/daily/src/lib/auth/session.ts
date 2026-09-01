@@ -97,6 +97,12 @@ export async function getSession(config: AuthConfig): Promise<DailySession | nul
   const raw = cookieStore.get(SESSION_COOKIE)?.value;
   const session = await decodeSession(raw, config.sessionSecret);
 
+  console.info("[Briefs Daily] Daily session check", {
+    hasCookie: Boolean(raw),
+    cookieLength: raw?.length ?? 0,
+    valid: Boolean(session),
+  });
+
   if (session) {
     return session;
   }
@@ -122,6 +128,12 @@ export async function setSession(config: AuthConfig, session: Omit<DailySession,
     },
     config.sessionSecret,
   );
+
+  console.info("[Briefs Daily] Daily session created", {
+    cookieLength: value.length,
+    hasAccessToken: Boolean(session.accessToken),
+    hasRefreshToken: Boolean(session.refreshToken),
+  });
 
   cookieStore.set(SESSION_COOKIE, value, sessionCookieOptions());
 }

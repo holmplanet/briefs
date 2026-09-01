@@ -261,7 +261,7 @@ export default async function LoginPage({
   const isPendingBetterAuthLogin = config.authProvider === "better-auth"
     && params.otp === "sent"
     && Boolean(pendingEmail && pendingOAuthQuery);
-  const betterAuthOtpPending = isBetterAuthProviderLogin || isPendingBetterAuthLogin;
+  const betterAuthOtpPending = (isBetterAuthProviderLogin && params.otp === "sent") || isPendingBetterAuthLogin;
   const oauthQuery = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (["email", "error", "next", "otp"].includes(key)) continue;

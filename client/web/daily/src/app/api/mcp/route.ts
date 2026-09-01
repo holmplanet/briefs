@@ -1,5 +1,6 @@
 import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { createBriefsMcpServer } from "@briefs/mcp/server";
+import { verifyBetterAuthAccessToken } from "@briefs/system/auth/resource";
 import { verifyAccessToken } from "@briefs/shared/auth";
 import { getSystemRuntime } from "@briefs/system/runtime";
 import { handleWebApiRequest } from "@briefs/system/web";
@@ -57,7 +58,12 @@ async function resolveAuth(request: Request) {
     return { userId: process.env.DEV_USER_ID ?? "demo", email: "dev@localhost", token: "dev-token" };
   }
   if (!token) return null;
-  const issuer = (process.env.OAUTH_ISSUER ?? "http://localhost:8001/oauth").replace(/\/$/, "");
-  const claims = await verifyAccessToken(token, authConfig.authSecret, issuer);
+  const issuer = (authConfig.issuer ?? "http://localhost:8001/oauth").replace(/\/$/, "");
+  const claims = authConfig.authProvider === "better-auth"
+    ? await verifyBetterAuthAccessToken(token, {
+      issuer,
+      audience: process.env.MCP_RESOURCE ?? getMcpResourceMetadataUrl(request).replace("/.well-known/oauth-protected-resource", ""),
+    })
+    : await verifyAccessToken(token, authConfig.authSecret, issuer);
   return claims ? { userId: claims.sub, email: claims.email, token } : null;
 }

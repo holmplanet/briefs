@@ -7,15 +7,19 @@ import { ItemStatus, itemCreateInputSchema, itemUpdateInputSchema } from "@brief
 import type { AppContext } from "./bootstrap.js";
 import { isApiError } from "./api/errors.js";
 import { isProductionEnvironment } from "./config.js";
+import { verifyBetterAuthAccessToken } from "./auth/better-auth-resource.js";
 
 const USER_HEADER = "x-briefs-user-id";
 
-export async function authenticateWebRequest(request: Request): Promise<string | null> {
+export async function authenticateWebRequest(request: Request, context: AppContext): Promise<string | null> {
   const authHeader = request.headers.get("authorization") ?? "";
   const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice(7).trim() : "";
-  const issuer = process.env.OAUTH_ISSUER ?? `http://localhost:${process.env.APP_PORT ?? "8001"}/oauth`;
-  const secret = process.env.AUTH_SECRET ?? "dev-briefs-auth-secret";
-  const claims = bearer ? await verifyAccessToken(bearer, secret, issuer.replace(/\/$/, "")) : null;
+  const issuer = context.config.oauthIssuer;
+  const claims = bearer
+    ? context.config.authProvider === "better-auth"
+      ? await verifyBetterAuthAccessToken(bearer, { issuer, audience: context.config.apiResource })
+      : await verifyAccessToken(bearer, context.config.authSecret, issuer)
+    : null;
   if (claims) return claims.sub;
 
   const devBypass = process.env.API_DEV_BYPASS !== "false" && !isProductionEnvironment();
@@ -24,7 +28,7 @@ export async function authenticateWebRequest(request: Request): Promise<string |
 }
 
 export async function handleWebApiRequest(request: Request, context: AppContext): Promise<Response> {
-  const userId = await authenticateWebRequest(request);
+  const userId = await authenticateWebRequest(request, context);
   if (!userId) return json({ error: "unauthorized", error_description: "Valid bearer token required" }, 401);
 
   const url = new URL(request.url);

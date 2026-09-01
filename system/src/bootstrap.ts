@@ -7,6 +7,7 @@ import { ItemService, MemoryItemStore, PostgresItemStore } from "./item/index.js
 import { MemoryAuthStore, PostgresAuthStore, type AuthStore } from "./auth/store.js";
 import { ConsoleOtpMailer, ResendOtpMailer, type OtpMailer } from "./auth/mailer.js";
 import { BriefService, MemoryBriefStore, PostgresBriefStore } from "./brief/index.js";
+import { createBetterAuthSpike } from "./auth/better-auth-spike.js";
 
 export type AppContext = {
   config: BriefsConfig;
@@ -14,6 +15,7 @@ export type AppContext = {
   actors: ActorService;
   activities: ActivityService;
   auth: AuthStore;
+  betterAuth?: ReturnType<typeof createBetterAuthSpike>;
   mailer: OtpMailer;
   briefs: BriefService;
 };
@@ -26,6 +28,9 @@ export async function bootstrap(): Promise<AppContext> {
   }
   if (config.env === "production" && !config.databaseUrl) {
     throw new Error("Production requires DATABASE_URL for durable OAuth storage");
+  }
+  if (config.authProvider === "better-auth" && !config.databaseUrl) {
+    throw new Error("Better Auth requires DATABASE_URL for durable authentication storage");
   }
   if (config.env === "production" && config.oauthAllowedRedirectUris.length === 0) {
     throw new Error("Production requires OAUTH_ALLOWED_REDIRECT_URIS for dynamic OAuth clients");
@@ -49,7 +54,18 @@ export async function bootstrap(): Promise<AppContext> {
     const mailer = config.otpMailer === "resend" && config.resendApiKey && config.emailFrom
       ? new ResendOtpMailer(config.resendApiKey, config.emailFrom)
       : new ConsoleOtpMailer();
-    return { config, actors, activities, items, auth, mailer, briefs };
+    const betterAuth = config.authProvider === "better-auth"
+      ? createBetterAuthSpike(pool, {
+        issuer: config.oauthIssuer,
+        secret: config.authSecret,
+        allowedEmails: config.oauthAllowedEmails,
+        mcpResource: process.env.MCP_RESOURCE ?? "http://localhost:3334/mcp",
+        apiResource: process.env.API_RESOURCE ?? `${new URL(config.oauthIssuer).origin}/api`,
+        sendOtp: (email, code) => mailer.sendOtp(email, code),
+      })
+      : undefined;
+    if (betterAuth) await (await betterAuth.$context).runMigrations();
+    return { config, actors, activities, items, auth, betterAuth, mailer, briefs };
   }
 
   const actors = new ActorService(new MemoryActorStore());

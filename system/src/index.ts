@@ -6,6 +6,8 @@ import express, { type Express, type Request, type Response } from "express";
 
 import { mountApiRoutes } from "./api/router.js";
 import { createOAuthRouter } from "./auth/oauth.js";
+import { createBetterAuthCompatibilityHandler } from "./auth/better-auth-express.js";
+import { createBetterAuthResourceMiddleware } from "./auth/better-auth-middleware.js";
 import { bootstrap, type AppContext } from "./bootstrap.js";
 import { closePool, createPool } from "./db.js";
 
@@ -25,12 +27,29 @@ export function createApp(context: AppContext): Express {
     });
   });
 
-  app.use("/oauth", createOAuthRouter(context.config, context.auth, context.mailer));
+  if (context.betterAuth) {
+    const betterAuthHandler = createBetterAuthCompatibilityHandler(context.betterAuth);
+    app.use((request, response, next) => {
+      if (request.path.startsWith("/oauth")) {
+        void betterAuthHandler(request, response, next);
+        return;
+      }
+      next();
+    });
+  } else {
+    app.use("/oauth", createOAuthRouter(context.config, context.auth, context.mailer));
+  }
 
   mountApiRoutes(app, {
     items: context.items,
     actors: context.actors,
     briefs: context.briefs,
+    authMiddleware: context.betterAuth
+      ? createBetterAuthResourceMiddleware({
+        issuer: context.config.oauthIssuer,
+        audience: process.env.API_RESOURCE ?? `${new URL(context.config.oauthIssuer).origin}/api`,
+      })
+      : undefined,
   });
 
   return app;

@@ -2,6 +2,7 @@ import { loadFileSecrets } from "./loadEnv.js";
 
 export type BriefsConfig = {
   env: string;
+  authProvider: "legacy" | "better-auth";
   host: string;
   port: number;
   databaseUrl?: string;
@@ -60,6 +61,7 @@ export function loadConfig(): BriefsConfig {
 
   return {
     env,
+    authProvider: process.env.AUTH_PROVIDER === "better-auth" ? "better-auth" : "legacy",
     host: process.env.APP_HOST ?? "0.0.0.0",
     port: readPort(process.env.APP_PORT, 8001),
     databaseUrl: process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL,

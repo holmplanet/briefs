@@ -15,9 +15,36 @@ import { getInProcessOAuthFetch } from "@/lib/auth/in-process-oauth";
 const OAUTH_STATE_COOKIE = "briefs_oauth_state";
 const OAUTH_VERIFIER_COOKIE = "briefs_oauth_verifier";
 
+function splitSetCookieHeader(setCookie: string): string[] {
+  const result: string[] = [];
+  let start = 0;
+  let index = 0;
+  while (index < setCookie.length) {
+    if (setCookie[index] === ",") {
+      let next = index + 1;
+      while (next < setCookie.length && setCookie[next] === " ") next += 1;
+      while (next < setCookie.length && setCookie[next] !== "=" && setCookie[next] !== ";" && setCookie[next] !== ",") {
+        next += 1;
+      }
+      if (setCookie[next] === "=") {
+        const value = setCookie.slice(start, index).trim();
+        if (value) result.push(value);
+        start = index + 1;
+        while (start < setCookie.length && setCookie[start] === " ") start += 1;
+        index = start;
+        continue;
+      }
+    }
+    index += 1;
+  }
+  const last = setCookie.slice(start).trim();
+  if (last) result.push(last);
+  return result;
+}
+
 function applyBetterAuthSessionCookies(response: Response, cookieStore: Awaited<ReturnType<typeof cookies>>): boolean {
   const headers = response.headers as Headers & { getSetCookie?: () => string[] };
-  const setCookies = headers.getSetCookie?.() ?? (headers.get("set-cookie") ? [headers.get("set-cookie")!] : []);
+  const setCookies = headers.getSetCookie?.() ?? splitSetCookieHeader(headers.get("set-cookie") ?? "");
   let sessionCookieSet = false;
 
   for (const setCookie of setCookies) {

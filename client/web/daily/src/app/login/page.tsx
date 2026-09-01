@@ -18,7 +18,7 @@ const OAUTH_VERIFIER_COOKIE = "briefs_oauth_verifier";
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string; error?: string }>;
+  searchParams: Promise<{ next?: string; error?: string; otp?: string; email?: string }>;
 }) {
   const params = await searchParams;
   const nextPath = safeNextPath(params.next);
@@ -85,6 +85,94 @@ export default async function LoginPage({
     redirect(authorizeUrl);
   }
 
+  async function sendBetterAuthOtp(formData: FormData) {
+    "use server";
+
+    const authConfig = loadAuthConfig();
+    const email = String(formData.get("email") ?? "").trim().toLowerCase();
+    const next = safeNextPath(String(formData.get("next") ?? "/"));
+    if (!email || !email.includes("@")) {
+      redirect(`/login?error=Enter%20a%20valid%20email&next=${encodeURIComponent(next)}`);
+    }
+
+    const response = await (await getInProcessOAuthFetch())(
+      `${authConfig.issuer}/email-otp/send-verification-otp`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, type: "sign-in" }),
+      },
+    );
+    if (!response.ok) {
+      const detail = await response.text();
+      redirect(`/login?error=${encodeURIComponent(detail || "Unable to send sign-in code")}&next=${encodeURIComponent(next)}`);
+    }
+    redirect(`/login?otp=sent&email=${encodeURIComponent(email)}&next=${encodeURIComponent(next)}`);
+  }
+
+  async function finishBetterAuthLogin(formData: FormData) {
+    "use server";
+
+    const authConfig = loadAuthConfig();
+    const email = String(formData.get("email") ?? "").trim().toLowerCase();
+    const otp = String(formData.get("otp") ?? "").trim();
+    const next = safeNextPath(String(formData.get("next") ?? "/"));
+    const response = await (await getInProcessOAuthFetch())(
+      `${authConfig.issuer}/sign-in/email-otp`,
+      {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, otp }),
+      },
+    );
+    if (!response.ok) {
+      const detail = await response.text();
+      redirect(`/login?otp=sent&email=${encodeURIComponent(email)}&error=${encodeURIComponent(detail || "Invalid sign-in code")}&next=${encodeURIComponent(next)}`);
+    }
+
+    const sessionCookie = response.headers.get("set-cookie")?.split(";", 1)[0];
+    if (!sessionCookie) {
+      redirect(`/login?error=Authentication%20session%20was%20not%20created&next=${encodeURIComponent(next)}`);
+    }
+    const separator = sessionCookie!.indexOf("=");
+    const cookieStore = await cookies();
+    cookieStore.set({
+      name: sessionCookie!.slice(0, separator),
+      value: sessionCookie!.slice(separator + 1),
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60,
+    });
+
+    const state = createOAuthState();
+    const { verifier, challenge } = createPkcePair();
+    const authorizeUrl = await buildAuthorizeUrl(
+      authConfig,
+      state,
+      challenge,
+      await getInProcessOAuthFetch(),
+    );
+    cookieStore.set(OAUTH_STATE_COOKIE, `${state}:${next}`, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 600,
+    });
+    cookieStore.set(OAUTH_VERIFIER_COOKIE, verifier, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 600,
+    });
+    redirect(authorizeUrl);
+  }
+
+  const betterAuthOtpPending = config.authProvider === "better-auth" && params.otp === "sent";
+
   return (
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-6 py-16">
       <div className="glass-panel space-y-6 rounded-3xl p-8">
@@ -103,15 +191,37 @@ export default async function LoginPage({
           </p>
         ) : null}
 
-        <form action={startLogin}>
+        {betterAuthOtpPending ? (
+          <form action={finishBetterAuthLogin} className="space-y-3">
+            <input type="hidden" name="email" value={params.email ?? ""} />
             <input type="hidden" name="next" value={nextPath} />
-          <button
-            type="submit"
-            className="w-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-500/20"
-          >
-            Continue with email
-          </button>
-        </form>
+            <label className="block space-y-1 text-sm">
+              <span className="text-muted-foreground">Email code</span>
+              <input name="otp" inputMode="numeric" autoComplete="one-time-code" required className="w-full rounded-xl border border-border bg-background/60 px-3 py-2" />
+            </label>
+            <button type="submit" className="w-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-500/20">
+              Verify and continue
+            </button>
+          </form>
+        ) : config.authProvider === "better-auth" ? (
+          <form action={sendBetterAuthOtp} className="space-y-3">
+            <input type="hidden" name="next" value={nextPath} />
+            <label className="block space-y-1 text-sm">
+              <span className="text-muted-foreground">Email</span>
+              <input name="email" type="email" autoComplete="email" required className="w-full rounded-xl border border-border bg-background/60 px-3 py-2" />
+            </label>
+            <button type="submit" className="w-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-500/20">
+              Send sign-in code
+            </button>
+          </form>
+        ) : (
+          <form action={startLogin}>
+            <input type="hidden" name="next" value={nextPath} />
+            <button type="submit" className="w-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-500/20">
+              Continue with email
+            </button>
+          </form>
+        )}
 
         <p className="text-xs text-muted-foreground">
           Uses Briefs OAuth 2.1 + PKCE with email OTP.

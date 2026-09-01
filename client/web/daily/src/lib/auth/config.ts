@@ -1,6 +1,8 @@
 export type AuthConfig = {
   /** OAuth issuer URL used for authorization and token validation. */
   issuer: string | null;
+  authProvider: "legacy" | "better-auth";
+  apiResource: string | null;
   clientId: string;
   clientSecret: string | null;
   authSecret: string;
@@ -40,6 +42,8 @@ export function loadAuthConfig(): AuthConfig {
 
   return {
     issuer,
+    authProvider: process.env.AUTH_PROVIDER === "better-auth" ? "better-auth" : "legacy",
+    apiResource: process.env.API_RESOURCE?.replace(/\/$/, "") ?? null,
     clientId: process.env.OAUTH_CLIENT_ID ?? "briefs-daily",
     clientSecret: process.env.OAUTH_CLIENT_SECRET ?? null,
     authSecret,

@@ -6,6 +6,9 @@ export async function getInProcessOAuthFetch(): Promise<typeof fetch> {
   const runtime = await getSystemRuntime();
   return async (input, init) => {
     const url = new URL(typeof input === "string" ? input : input.toString());
+    if (runtime.betterAuth) {
+      return runtime.betterAuth.handler(new Request(url, init));
+    }
     return handleWebOAuthRequest(new Request(url, init), runtime);
   };
 }

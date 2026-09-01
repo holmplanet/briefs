@@ -69,6 +69,7 @@ export async function buildAuthorizeUrl(
   url.searchParams.set("state", state);
   url.searchParams.set("code_challenge", challenge);
   url.searchParams.set("code_challenge_method", "S256");
+  if (config.apiResource) url.searchParams.append("resource", config.apiResource);
 
   return url.toString();
 }

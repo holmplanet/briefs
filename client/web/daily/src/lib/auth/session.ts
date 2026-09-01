@@ -138,6 +138,19 @@ export async function setSession(config: AuthConfig, session: Omit<DailySession,
   cookieStore.set(SESSION_COOKIE, value, sessionCookieOptions());
 }
 
+export async function createSessionCookieValue(
+  config: AuthConfig,
+  session: Omit<DailySession, "expiresAt">,
+): Promise<string> {
+  return encodeSessionValue(
+    {
+      ...session,
+      expiresAt: Date.now() + SESSION_TTL_MS,
+    },
+    config.sessionSecret,
+  );
+}
+
 export function sessionCookieOptions() {
   return {
     httpOnly: true,

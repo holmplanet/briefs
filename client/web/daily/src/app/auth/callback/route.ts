@@ -3,9 +3,11 @@ import { NextResponse } from "next/server";
 
 import {
   exchangeCodeForUser,
+  createSessionCookieValue,
   loadAuthConfig,
   safeNextPath,
-  setSession,
+  SESSION_COOKIE,
+  sessionCookieOptions,
 } from "@/lib/auth";
 import { getInProcessOAuthFetch } from "@/lib/auth/in-process-oauth";
 
@@ -61,13 +63,16 @@ export async function GET(request: Request) {
       hasEmail: Boolean(user.email),
       hasRefreshToken: Boolean(user.refreshToken),
     });
-    await setSession(config, {
+    const sessionCookieValue = await createSessionCookieValue(config, {
       userId: user.userId,
       email: user.email,
       accessToken: user.accessToken,
       refreshToken: user.refreshToken,
       accessTokenExpiresAt: user.accessTokenExpiresAt,
     });
+    const response = NextResponse.redirect(new URL(safeNextPath(nextPath), config.appUrl));
+    response.cookies.set(SESSION_COOKIE, sessionCookieValue, sessionCookieOptions());
+    return response;
   } catch (callbackError) {
     const message =
       callbackError instanceof Error ? callbackError.message : "Authentication failed";
@@ -82,5 +87,4 @@ export async function GET(request: Request) {
     cookieStore.delete(OAUTH_VERIFIER_COOKIE);
   }
 
-  return NextResponse.redirect(new URL(safeNextPath(nextPath), config.appUrl));
 }

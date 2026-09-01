@@ -2,7 +2,7 @@ import { loadAuthConfig, isOAuthEnabled } from "./config";
 import { getSession } from "./session";
 
 export { buildAuthorizeUrl, exchangeCodeForUser, refreshAccessToken } from "./oauth";
-export { clearSession, getSession, setSession, SESSION_COOKIE } from "./session";
+export { clearSession, createSessionCookieValue, getSession, setSession, SESSION_COOKIE, sessionCookieOptions } from "./session";
 export { createOAuthState, createPkcePair } from "./pkce";
 export { loadAuthConfig, isOAuthEnabled, redirectUri, safeNextPath } from "./config";
 export type { AuthConfig } from "./config";

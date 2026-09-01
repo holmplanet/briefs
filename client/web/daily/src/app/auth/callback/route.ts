@@ -70,7 +70,13 @@ export async function GET(request: Request) {
       refreshToken: user.refreshToken,
       accessTokenExpiresAt: user.accessTokenExpiresAt,
     });
-    const response = NextResponse.redirect(new URL(safeNextPath(nextPath), config.appUrl), 303);
+    const target = new URL(safeNextPath(nextPath), config.appUrl);
+    const response = new NextResponse(
+      `<!doctype html><meta http-equiv="refresh" content="0;url=${target.toString()}"><script>window.location.replace(${JSON.stringify(target.toString())})</script>`,
+      {
+        headers: { "content-type": "text/html; charset=utf-8" },
+      },
+    );
     response.cookies.set(SESSION_COOKIE, sessionCookieValue, sessionCookieOptions());
     const setCookieHeader = response.headers.get("set-cookie");
     console.info("[Briefs Daily] Daily session attached to callback response", {

@@ -42,6 +42,7 @@ export default async function ConsentPage({
         headers: {
           "content-type": "application/json",
           cookie: cookieHeader,
+          origin: authConfig.appUrl,
         },
         body: JSON.stringify({ accept: true, oauth_query: oauthQuery }),
       },

@@ -15,6 +15,32 @@ import { getInProcessOAuthFetch } from "@/lib/auth/in-process-oauth";
 const OAUTH_STATE_COOKIE = "briefs_oauth_state";
 const OAUTH_VERIFIER_COOKIE = "briefs_oauth_verifier";
 
+function applyBetterAuthSessionCookies(response: Response, cookieStore: Awaited<ReturnType<typeof cookies>>): boolean {
+  const headers = response.headers as Headers & { getSetCookie?: () => string[] };
+  const setCookies = headers.getSetCookie?.() ?? (headers.get("set-cookie") ? [headers.get("set-cookie")!] : []);
+  let sessionCookieSet = false;
+
+  for (const setCookie of setCookies) {
+    const [nameValue] = setCookie.split(";", 1);
+    const separator = nameValue.indexOf("=");
+    if (separator <= 0) continue;
+    const name = nameValue.slice(0, separator);
+    const value = nameValue.slice(separator + 1);
+    cookieStore.set({
+      name,
+      value,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60,
+    });
+    if (name.includes("session_token")) sessionCookieSet = true;
+  }
+
+  return sessionCookieSet;
+}
+
 export default async function LoginPage({
   searchParams,
 }: {
@@ -130,21 +156,10 @@ export default async function LoginPage({
       redirect(`/login?otp=sent&email=${encodeURIComponent(email)}&error=${encodeURIComponent(detail || "Invalid sign-in code")}&next=${encodeURIComponent(next)}`);
     }
 
-    const sessionCookie = response.headers.get("set-cookie")?.split(";", 1)[0];
-    if (!sessionCookie) {
+    const cookieStore = await cookies();
+    if (!applyBetterAuthSessionCookies(response, cookieStore)) {
       redirect(`/login?error=Authentication%20session%20was%20not%20created&next=${encodeURIComponent(next)}`);
     }
-    const separator = sessionCookie!.indexOf("=");
-    const cookieStore = await cookies();
-    cookieStore.set({
-      name: sessionCookie!.slice(0, separator),
-      value: sessionCookie!.slice(separator + 1),
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 30 * 24 * 60 * 60,
-    });
 
     const state = createOAuthState();
     const { verifier, challenge } = createPkcePair();

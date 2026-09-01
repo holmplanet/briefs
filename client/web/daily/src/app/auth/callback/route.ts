@@ -72,8 +72,6 @@ export async function GET(request: Request) {
     });
     const response = NextResponse.redirect(new URL(safeNextPath(nextPath), config.appUrl), 303);
     response.cookies.set(SESSION_COOKIE, sessionCookieValue, sessionCookieOptions());
-    response.cookies.delete(OAUTH_STATE_COOKIE);
-    response.cookies.delete(OAUTH_VERIFIER_COOKIE);
     const setCookieHeader = response.headers.get("set-cookie");
     console.info("[Briefs Daily] Daily session attached to callback response", {
       cookieAttached: Boolean(response.cookies.get(SESSION_COOKIE)?.value),

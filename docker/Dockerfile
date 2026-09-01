@@ -31,6 +31,7 @@ FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a55
 WORKDIR /repo
 
 COPY --from=prod-deps /repo/node_modules ./node_modules
+COPY --from=prod-deps /repo/system/node_modules ./system/node_modules
 COPY package.json package-lock.json tsconfig.base.json ./
 COPY --from=build /repo/shared/dist ./shared/dist
 COPY shared/package.json ./shared/package.json

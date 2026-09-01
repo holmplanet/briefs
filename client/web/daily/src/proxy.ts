@@ -4,7 +4,7 @@ import { loadAuthConfig, isOAuthEnabled } from "@/lib/auth/config";
 import { refreshAccessToken } from "@/lib/auth/oauth";
 import { SESSION_COOKIE, decodeSessionValue, encodeSessionValue, sessionCookieOptions } from "@/lib/auth/session";
 
-const PUBLIC_PATHS = ["/login", "/auth/callback", "/auth/logout", "/register", "/api/health", "/api/mcp", "/api/v1", "/mcp"];
+const PUBLIC_PATHS = ["/login", "/consent", "/auth/callback", "/auth/logout", "/register", "/api/health", "/api/mcp", "/api/v1", "/mcp"];
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;

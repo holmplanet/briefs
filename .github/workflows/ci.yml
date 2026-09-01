@@ -13,6 +13,22 @@ jobs:
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      DATABASE_URL: postgres://briefs:briefs@127.0.0.1:5432/briefs
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: briefs
+          POSTGRES_PASSWORD: briefs
+          POSTGRES_DB: briefs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U briefs -d briefs"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

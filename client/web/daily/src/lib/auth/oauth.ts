@@ -96,6 +96,9 @@ export async function exchangeCodeForUser(
   if (config.clientSecret) {
     body.set("client_secret", config.clientSecret);
   }
+  if (config.apiResource) {
+    body.set("resource", config.apiResource);
+  }
 
   const tokenResponse = await requestFetch(metadata.token_endpoint, {
     method: "POST",
@@ -149,6 +152,7 @@ export async function refreshAccessToken(
     client_id: config.clientId,
   });
   if (config.clientSecret) body.set("client_secret", config.clientSecret);
+  if (config.apiResource) body.set("resource", config.apiResource);
 
   const tokenResponse = await requestFetch(metadata.token_endpoint, {
     method: "POST",

@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { verifyBetterAuthAccessToken } from "@briefs/system/auth/resource";
 import { verifyAccessToken } from "@briefs/shared/auth";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
@@ -35,11 +36,13 @@ async function resolveAuth(req: express.Request): Promise<BriefsMcpAuth | null> 
   }
 
   const issuer = (process.env.OAUTH_ISSUER ?? "http://localhost:8001/oauth").replace(/\/$/, "");
-  const claims = await verifyAccessToken(
-    authHeader.slice(7).trim(),
-    process.env.AUTH_SECRET ?? "dev-briefs-auth-secret",
-    issuer,
-  );
+  const token = authHeader.slice(7).trim();
+  const claims = process.env.AUTH_PROVIDER === "better-auth"
+    ? await verifyBetterAuthAccessToken(token, {
+      issuer,
+      audience: process.env.MCP_RESOURCE ?? `http://localhost:${port}/mcp`,
+    })
+    : await verifyAccessToken(token, process.env.AUTH_SECRET ?? "dev-briefs-auth-secret", issuer);
   if (!claims) return null;
 
   return {

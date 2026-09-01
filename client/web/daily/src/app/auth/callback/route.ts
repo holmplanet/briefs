@@ -19,6 +19,12 @@ export async function GET(request: Request) {
   const state = url.searchParams.get("state");
   const error = url.searchParams.get("error");
 
+  console.info("[Briefs Daily] OAuth callback received", {
+    hasCode: Boolean(code),
+    hasState: Boolean(state),
+    error: error ?? undefined,
+  });
+
   if (error) {
     return NextResponse.redirect(
       new URL(`/login?error=${encodeURIComponent(error)}`, config.appUrl),
@@ -33,6 +39,12 @@ export async function GET(request: Request) {
   const stateCookie = cookieStore.get(OAUTH_STATE_COOKIE)?.value;
   const verifier = cookieStore.get(OAUTH_VERIFIER_COOKIE)?.value;
 
+  console.info("[Briefs Daily] OAuth callback state check", {
+    hasStateCookie: Boolean(stateCookie),
+    hasVerifier: Boolean(verifier),
+    stateMatches: stateCookie ? stateCookie.split(":", 1)[0] === state : false,
+  });
+
   if (!stateCookie || !verifier) {
     return NextResponse.redirect(new URL("/login?error=expired_state", config.appUrl));
   }
@@ -44,6 +56,11 @@ export async function GET(request: Request) {
 
   try {
     const user = await exchangeCodeForUser(config, code, verifier, await getInProcessOAuthFetch());
+    console.info("[Briefs Daily] OAuth token exchange succeeded", {
+      hasUserId: Boolean(user.userId),
+      hasEmail: Boolean(user.email),
+      hasRefreshToken: Boolean(user.refreshToken),
+    });
     await setSession(config, {
       userId: user.userId,
       email: user.email,
@@ -54,6 +71,9 @@ export async function GET(request: Request) {
   } catch (callbackError) {
     const message =
       callbackError instanceof Error ? callbackError.message : "Authentication failed";
+    console.error("[Briefs Daily] OAuth callback failed", {
+      message,
+    });
     return NextResponse.redirect(
       new URL(`/login?error=${encodeURIComponent(message)}`, config.appUrl),
     );

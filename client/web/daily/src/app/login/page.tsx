@@ -11,9 +11,13 @@ import {
   safeNextPath,
 } from "@/lib/auth";
 import { getInProcessOAuthFetch } from "@/lib/auth/in-process-oauth";
+import { buildPendingOtpRedirect } from "@/lib/auth/pending";
 
 const OAUTH_STATE_COOKIE = "briefs_oauth_state";
 const OAUTH_VERIFIER_COOKIE = "briefs_oauth_verifier";
+const BETTER_AUTH_PENDING_EMAIL_COOKIE = "briefs_better_auth_pending_email";
+const BETTER_AUTH_PENDING_QUERY_COOKIE = "briefs_better_auth_pending_query";
+const BETTER_AUTH_PENDING_TTL_SECONDS = 600;
 
 function splitSetCookieHeader(setCookie: string): string[] {
   const result: string[] = [];
@@ -76,6 +80,9 @@ export default async function LoginPage({
   const params = await searchParams;
   const nextPath = safeNextPath(typeof params.next === "string" ? params.next : undefined);
   const config = loadAuthConfig();
+  const requestCookies = await cookies();
+  const pendingEmail = requestCookies.get(BETTER_AUTH_PENDING_EMAIL_COOKIE)?.value ?? "";
+  const pendingOAuthQuery = requestCookies.get(BETTER_AUTH_PENDING_QUERY_COOKIE)?.value ?? "";
   const session = await getSession(config);
 
   if (session && (!isOAuthEnabled(config) || session.accessToken)) {
@@ -144,8 +151,10 @@ export default async function LoginPage({
     const authConfig = loadAuthConfig();
     const email = String(formData.get("email") ?? "").trim().toLowerCase();
     const next = safeNextPath(String(formData.get("next") ?? "/"));
+    const oauthQuery = String(formData.get("oauth_query") ?? "");
+
     if (!email || !email.includes("@")) {
-      redirect(`/login?error=Enter%20a%20valid%20email&next=${encodeURIComponent(next)}`);
+      redirect(`/login?error=${encodeURIComponent("Enter a valid email")}&next=${encodeURIComponent(next)}`);
     }
 
     const response = await (await getInProcessOAuthFetch())(
@@ -160,17 +169,38 @@ export default async function LoginPage({
       const detail = await response.text();
       redirect(`/login?error=${encodeURIComponent(detail || "Unable to send sign-in code")}&next=${encodeURIComponent(next)}`);
     }
-    redirect(`/login?otp=sent&email=${encodeURIComponent(email)}&next=${encodeURIComponent(next)}`);
+
+    const cookieStore = await cookies();
+    cookieStore.set(BETTER_AUTH_PENDING_EMAIL_COOKIE, email, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: BETTER_AUTH_PENDING_TTL_SECONDS,
+    });
+    if (oauthQuery) {
+      cookieStore.set(BETTER_AUTH_PENDING_QUERY_COOKIE, oauthQuery, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        path: "/",
+        maxAge: BETTER_AUTH_PENDING_TTL_SECONDS,
+      });
+    }
+    redirect(buildPendingOtpRedirect(next));
   }
 
   async function finishBetterAuthLogin(formData: FormData) {
     "use server";
 
     const authConfig = loadAuthConfig();
-    const email = String(formData.get("email") ?? "").trim().toLowerCase();
+    const cookieStore = await cookies();
+    const email = (cookieStore.get(BETTER_AUTH_PENDING_EMAIL_COOKIE)?.value
+      ?? String(formData.get("email") ?? "")).trim().toLowerCase();
     const otp = String(formData.get("otp") ?? "").trim();
     const next = safeNextPath(String(formData.get("next") ?? "/"));
-    const oauthQuery = String(formData.get("oauth_query") ?? "");
+    const oauthQuery = cookieStore.get(BETTER_AUTH_PENDING_QUERY_COOKIE)?.value
+      ?? String(formData.get("oauth_query") ?? "");
     const response = await (await getInProcessOAuthFetch())(
       `${authConfig.issuer}/sign-in/email-otp`,
       {
@@ -181,10 +211,9 @@ export default async function LoginPage({
     );
     if (!response.ok && !response.headers.get("location")) {
       const detail = await response.text();
-      redirect(`/login?otp=sent&email=${encodeURIComponent(email)}&error=${encodeURIComponent(detail || "Invalid sign-in code")}&next=${encodeURIComponent(next)}`);
+      redirect(`/login?otp=sent&error=${encodeURIComponent(detail || "Invalid sign-in code")}&next=${encodeURIComponent(next)}`);
     }
 
-    const cookieStore = await cookies();
     if (!applyBetterAuthSessionCookies(response, cookieStore) && !response.headers.get("location")) {
       redirect(`/login?error=Authentication%20session%20was%20not%20created&next=${encodeURIComponent(next)}`);
     }
@@ -195,6 +224,8 @@ export default async function LoginPage({
       if (result.redirect && result.url) continuation = result.url;
     }
     if (continuation) {
+      cookieStore.delete(BETTER_AUTH_PENDING_EMAIL_COOKIE);
+      cookieStore.delete(BETTER_AUTH_PENDING_QUERY_COOKIE);
       redirect(new URL(continuation, authConfig.issuer ?? "http://localhost").toString());
     }
 
@@ -227,7 +258,10 @@ export default async function LoginPage({
     && typeof params.client_id === "string"
     && typeof params.response_type === "string"
     && typeof params.redirect_uri === "string";
-  const betterAuthOtpPending = isBetterAuthProviderLogin && params.otp === "sent";
+  const isPendingBetterAuthLogin = config.authProvider === "better-auth"
+    && params.otp === "sent"
+    && Boolean(pendingEmail && pendingOAuthQuery);
+  const betterAuthOtpPending = isBetterAuthProviderLogin || isPendingBetterAuthLogin;
   const oauthQuery = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
     if (["email", "error", "next", "otp"].includes(key)) continue;
@@ -235,6 +269,7 @@ export default async function LoginPage({
       if (item !== undefined) oauthQuery.append(key, item);
     }
   }
+  const oauthQueryValue = oauthQuery.toString() || pendingOAuthQuery;
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-6 py-16">
@@ -256,9 +291,9 @@ export default async function LoginPage({
 
         {betterAuthOtpPending ? (
           <form action={finishBetterAuthLogin} className="space-y-3">
-            <input type="hidden" name="email" value={params.email ?? ""} />
+            <input type="hidden" name="email" value={pendingEmail || params.email || ""} />
             <input type="hidden" name="next" value={nextPath} />
-            <input type="hidden" name="oauth_query" value={oauthQuery.toString()} />
+            <input type="hidden" name="oauth_query" value={oauthQueryValue} />
             <label className="block space-y-1 text-sm">
               <span className="text-muted-foreground">Email code</span>
               <input name="otp" inputMode="numeric" autoComplete="one-time-code" required className="w-full rounded-xl border border-border bg-background/60 px-3 py-2" />
@@ -270,6 +305,7 @@ export default async function LoginPage({
         ) : isBetterAuthProviderLogin ? (
           <form action={sendBetterAuthOtp} className="space-y-3">
             <input type="hidden" name="next" value={nextPath} />
+            <input type="hidden" name="oauth_query" value={oauthQueryValue} />
             <label className="block space-y-1 text-sm">
               <span className="text-muted-foreground">Email</span>
               <input name="email" type="email" autoComplete="email" required className="w-full rounded-xl border border-border bg-background/60 px-3 py-2" />

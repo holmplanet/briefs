@@ -50,14 +50,16 @@ export function createApp(context: AppContext): Express {
       }
       next();
     });
-  } else {
-    app.use("/oauth", createOAuthRouter(context.config, context.auth, context.mailer));
   }
 
   // Keep these parsers after the Better Auth handler. Parsing first consumes the
   // IncomingMessage stream and prevents Better Auth from reading request bodies.
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
+
+  if (!context.betterAuth) {
+    app.use("/oauth", createOAuthRouter(context.config, context.auth, context.mailer));
+  }
 
   mountApiRoutes(app, {
     items: context.items,

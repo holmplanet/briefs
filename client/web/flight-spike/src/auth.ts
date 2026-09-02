@@ -24,7 +24,7 @@ export function loadFlightAuthConfig(): FlightAuthConfig {
   return {
     issuer: process.env.OAUTH_ISSUER?.replace(/\/$/, "") ?? null,
     appUrl: (process.env.APP_URL ?? "http://localhost:3000").replace(/\/$/, ""),
-    clientId: process.env.OAUTH_CLIENT_ID ?? "briefs-daily",
+    clientId: process.env.OAUTH_CLIENT_ID ?? "",
     clientSecret: process.env.OAUTH_CLIENT_SECRET ?? null,
     sessionSecret: process.env.SESSION_SECRET ?? "dev-briefs-session-secret",
   };

@@ -66,7 +66,7 @@ router.get("/api/flight/health", (context) => {
 
 router.get("/api/flight/auth/start", async (context) => {
   const config = loadFlightAuthConfig();
-  if (!config.issuer) { context.status = 503; context.body = { error: "OAuth is not configured" }; return; }
+  if (!config.issuer || !config.clientId) { context.status = 503; context.body = { error: "OAuth issuer and client ID are required" }; return; }
   const state = createOAuthState();
   const { verifier, challenge } = createPkcePair();
   context.cookies.set(OAUTH_STATE_COOKIE, state, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 600 });

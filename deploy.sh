@@ -158,4 +158,7 @@ for secret in postgres_password auth_secret session_secret resend_api_key databa
 done
 
 "${SSH[@]}" "cd '$APP_DIR' && docker compose --env-file .env -f docker-compose.prod.yml config --quiet && docker compose --env-file .env -f docker-compose.prod.yml up -d"
+# Caddy reads its bind-mounted configuration at process start. Explicitly
+# restart it after every bundle update so routing changes take effect.
+"${SSH[@]}" "cd '$APP_DIR' && docker compose --env-file .env -f docker-compose.prod.yml restart caddy"
 echo "Deployed Briefs images at $IMAGE_TAG to $DROPLET_IP"

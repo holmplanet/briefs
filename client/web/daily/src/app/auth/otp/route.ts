@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
+import { loadAuthConfig } from "@/lib/auth";
 import { getInProcessOAuthFetch } from "@/lib/auth/in-process-oauth";
 
 function splitSetCookieHeader(setCookie: string): string[] {
@@ -12,8 +13,12 @@ export async function POST(request: Request) {
   const email = body.email?.trim().toLowerCase() ?? "";
   const otp = body.otp?.trim() ?? "";
   const oauthQuery = body.oauthQuery?.trim() ?? "";
+  const config = loadAuthConfig();
+  if (!config.issuer) {
+    return NextResponse.json({ error: "OAuth is not configured" }, { status: 503 });
+  }
   const response = await (await getInProcessOAuthFetch())(
-    `${process.env.OAUTH_ISSUER}/sign-in/email-otp`,
+    `${config.issuer}/sign-in/email-otp`,
     {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -29,7 +34,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid sign-in code" }, { status: 400 });
   }
 
-  const output = NextResponse.json({ continuation: result || `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/` });
+  const output = NextResponse.json({ continuation: result || `${config.appUrl}/` });
   const cookieStore = await cookies();
   const headers = response.headers as Headers & { getSetCookie?: () => string[] };
   const setCookies = headers.getSetCookie?.() ?? splitSetCookieHeader(headers.get("set-cookie") ?? "");

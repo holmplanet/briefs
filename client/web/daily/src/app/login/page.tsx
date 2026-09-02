@@ -20,59 +20,6 @@ const BETTER_AUTH_PENDING_EMAIL_COOKIE = "briefs_better_auth_pending_email";
 const BETTER_AUTH_PENDING_QUERY_COOKIE = "briefs_better_auth_pending_query";
 const BETTER_AUTH_PENDING_TTL_SECONDS = 600;
 
-function splitSetCookieHeader(setCookie: string): string[] {
-  const result: string[] = [];
-  let start = 0;
-  let index = 0;
-  while (index < setCookie.length) {
-    if (setCookie[index] === ",") {
-      let next = index + 1;
-      while (next < setCookie.length && setCookie[next] === " ") next += 1;
-      while (next < setCookie.length && setCookie[next] !== "=" && setCookie[next] !== ";" && setCookie[next] !== ",") {
-        next += 1;
-      }
-      if (setCookie[next] === "=") {
-        const value = setCookie.slice(start, index).trim();
-        if (value) result.push(value);
-        start = index + 1;
-        while (start < setCookie.length && setCookie[start] === " ") start += 1;
-        index = start;
-        continue;
-      }
-    }
-    index += 1;
-  }
-  const last = setCookie.slice(start).trim();
-  if (last) result.push(last);
-  return result;
-}
-
-function applyBetterAuthSessionCookies(response: Response, cookieStore: Awaited<ReturnType<typeof cookies>>): boolean {
-  const headers = response.headers as Headers & { getSetCookie?: () => string[] };
-  const setCookies = headers.getSetCookie?.() ?? splitSetCookieHeader(headers.get("set-cookie") ?? "");
-  let sessionCookieSet = false;
-
-  for (const setCookie of setCookies) {
-    const [nameValue] = setCookie.split(";", 1);
-    const separator = nameValue.indexOf("=");
-    if (separator <= 0) continue;
-    const name = nameValue.slice(0, separator);
-    const value = nameValue.slice(separator + 1);
-    cookieStore.set({
-      name,
-      value,
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 30 * 24 * 60 * 60,
-    });
-    if (name.includes("session_token")) sessionCookieSet = true;
-  }
-
-  return sessionCookieSet;
-}
-
 export default async function LoginPage({
   searchParams,
 }: {

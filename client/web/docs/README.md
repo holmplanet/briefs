@@ -5,7 +5,7 @@ applications, and people building around the same durable records.
 
 Runs at **http://localhost:3001** (`npm run dev:docs`).
 
-The docs link to the `@briefs/daily` source folder on GitHub by default. Set `NEXT_PUBLIC_DAILY_URL` when developing locally or deploying a hosted Daily instance.
+The docs link to the `@briefs/flight-spike` source folder on GitHub by default. Set `NEXT_PUBLIC_DAILY_URL` when developing locally or deploying a hosted Daily instance.
 
 ## Pages
 
@@ -24,7 +24,7 @@ The docs link to the `@briefs/daily` source folder on GitHub by default. Set `NE
 
 ```bash
 npm run dev:docs      # http://localhost:3001
-npm run dev:daily     # http://localhost:3000
+npm run dev:flight     # http://localhost:3000
 npm run dev:system    # API
 ```
 

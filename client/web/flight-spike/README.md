@@ -1,6 +1,6 @@
 # Briefs Flight spike
 
-An isolated React/Vite surface for evaluating ThoughtPivot Flight alongside the current Next.js Daily app.
+The React/Vite Briefs web client, served by ThoughtPivot Flight.
 
 ## Run
 

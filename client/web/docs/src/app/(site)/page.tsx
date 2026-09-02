@@ -135,7 +135,7 @@ system/              @briefs/system — REST API + Postgres
 client/web/
   shared/            @briefs/web-shared — UI + theme
   docs/              @briefs/docs — SDK documentation
-  daily/             @briefs/daily — reference web client
+  daily/             @briefs/flight-spike — reference web client
 client/plugin/       Cursor/Codex skills`}
           />
         </DocSection>
@@ -154,7 +154,7 @@ client/plugin/       Cursor/Codex skills`}
                 ["@briefs/system", "Express API, stores, domain services"],
                 ["@briefs/web-shared", "Shared Next.js UI primitives and theme"],
                 ["@briefs/docs", "SDK documentation site"],
-                ["@briefs/daily", "Default daily-driver web client"],
+                ["@briefs/flight-spike", "Default daily-driver web client"],
               ].map(([pkg, role]) => (
                 <tr key={pkg}>
                   <td className="px-4 py-2.5 font-mono text-xs">{pkg}</td>

@@ -30,9 +30,6 @@ if [[ -f "$DEPLOY_CONTEXT_FILE" ]]; then
 fi
 
 : "${DROPLET_IP:?DROPLET_IP is required}"
-: "${NEXT_PUBLIC_API_URL:?NEXT_PUBLIC_API_URL is required}"
-: "${NEXT_PUBLIC_MCP_URL:?NEXT_PUBLIC_MCP_URL is required}"
-: "${NEXT_PUBLIC_DOCS_URL:=https://briefs.holmplanet.com}"
 : "${APP_DOMAIN:?APP_DOMAIN is required}"
 
 command -v docker >/dev/null || { echo "ERROR: docker is required" >&2; exit 1; }
@@ -124,31 +121,24 @@ IMAGE_TAG="${IMAGE_TAG:-$(git -C "$ROOT_DIR" rev-parse --short=12 HEAD)}"
 TARGET_PLATFORM="${TARGET_PLATFORM:-linux/amd64}"
 docker build --platform "$TARGET_PLATFORM" -f "$ROOT_DIR/docker/Dockerfile" -t "briefs-system:$IMAGE_TAG" "$ROOT_DIR"
 docker build --platform "$TARGET_PLATFORM" -f "$ROOT_DIR/docker/Dockerfile.mcp" -t "briefs-mcp:$IMAGE_TAG" "$ROOT_DIR"
-docker build --platform "$TARGET_PLATFORM" -f "$ROOT_DIR/docker/Dockerfile.daily" \
-  --build-arg NEXT_PUBLIC_API_URL="$NEXT_PUBLIC_API_URL" \
-  --build-arg NEXT_PUBLIC_MCP_URL="$NEXT_PUBLIC_MCP_URL" \
-  --build-arg NEXT_PUBLIC_DOCS_URL="$NEXT_PUBLIC_DOCS_URL" \
-  -t "briefs-daily:$IMAGE_TAG" "$ROOT_DIR"
 docker build --platform "$TARGET_PLATFORM" -f "$ROOT_DIR/docker/Dockerfile.flight" \
   -t "briefs-flight:$IMAGE_TAG" "$ROOT_DIR"
 
-sed -E '/^(SYSTEM_IMAGE|MCP_IMAGE|DAILY_IMAGE|FLIGHT_IMAGE)=/d' "$RUNTIME_ENV_FILE" > "$WORK_DIR/.env"
+sed -E '/^(SYSTEM_IMAGE|MCP_IMAGE|FLIGHT_IMAGE)=/d' "$RUNTIME_ENV_FILE" > "$WORK_DIR/.env"
 printf '%s\n' \
   "SYSTEM_IMAGE=briefs-system:$IMAGE_TAG" \
   "MCP_IMAGE=briefs-mcp:$IMAGE_TAG" \
-  "DAILY_IMAGE=briefs-daily:$IMAGE_TAG" \
   "FLIGHT_IMAGE=briefs-flight:$IMAGE_TAG" >> "$WORK_DIR/.env"
 
 docker save -o "$WORK_DIR/system.tar" "briefs-system:$IMAGE_TAG"
 docker save -o "$WORK_DIR/mcp.tar" "briefs-mcp:$IMAGE_TAG"
-docker save -o "$WORK_DIR/daily.tar" "briefs-daily:$IMAGE_TAG"
 docker save -o "$WORK_DIR/flight.tar" "briefs-flight:$IMAGE_TAG"
 
 "${SSH[@]}" "mkdir -p '$APP_DIR/secrets' /tmp/briefs-deploy && chmod 700 '$APP_DIR/secrets'"
 "${SCP[@]}" "$ROOT_DIR/docker/docker-compose.prod.yml" "$ROOT_DIR/docker/Caddyfile" "$WORK_DIR/.env" "$DEPLOY_USER@$DROPLET_IP:/tmp/briefs-deploy/"
 "${SSH[@]}" "install -m 600 /tmp/briefs-deploy/.env '$APP_DIR/.env' && install -m 644 /tmp/briefs-deploy/docker-compose.prod.yml '$APP_DIR/docker-compose.prod.yml' && install -m 644 /tmp/briefs-deploy/Caddyfile '$APP_DIR/Caddyfile' && rm -rf /tmp/briefs-deploy"
 
-for image in system mcp daily flight; do
+for image in system mcp flight; do
   "${SCP[@]}" "$WORK_DIR/$image.tar" "$DEPLOY_USER@$DROPLET_IP:/tmp/briefs-$image.tar"
   "${SSH[@]}" "docker load -i /tmp/briefs-$image.tar >/dev/null && rm -f /tmp/briefs-$image.tar"
 done

@@ -10,43 +10,27 @@
     -Server
   }
 
-  handle /items* {
+  handle /oauth* {
+    reverse_proxy system:8000 {
+      header_up X-Forwarded-Proto https
+    }
+  }
+
+  handle /mcp* {
+    reverse_proxy mcp:3334 {
+      header_up X-Forwarded-Proto https
+    }
+  }
+
+  handle /api/flight* {
     reverse_proxy flight:3100 {
       header_up X-Forwarded-Proto https
     }
   }
 
-handle /api/flight* {
-	reverse_proxy flight:3100 {
-	  header_up X-Forwarded-Proto https
-	}
-}
-
-handle /assets* {
-	reverse_proxy flight:3100 {
-	  header_up X-Forwarded-Proto https
-	}
-}
-
-handle /login* {
-	reverse_proxy flight:3100 {
-	  header_up X-Forwarded-Proto https
-	}
-}
-
-handle /consent* {
-	reverse_proxy flight:3100 {
-	  header_up X-Forwarded-Proto https
-	}
-}
-
-handle /auth/callback* {
-	reverse_proxy flight:3100 {
-	  header_up X-Forwarded-Proto https
-	}
-}
-
-handle {
-    reverse_proxy daily:3000
+  handle {
+    reverse_proxy flight:3100 {
+      header_up X-Forwarded-Proto https
+    }
   }
 }

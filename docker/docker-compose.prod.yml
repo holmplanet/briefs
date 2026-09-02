@@ -113,35 +113,6 @@ services:
       timeout: 5s
       retries: 3
 
-  daily:
-    image: ${DAILY_IMAGE:?DAILY_IMAGE is required}
-    restart: unless-stopped
-    env_file:
-      - ${RUNTIME_ENV_FILE:-.env}
-    environment:
-      API_URL: http://system:8000
-      MCP_HEALTH_URL: http://mcp:3334/mcp
-      DATABASE_URL_FILE: /run/secrets/database_url
-      AUTH_SECRET_FILE: /run/secrets/auth_secret
-      SESSION_SECRET_FILE: /run/secrets/session_secret
-      RESEND_API_KEY_FILE: /run/secrets/resend_api_key
-    ports:
-      - "127.0.0.1:${DAILY_PORT:-3000}:3000"
-    secrets:
-      - database_url
-      - auth_secret
-      - session_secret
-      - resend_api_key
-    networks:
-      - private
-    depends_on:
-      system:
-        condition: service_healthy
-      mcp:
-        condition: service_healthy
-      flight:
-        condition: service_healthy
-
   caddy:
     image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
     restart: unless-stopped
@@ -157,7 +128,7 @@ services:
     networks:
       - private
     depends_on:
-      daily:
+      flight:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:2019/config/ >/dev/null || exit 1"]

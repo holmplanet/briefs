@@ -76,5 +76,5 @@ client/cli/
 ## Non-goals
 
 - Postgres or in-process system imports
-- Dependencies on `@briefs/daily` or `@briefs/docs`
+- Dependencies on `@briefs/flight-spike` or `@briefs/docs`
 - Replacing the standalone MCP contract; MCP remains a separate client surface.

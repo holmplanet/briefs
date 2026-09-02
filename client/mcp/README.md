@@ -24,7 +24,7 @@ sent only as a development fallback and is ignored by the API in production.
 ```bash
 npm run dev:system   # API on :8001
   npm run dev:mcp      # MCP on :3334/mcp (configure bypass explicitly for local work)
-npm run dev:daily     # Daily on :3000
+npm run dev:flight    # Flight on :3100
 npm run briefs:e2e-smoke # MCP → API → Daily smoke (archives its test item)
 ```
 

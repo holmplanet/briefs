@@ -14,7 +14,7 @@ is intended only for local work. Do not copy these bypass settings into a hosted
 ```bash
 npm run db:up
 npm run dev:system
-npm run dev:daily
+npm run dev:flight
 npm run dev:mcp
 ```
 

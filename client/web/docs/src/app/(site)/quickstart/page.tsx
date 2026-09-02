@@ -37,7 +37,7 @@ npm ci
 cp .env.example .env
 npm run db:up
 npm run dev:system    # API — default http://localhost:8001
-npm run dev:daily     # Briefs Daily — http://localhost:3000
+npm run dev:flight     # Briefs Daily — http://localhost:3000
 npm run dev:docs      # SDK docs — http://localhost:3001`}
           />
         </DocSection>
@@ -48,7 +48,7 @@ npm run dev:docs      # SDK docs — http://localhost:3001`}
             <code className="text-foreground">.env.local</code> in their package directory:
           </p>
           <CodeBlock
-            title="client/web/daily/.env.local"
+            title="client/web/flight-spike/.env.local"
             code={`NEXT_PUBLIC_API_URL=${apiBase}
 NEXT_PUBLIC_USER_ID=demo
 NEXT_PUBLIC_DOCS_URL=http://localhost:3001`}

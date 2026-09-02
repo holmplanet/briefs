@@ -8,6 +8,7 @@ const router = new Router();
 const SESSION_COOKIE = "briefs_daily_session";
 const OAUTH_STATE_COOKIE = "briefs_flight_oauth_state";
 const OAUTH_VERIFIER_COOKIE = "briefs_flight_oauth_verifier";
+const OAUTH_NEXT_COOKIE = "briefs_flight_oauth_next";
 type FlightContext = Parameters<Parameters<typeof router.get>[1]>[0];
 
 function providerOrigin(config: ReturnType<typeof loadFlightAuthConfig>): string {
@@ -85,6 +86,8 @@ router.get("/api/flight/auth/start", async (context) => {
   const { verifier, challenge } = createPkcePair();
   context.cookies.set(OAUTH_STATE_COOKIE, state, { httpOnly: true, sameSite: "lax", secure: secureCookie(context), path: "/", maxAge: 10 * 60 * 1000 });
   context.cookies.set(OAUTH_VERIFIER_COOKIE, verifier, { httpOnly: true, sameSite: "lax", secure: secureCookie(context), path: "/", maxAge: 10 * 60 * 1000 });
+  const next = typeof context.query.next === "string" && context.query.next.startsWith("/") && !context.query.next.startsWith("//") ? context.query.next : "/";
+  context.cookies.set(OAUTH_NEXT_COOKIE, next, { httpOnly: true, sameSite: "lax", secure: secureCookie(context), path: "/", maxAge: 10 * 60 * 1000 });
   context.body = { url: await buildAuthorizeUrl(config, state, challenge) };
 });
 
@@ -159,6 +162,7 @@ router.get("/auth/callback", async (context) => {
   const state = typeof context.query.state === "string" ? context.query.state : "";
   const expectedState = context.cookies.get(OAUTH_STATE_COOKIE);
   const verifier = context.cookies.get(OAUTH_VERIFIER_COOKIE);
+  const next = context.cookies.get(OAUTH_NEXT_COOKIE) ?? "/";
   if (!code || !state || !expectedState || state !== expectedState || !verifier) {
     context.redirect(`${config.appUrl}/login?error=invalid_state`); return;
   }
@@ -168,8 +172,8 @@ router.get("/auth/callback", async (context) => {
     context.cookies.set(SESSION_COOKIE, value, { httpOnly: true, secure: secureCookie(context), sameSite: "lax", path: "/", maxAge: 30 * 24 * 60 * 60 * 1000 });
     context.cookies.set(OAUTH_STATE_COOKIE, "", { expires: new Date(0), path: "/", secure: secureCookie(context) });
     context.cookies.set(OAUTH_VERIFIER_COOKIE, "", { expires: new Date(0), path: "/", secure: secureCookie(context) });
-    context.type = "html";
-    context.body = `<!doctype html><meta http-equiv="refresh" content="0;url=${config.appUrl}/">`;
+    context.cookies.set(OAUTH_NEXT_COOKIE, "", { expires: new Date(0), path: "/", secure: secureCookie(context) });
+    context.redirect(`${config.appUrl}${next}`);
   } catch (error) {
     context.redirect(`${config.appUrl}/login?error=${encodeURIComponent(error instanceof Error ? error.message : "Authentication failed")}`);
   }

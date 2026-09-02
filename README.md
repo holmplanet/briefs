@@ -68,7 +68,7 @@ process, or a custom application that needs shared work records without
 inventing a new task model and activity log every time.
 
 Start with the [developer walkthrough](https://briefs.holmplanet.com/walkthrough)
-or inspect the [Briefs Daily reference client](./client/web/daily).
+or inspect the [Briefs Daily reference client](./client/web/flight-spike).
 
 ## Data model
 
@@ -96,7 +96,7 @@ npm ci
 cp .env.example .env
 npm run db:up
 npm run dev:system    # API http://localhost:8001
-npm run dev:daily     # Briefs Daily http://localhost:3000
+npm run dev:flight     # Briefs Daily http://localhost:3000
 npm run dev:docs      # SDK docs http://localhost:3001
 ```
 
@@ -151,7 +151,7 @@ Ingested items can pass `source: { "system": "github", "externalId": "issue-18" 
 | Command | Description |
 |---------|-------------|
 | `npm run dev:system` | API with hot reload (`tsx watch`) |
-| `npm run dev:daily` | Briefs Daily web client |
+| `npm run dev:flight` | Briefs Daily web client |
 | `npm run dev:mcp` | Briefs MCP dev server (`:3334/mcp`) |
 | `npm run briefs` | Briefs CLI (`@briefs/cli`) |
 | `npm run briefs:smoke` | API smoke test via CLI |
@@ -169,7 +169,7 @@ Ingested items can pass `source: { "system": "github", "externalId": "issue-18" 
 | `@briefs/system` | REST API, Postgres stores, domain services |
 | `@briefs/web-shared` | Shared web UI primitives and theme |
 | `@briefs/docs` | SDK documentation site (Next.js) |
-| `@briefs/daily` | Briefs Daily — default web client |
+| `@briefs/flight-spike` | Briefs Daily — default web client |
 | `@briefs/cli` | Terminal client + smoke tests |
 | `@briefs/mcp` | MCP tools + standalone dev server |
 
@@ -226,7 +226,7 @@ for the infrastructure stack.
 - `shared/README.md` — schema layout and imports
 - `system/README.md` — API layout
 - `client/web/docs/README.md` — SDK docs dev
-- `client/web/daily/README.md` — Briefs Daily dev
+- `client/web/flight-spike/README.md` — Briefs Daily dev
 - `client/plugin/README.md` — assistant integration
 - `docs/dogfood.md` — calendar-to-morning-brief dogfood runbook
 - `docs/database.md` — provider-neutral PostgreSQL setup for local, hosted, and self-hosted use

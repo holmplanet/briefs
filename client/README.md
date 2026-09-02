@@ -10,4 +10,4 @@ client/
   plugin/    assistant integration (Cursor/Codex skills, MCP config)
 ```
 
-Web apps are npm workspaces (`@briefs/daily`, `@briefs/docs`, and `@briefs/web-shared`). New vertical clients can be added as separate workspaces when a product need exists. Plugin is static manifests only.
+Web apps are npm workspaces (`@briefs/flight-spike`, `@briefs/docs`, and `@briefs/web-shared`). New vertical clients can be added as separate workspaces when a product need exists. Plugin is static manifests only.

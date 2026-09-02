@@ -70,7 +70,7 @@ export default function WalkthroughPage() {
         <DocSection id="next" title="Where to start">
           <p>
             Run the local stack with the <code className="text-foreground">Quickstart</code>, inspect the reference
-            client in <code className="text-foreground">client/web/daily</code>, then follow{" "}
+            client in <code className="text-foreground">client/web/flight-spike</code>, then follow{" "}
             <code className="text-foreground">Build a client</code> to create your own interface.
           </p>
         </DocSection>

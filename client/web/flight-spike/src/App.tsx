@@ -1,153 +1,31 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { createBriefFlow, type QuestionAnswers } from "@briefs/shared";
 
 type Health = { status: string; service: string };
-type Items = { items: Array<{ id: string; name: string; status: string }> };
 type Item = { id: string; name: string; kind: string; status: string; lifecycle: string; description?: string; updatedAt: string };
 type Activities = { activities: Array<{ id: string; type: string; summary?: string; occurredAt: string }> };
+type ItemResponse = { items: Item[] };
 
-function AppNav() {
-  return <nav className="nav"><a href="/">Flight spike</a><a href="/items">Items</a><a href="/items/new">New brief</a><a href="/api/flight/auth/logout">Log out</a></nav>;
-}
+function apiJson<T>(path: string, init?: RequestInit): Promise<T> { return fetch(path, { credentials: "include", ...init }).then(async (response) => { const body = await response.json().catch(() => ({})); if (!response.ok) throw new Error(body.error ?? "Request failed"); return body as T; }); }
+function formatDate(value: string) { return new Date(value).toLocaleString(); }
+function statusTone(status: string) { return status === "done" ? "done" : status === "in_progress" ? "progress" : status === "cancelled" ? "cancelled" : ""; }
+function Badge({ children, tone = "" }: { children: ReactNode; tone?: string }) { return <span className={`badge ${tone}`}>{children}</span>; }
+function AppNav() { return <nav className="nav"><a className="nav-brand" href="/">Briefs</a><a href="/">Today</a><a href="/items">Items</a><a href="/connect">Connect</a><a href="/briefs/new">Start a brief</a><a href="/api/flight/auth/logout">Sign out</a></nav>; }
 
 function AuthPage() {
-  const [email, setEmail] = useState("");
-  const [otp, setOtp] = useState("");
-  const [sent, setSent] = useState(false);
-  const [error, setError] = useState("");
-  const query = window.location.search.slice(1);
-  const params = new URLSearchParams(query);
-  const isProviderLogin = params.has("client_id") && params.has("redirect_uri");
-
-  async function submitEmail(event: FormEvent) {
-    event.preventDefault();
-    setError("");
-    const response = await fetch("/api/flight/auth/send-otp", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email }) });
-    const result = await response.json() as { error?: string };
-    if (!response.ok) { setError(result.error ?? "Unable to send sign-in code"); return; }
-    setSent(true);
-  }
-
-  async function submitOtp(event: FormEvent) {
-    event.preventDefault();
-    setError("");
-    const response = await fetch("/api/flight/auth/verify-otp", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, otp, oauthQuery: isProviderLogin ? query : "" }) });
-    const result = await response.json() as { continuation?: string; error?: string };
-    if (!response.ok || !result.continuation) { setError(result.error ?? "Invalid sign-in code"); return; }
-    window.location.assign(result.continuation);
-  }
-
-  return <Page title="Sign in" description={isProviderLogin ? "Approve your client’s request after signing in." : "Use your Briefs identity to continue."}><form className="panel form" onSubmit={sent ? submitOtp : submitEmail}><label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required disabled={sent} /></label>{sent ? <label>Verification code<input inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(event) => setOtp(event.target.value)} required /></label> : null}{error ? <p className="error">{error}</p> : null}<button>{sent ? "Verify and continue" : "Send sign-in code"}</button></form></Page>;
+  const [email, setEmail] = useState(""); const [otp, setOtp] = useState(""); const [sent, setSent] = useState(false); const params = new URLSearchParams(window.location.search); const isProviderLogin = params.has("client_id") && params.has("redirect_uri"); const [error, setError] = useState(params.get("error") ?? ""); const query = window.location.search.slice(1);
+  async function submitEmail(event: FormEvent) { event.preventDefault(); setError(""); try { await apiJson("/api/flight/auth/send-otp", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email }) }); setSent(true); } catch (e) { setError(e instanceof Error ? e.message : "Unable to send sign-in code"); } }
+  async function submitOtp(event: FormEvent) { event.preventDefault(); setError(""); try { const result = await apiJson<{ continuation: string }>("/api/flight/auth/verify-otp", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, otp, oauthQuery: isProviderLogin ? query : "" }) }); window.location.assign(result.continuation); } catch (e) { setError(e instanceof Error ? e.message : "Invalid sign-in code"); } }
+  async function startOAuth() { try { const next = params.get("next"); const result = await apiJson<{ url: string }>(`/api/flight/auth/start${next ? `?next=${encodeURIComponent(next)}` : ""}`); window.location.assign(result.url); } catch (e) { setError(e instanceof Error ? e.message : "OAuth is not configured"); } }
+  return <AuthShell><div className="auth-heading"><p className="auth-brand">Briefs</p><h1>Sign in</h1><p>{isProviderLogin ? "Approve your client’s request after signing in." : "View your tasks here. Create and update them through your MCP client — the same OAuth identity powers both."}</p></div>{error ? <p className="auth-error">{error}</p> : null}{sent ? <form className="auth-form" onSubmit={submitOtp}><label><span>Email</span><input type="email" value={email} disabled /></label><label><span>Email code</span><input type="text" inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(e) => setOtp(e.target.value)} required /></label><p className="auth-hint">We sent a six-digit code to your email.</p><button type="submit">Verify and continue</button></form> : isProviderLogin ? <form className="auth-form" onSubmit={submitEmail}><label><span>Email</span><input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label><button type="submit">Send sign-in code</button></form> : <button className="auth-primary" type="button" onClick={() => void startOAuth()}>Continue with email</button>}<p className="auth-footnote">Uses Briefs OAuth 2.1 + PKCE with email OTP.</p></AuthShell>;
 }
+function ConsentPage() { const [error, setError] = useState(""); const query = window.location.search.slice(1); const params = new URLSearchParams(window.location.search); const clientId = params.get("client_id") ?? "this client"; const scopes = (params.get("scope") ?? "").split(" ").filter(Boolean); async function approve() { try { const result = await apiJson<{ continuation: string }>("/api/flight/auth/consent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ oauthQuery: query }) }); window.location.assign(result.continuation); } catch (e) { setError(e instanceof Error ? e.message : "Unable to approve access"); } } return <AuthShell><div className="auth-heading"><p className="auth-brand">Briefs</p><h1>Allow access?</h1><p>{clientId} is requesting access to your Briefs identity and the following scopes:</p></div><ul className="auth-scopes">{scopes.map((scope) => <li key={scope}>{scope}</li>)}</ul>{error ? <p className="auth-error">{error}</p> : null}<button className="auth-primary" onClick={() => void approve()}>Allow and continue</button><a className="auth-cancel" href="/">Cancel</a></AuthShell>; }
+function AuthShell({ children }: { children: ReactNode }) { return <main className="auth-shell"><div className="glass-panel">{children}</div></main>; }
 
-function ConsentPage() {
-  const [error, setError] = useState("");
-  const query = window.location.search.slice(1);
-  async function approve() {
-    const response = await fetch("/api/flight/auth/consent", { method: "POST", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ oauthQuery: query }) });
-    const result = await response.json() as { continuation?: string; error?: string };
-    if (!response.ok || !result.continuation) { setError(result.error ?? "Unable to approve access"); return; }
-    window.location.assign(result.continuation);
-  }
-  return <Page title="Allow access" description="Briefs is requesting permission to connect this client to your account."><section className="panel form"><p className="muted-text">The client will be able to act as you within the permissions it requested.</p>{error ? <p className="error">{error}</p> : null}<button onClick={() => void approve()}>Allow and continue</button><a href="/">Cancel</a></section></Page>;
-}
-
-function ItemsPage() {
-  const [items, setItems] = useState<Items | null>(null);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    fetch("/api/flight/items")
-      .then(async (response) => {
-        if (!response.ok) throw new Error();
-        return response.json() as Promise<Items>;
-      })
-      .then(setItems)
-      .catch(() => setError(true));
-  }, []);
-
-  return <Page title="Items" description="A React/Vite read surface backed by Flight.">
-    {error ? <section className="panel muted"><p className="label">Items unavailable</p><p>Sign in through Daily before loading this surface.</p></section> : null}
-    {items ? <section className="panel muted"><p className="label">Authenticated items</p><p>{items.items.length} items loaded through the Flight BFF.</p>{items.items.length > 0 ? <ul className="items-list">{items.items.map((item) => <li key={item.id} className="item-row"><a href={`/items/${item.id}`}>{item.name}</a><span className="status">{item.status.replace("_", " ")}</span></li>)}</ul> : <p className="empty">Create your first brief to see it here.</p>}</section> : null}
-  </Page>;
-}
-
-function ItemPage({ itemId }: { itemId: string }) {
-  const [item, setItem] = useState<Item | null>(null);
-  const [activities, setActivities] = useState<Activities | null>(null);
-  const [error, setError] = useState(false);
-
-  useEffect(() => {
-    Promise.all([
-      fetch(`/api/flight/items/${encodeURIComponent(itemId)}`).then((response) => response.json() as Promise<{ item?: Item }>),
-      fetch(`/api/flight/items/${encodeURIComponent(itemId)}/activities`).then((response) => response.json() as Promise<Activities>),
-    ]).then(([itemResponse, activityResponse]) => {
-      if (!itemResponse.item) throw new Error();
-      setItem(itemResponse.item);
-      setActivities(activityResponse);
-    }).catch(() => setError(true));
-  }, [itemId]);
-
-  return <Page title={item?.name ?? "Item detail"} description={item?.description ?? "Loading item details…"}>
-    {error ? <section className="panel muted"><p>Item not found or unavailable.</p></section> : null}
-    {item ? <><section className="panel"><div><p className="label">{item.kind} · {item.lifecycle}</p><p className="value">{item.status.replace("_", " ")}</p><p className="muted-text">Updated {new Date(item.updatedAt).toLocaleString()}</p></div></section><section className="panel muted"><p className="label">Activity</p>{activities?.activities.length ? <ul className="activity-list">{activities.activities.map((activity) => <li key={activity.id}><strong>{activity.type}</strong>{activity.summary ? ` — ${activity.summary}` : ""}</li>)}</ul> : <p>No activities recorded yet.</p>}</section></> : null}
-  </Page>;
-}
-
-function NewItemPage() {
-  const [error, setError] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setSaving(true);
-    setError("");
-    const values = new FormData(event.currentTarget);
-    const name = String(values.get("name") ?? "").trim();
-    const outcome = String(values.get("outcome") ?? "").trim();
-    const context = String(values.get("context") ?? "").trim();
-    const response = await fetch("/api/flight/items", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name, kind: String(values.get("kind") ?? "task"), description: [`Outcome\n${outcome}`, context ? `Context\n${context}` : ""].filter(Boolean).join("\n\n") }) });
-    if (!response.ok) { setError("Could not create this brief."); setSaving(false); return; }
-    const result = await response.json() as { item: Item };
-    window.location.assign(`/items/${result.item.id}`);
-  }
-
-  return <Page title="Start with intent" description="Create a durable item through the Flight BFF."><form className="panel form" onSubmit={submit}><label>Title<input name="name" required /></label><label>Kind<select name="kind" defaultValue="task"><option value="task">Task</option><option value="note">Note</option><option value="commitment">Commitment</option></select></label><label>Outcome<textarea name="outcome" required rows={4} /></label><label>Context<textarea name="context" rows={3} /></label>{error ? <p className="error">{error}</p> : null}<button disabled={saving}>{saving ? "Creating…" : "Create brief"}</button></form></Page>;
-}
-
-function Page({ title, description, children }: { title: string; description: string; children: ReactNode }) {
-  return <><AppNav /><main className="shell"><p className="eyebrow">Briefs / Flight spike</p><h1>{title}</h1><p className="lede">{description}</p>{children}</main></>;
-}
-
-export function App() {
-  const path = window.location.pathname;
-  const [health, setHealth] = useState<Health | null>(null);
-
-  useEffect(() => {
-    fetch("/api/flight/health")
-      .then((response) => response.ok ? response.json() as Promise<Health> : null)
-      .then(setHealth)
-      .catch(() => setHealth(null));
-  }, []);
-
-  if (path === "/login") return <AuthPage />;
-  if (path === "/consent") return <ConsentPage />;
-  if (path === "/items") return <ItemsPage />;
-  if (path === "/items/new") return <NewItemPage />;
-  if (path.startsWith("/items/")) return <ItemPage itemId={path.slice("/items/".length)} />;
-
-  return (
-    <Page title="Items, with a smaller runtime seam." description="This isolated React/Vite surface is the migration boundary to evaluate before moving Daily’s full item experience.">
-      <section className="panel">
-        <div>
-          <p className="label">Runtime health</p>
-          <p className="value">{health ? `${health.service} · ${health.status}` : "Connecting…"}</p>
-        </div>
-        <span className={health ? "pill online" : "pill"}>{health ? "online" : "pending"}</span>
-      </section>
-      <section className="panel muted">
-        <p className="label">Next seam</p>
-        <p>Keep Better Auth and token-bearing API calls server-side, then add an authenticated `/items` BFF route here.</p>
-      </section>
-    </Page>
-  );
-}
+function ItemsPage() { const [items, setItems] = useState<Item[]>([]); const [error, setError] = useState(""); const status = new URLSearchParams(window.location.search).get("status") ?? ""; useEffect(() => { apiJson<ItemResponse>(`/api/flight/items${status ? `?status=${encodeURIComponent(status)}` : ""}`).then((r) => setItems(r.items)).catch((e) => setError(e.message)); }, [status]); const filters = [["", "All"], ["open", "Open"], ["in_progress", "In progress"], ["done", "Done"], ["cancelled", "Cancelled"]]; return <Page title="Items" description="Your durable work — tasks, notes, commitments — with stable identity and an append-only activity log."><div className="page-actions"><a className="button primary" href="/briefs/new">Create a brief</a><span className="muted-text">{items.length} total</span></div><div className="filter-row">{filters.map(([value, label]) => <a className={status === value ? "filter active" : "filter"} href={value ? `/items?status=${value}` : "/items"} key={value}>{label}</a>)}</div>{error ? <section className="panel muted"><strong>Could not reach the API</strong><p>{error}</p></section> : items.length === 0 ? <section className="panel muted">{status ? `No ${status.replace("_", " ")} items yet.` : "No items yet."} <a href="/connect">Connect MCP</a> to create your first task.</section> : <ul className="item-cards">{items.map((item) => <li key={item.id}><a href={`/items/${item.id}`}><div><div className="item-title"><strong>{item.name}</strong><Badge>{item.kind}</Badge><Badge tone={statusTone(item.status)}>{item.status.replace("_", " ")}</Badge>{item.lifecycle !== "active" ? <Badge>{item.lifecycle}</Badge> : null}</div><small>Updated {formatDate(item.updatedAt)}</small></div><span className="arrow">→</span></a></li>)}</ul>}</Page>; }
+function HomePage() { const [items, setItems] = useState<Item[]>([]); const [health, setHealth] = useState<Health | null>(null); useEffect(() => { apiJson<ItemResponse>("/api/flight/items").then((r) => setItems(r.items)).catch(() => undefined); apiJson<Health>("/api/flight/health").then(setHealth).catch(() => undefined); }, []); const open = items.filter((item) => item.lifecycle === "active" && !["done", "cancelled"].includes(item.status)); return <Page title="Today" description="A read-focused view of your durable work. Capture and update items from your assistant via MCP — this app shows what changed and who acted on it."><section className="stats"><div className="panel"><small>Open items</small><strong>{open.length}</strong></div><div className="panel"><small>Total items</small><strong>{items.length}</strong></div><div className="panel"><small>API</small><strong>{health?.status === "ok" ? "Online" : "Offline"}</strong></div></section><div className="page-actions"><a className="button primary" href="/briefs/new">Start a brief →</a><a className="button" href="/items">View all items →</a><a className="button" href="/connect">Connect MCP</a></div><section className="content-section"><p className="eyebrow">Work queue</p><h2>Next up</h2>{open.length === 0 ? <div className="panel muted">You’re clear for now. Capture your next task through MCP, or start a brief.</div> : <ul className="item-cards">{open.slice(0, 5).map((item) => <li key={item.id}><a href={`/items/${item.id}`}><div className="item-title"><strong>{item.name}</strong><Badge>{item.kind}</Badge><Badge tone={statusTone(item.status)}>{item.status.replace("_", " ")}</Badge></div><small>Updated {formatDate(item.updatedAt)}</small></a></li>)}</ul>}</section><McpConnect /></Page>; }
+function ItemPage({ itemId }: { itemId: string }) { const [item, setItem] = useState<Item | null>(null); const [activities, setActivities] = useState<Activities | null>(null); const [error, setError] = useState(""); useEffect(() => { Promise.all([apiJson<{ item: Item }>(`/api/flight/items/${encodeURIComponent(itemId)}`), apiJson<Activities>(`/api/flight/items/${encodeURIComponent(itemId)}/activities`)]).then(([i, a]) => { setItem(i.item); setActivities(a); }).catch((e) => setError(e.message)); return () => undefined; }, [itemId]); return <Page title={item?.name ?? "Item detail"} description={item?.description ?? "Loading item details…"}><a className="back-link" href="/items">← Back to items</a>{error ? <section className="panel muted">Item not found or unavailable: {error}</section> : item ? <><section className="panel detail-meta"><div><Badge>{item.kind}</Badge> <Badge tone={statusTone(item.status)}>{item.status.replace("_", " ")}</Badge><p>Updated {formatDate(item.updatedAt)}</p></div></section><section className="content-section"><h2>Activity</h2>{activities?.activities.length ? <ul className="activity-list">{activities.activities.map((activity) => <li key={activity.id}><strong>{activity.type}</strong>{activity.summary ? ` — ${activity.summary}` : ""}<small>{formatDate(activity.occurredAt)}</small></li>)}</ul> : <p className="muted-text">No activities recorded yet.</p>}</section></> : null}</Page>; }
+function NewBriefPage() { const [step, setStep] = useState(0); const [answers, setAnswers] = useState<QuestionAnswers>({}); const [error, setError] = useState(""); const [saving, setSaving] = useState(false); const question = createBriefFlow.questions[step]; const value = answers[question.id] ?? ""; const last = step === createBriefFlow.questions.length - 1; function update(value: string) { setAnswers((current) => ({ ...current, [question.id]: value })); setError(""); } async function next() { if (question.required && (!value || (typeof value === "string" && !value.trim()))) { setError("Answer this question to continue."); return; } if (!last) { setStep((current) => current + 1); return; } setSaving(true); try { const name = String(answers.name ?? "").trim(); const outcome = String(answers.outcome ?? "").trim(); const context = String(answers.context ?? "").trim(); const result = await apiJson<{ item: Item }>("/api/flight/items", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name, kind: String(answers.kind ?? "task"), description: [`Outcome\n${outcome}`, context ? `Context\n${context}` : ""].filter(Boolean).join("\n\n") }) }); window.location.assign(`/items/${result.item.id}`); } catch (e) { setError(e instanceof Error ? e.message : "Could not save this brief."); setSaving(false); } } return <Page title="Start with intent" description={createBriefFlow.description}><section className="questionnaire"><div className="progress"><span style={{ width: `${((step + 1) / createBriefFlow.questions.length) * 100}%` }} /></div><small>{createBriefFlow.title} · {step + 1} of {createBriefFlow.questions.length}</small><h2>{question.label}</h2>{question.description ? <p className="muted-text">{question.description}</p> : null}{question.type === "single" ? <div className="options">{question.options.map((option) => <button className={value === option.value ? "option selected" : "option"} key={option.value} onClick={() => update(option.value)}><strong>{option.label}</strong>{option.description ? <small>{option.description}</small> : null}</button>)}</div> : question.multiline ? <textarea value={typeof value === "string" ? value : ""} onChange={(e) => update(e.target.value)} placeholder={question.placeholder} rows={6} autoFocus /> : <input value={typeof value === "string" ? value : ""} onChange={(e) => update(e.target.value)} placeholder={question.placeholder} autoFocus />}{error ? <p className="error">{error}</p> : null}<div className="question-actions"><button className="button" onClick={() => setStep((current) => Math.max(0, current - 1))} disabled={step === 0 || saving}>Back</button><button className="button primary" onClick={() => void next()} disabled={saving}>{saving ? "Saving…" : last ? "Create brief" : "Continue"}</button></div></section></Page>; }
+function McpConnect() { const config = JSON.stringify({ mcpServers: { briefs: { url: "/mcp" } } }, null, 2); return <section className="panel mcp-panel"><h2>Work through MCP</h2><p>Briefs is read-focused. Create tasks, update status, and capture work from your assistant via MCP — then view changes here.</p><p><strong>MCP server:</strong> Ready for assistant connections</p><pre>{config}</pre><small>MCP URL: <code>/mcp</code></small></section>; }
+function Page({ title, description, children }: { title: string; description: string; children: ReactNode }) { return <><AppNav /><main className="shell"><p className="eyebrow">Briefs</p><h1>{title}</h1><p className="lede">{description}</p>{children}</main></>; }
+export function App() { const path = window.location.pathname; if (path === "/login") return <AuthPage />; if (path === "/consent") return <ConsentPage />; if (path === "/items") return <ItemsPage />; if (path === "/briefs/new") return <NewBriefPage />; if (path === "/connect") return <Page title="Connect MCP" description="Your assistant is your inbox — connect once, then create and update items through MCP tools."><McpConnect /></Page>; if (path.startsWith("/items/")) return <ItemPage itemId={path.slice("/items/".length)} />; return <HomePage />; }

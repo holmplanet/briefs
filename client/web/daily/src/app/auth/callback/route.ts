@@ -71,12 +71,10 @@ export async function GET(request: Request) {
       accessTokenExpiresAt: user.accessTokenExpiresAt,
     });
     const target = new URL(safeNextPath(nextPath), config.appUrl);
-    const response = new NextResponse(
-      `<!doctype html><meta http-equiv="refresh" content="0;url=${target.toString()}"><script>window.location.replace(${JSON.stringify(target.toString())})</script>`,
-      {
-        headers: { "content-type": "text/html; charset=utf-8" },
-      },
-    );
+    // A one-time authorization code must only be exchanged once. Returning an
+    // HTML meta-refresh plus script can trigger two callback navigations in a
+    // browser, making the second request fail with `invalid code`.
+    const response = NextResponse.redirect(target, 303);
     response.cookies.set(SESSION_COOKIE, sessionCookieValue, sessionCookieOptions());
     const setCookieHeader = response.headers.get("set-cookie");
     console.info("[Briefs Daily] Daily session attached to callback response", {

@@ -67,6 +67,8 @@ export async function bootstrap(): Promise<AppContext> {
     const betterAuth = config.authProvider === "better-auth"
       ? createBetterAuthSpike(pool, {
         issuer: config.oauthIssuer,
+        loginPage: config.authLoginUrl,
+        consentPage: config.authConsentUrl,
         secret: config.authSecret,
         allowedEmails: config.oauthAllowedEmails,
         mcpResource: config.mcpResource,

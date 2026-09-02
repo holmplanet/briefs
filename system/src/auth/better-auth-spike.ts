@@ -5,6 +5,8 @@ import type { Pool } from "pg";
 
 export type BetterAuthSpikeConfig = {
   issuer: string;
+  loginPage?: string;
+  consentPage?: string;
   secret: string;
   allowedEmails: string[];
   mcpResource: string;
@@ -46,8 +48,8 @@ export function createBetterAuthSpike(pool: Pool, config: BetterAuthSpikeConfig)
         },
       }),
       mcp({
-        loginPage: "/login",
-        consentPage: "/consent",
+        loginPage: config.loginPage ?? "/login",
+        consentPage: config.consentPage ?? "/consent",
         resource: config.mcpResource,
         resources: [config.mcpResource, config.apiResource],
         clientRegistrationDefaultResources: [config.mcpResource, config.apiResource],

@@ -8,6 +8,8 @@ export type BriefsConfig = {
   databaseUrl?: string;
   authSecret: string;
   oauthIssuer: string;
+  authLoginUrl: string;
+  authConsentUrl: string;
   authDevBypass: boolean;
   oauthClientId: string;
   oauthRedirectUris: string[];
@@ -71,6 +73,8 @@ export function loadConfig(): BriefsConfig {
     databaseUrl: process.env.DATABASE_URL ?? process.env.NEON_DATABASE_URL,
     authSecret: process.env.AUTH_SECRET ?? "dev-briefs-auth-secret",
     oauthIssuer: (process.env.OAUTH_ISSUER ?? `http://localhost:${readPort(process.env.APP_PORT, 8001)}/oauth`).replace(/\/$/, ""),
+    authLoginUrl: process.env.AUTH_LOGIN_URL ?? "/login",
+    authConsentUrl: process.env.AUTH_CONSENT_URL ?? "/consent",
     authDevBypass: process.env.API_DEV_BYPASS !== "false" && !isProductionEnvironment(),
     oauthClientId: process.env.OAUTH_CLIENT_ID ?? "briefs-daily",
     oauthRedirectUris: (process.env.OAUTH_REDIRECT_URIS ?? "http://localhost:3000/auth/callback").split(",").map((value) => value.trim()).filter(Boolean),

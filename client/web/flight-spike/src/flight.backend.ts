@@ -23,12 +23,7 @@ function splitSetCookieHeader(setCookie: string): string[] {
 }
 
 function secureCookie(context: FlightContext): boolean {
-  // Flight's Koa cookie adapter validates `secure` against the internal
-  // upstream connection, which is HTTP behind Caddy's TLS termination.
-  // HSTS keeps the public app on HTTPS; leaving this flag off avoids Koa
-  // rejecting the response before it reaches the browser.
-  void context;
-  return false;
+  return process.env.NODE_ENV === "production" && context.secure;
 }
 
 function copyProviderCookies(context: FlightContext, response: Response) {

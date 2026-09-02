@@ -91,6 +91,7 @@ services:
       FLIGHT_REDIS_HOST: redis
       FLIGHT_REDIS_PORT: 6379
       FLIGHT_MODE: production
+      FLIGHT_TRUST_PROXY: "true"
       FLIGHT_DISABLE_VITE: "true"
       FLIGHT_DIST_PATH: dist
       FLIGHT_PORT: 3100

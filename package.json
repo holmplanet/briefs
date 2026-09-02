@@ -12,6 +12,7 @@
     "client/web/shared",
     "client/web/docs",
     "client/web/daily",
+    "client/web/flight-spike",
     "client/agent",
     "client/cli",
     "client/mcp"

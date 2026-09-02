@@ -1,0 +1,24 @@
+{
+  "name": "@briefs/flight-spike",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "flight --mode development --port 3100",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@thoughtpivot/flight": "^2.0.2",
+    "@koa/router": "^13.1.0",
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/koa__router": "^12.0.5",
+    "@vitejs/plugin-react": "4.4.1",
+    "typescript": "^5",
+    "vite": "^6.1.7"
+  }
+}

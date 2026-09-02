@@ -22,6 +22,11 @@ function splitSetCookieHeader(setCookie: string): string[] {
   return setCookie.split(/,(?=\s*[^;,=]+=[^;,]*)/).map((value) => value.trim()).filter(Boolean);
 }
 
+function secureCookie(context: FlightContext): boolean {
+  return process.env.NODE_ENV === "production"
+    && (context.secure || context.get("x-forwarded-proto") === "https");
+}
+
 function copyProviderCookies(context: FlightContext, response: Response) {
   const headers = response.headers as Headers & { getSetCookie?: () => string[] };
   const values = headers.getSetCookie?.() ?? splitSetCookieHeader(headers.get("set-cookie") ?? "");
@@ -31,7 +36,7 @@ function copyProviderCookies(context: FlightContext, response: Response) {
     if (separator <= 0) continue;
     context.cookies.set(nameValue.slice(0, separator), nameValue.slice(separator + 1), {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: secureCookie(context),
       sameSite: "lax",
       path: "/",
       maxAge: 30 * 24 * 60 * 60 * 1000,
@@ -69,8 +74,8 @@ router.get("/api/flight/auth/start", async (context) => {
   if (!config.issuer || !config.clientId) { context.status = 503; context.body = { error: "OAuth issuer and client ID are required" }; return; }
   const state = createOAuthState();
   const { verifier, challenge } = createPkcePair();
-  context.cookies.set(OAUTH_STATE_COOKIE, state, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 600 });
-  context.cookies.set(OAUTH_VERIFIER_COOKIE, verifier, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 600 });
+  context.cookies.set(OAUTH_STATE_COOKIE, state, { httpOnly: true, sameSite: "lax", secure: secureCookie(context), path: "/", maxAge: 600 });
+  context.cookies.set(OAUTH_VERIFIER_COOKIE, verifier, { httpOnly: true, sameSite: "lax", secure: secureCookie(context), path: "/", maxAge: 600 });
   context.body = { url: await buildAuthorizeUrl(config, state, challenge) };
 });
 
@@ -131,9 +136,9 @@ router.get("/auth/callback", async (context) => {
   try {
     const user = await exchangeCode(config, code, verifier);
     const value = await encodeBriefsSession({ userId: user.userId, email: user.email, accessToken: user.accessToken, refreshToken: user.refreshToken, accessTokenExpiresAt: user.accessTokenExpiresAt, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 }, config.sessionSecret);
-    context.cookies.set(SESSION_COOKIE, value, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 30 * 24 * 60 * 60 });
-    context.cookies.set(OAUTH_STATE_COOKIE, "", { expires: new Date(0), path: "/" });
-    context.cookies.set(OAUTH_VERIFIER_COOKIE, "", { expires: new Date(0), path: "/" });
+    context.cookies.set(SESSION_COOKIE, value, { httpOnly: true, secure: secureCookie(context), sameSite: "lax", path: "/", maxAge: 30 * 24 * 60 * 60 });
+    context.cookies.set(OAUTH_STATE_COOKIE, "", { expires: new Date(0), path: "/", secure: secureCookie(context) });
+    context.cookies.set(OAUTH_VERIFIER_COOKIE, "", { expires: new Date(0), path: "/", secure: secureCookie(context) });
     context.type = "html";
     context.body = `<!doctype html><meta http-equiv="refresh" content="0;url=${config.appUrl}/">`;
   } catch (error) {

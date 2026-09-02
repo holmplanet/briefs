@@ -18,6 +18,10 @@ handle /api/flight* {
 	reverse_proxy flight:3100
 }
 
+handle /assets* {
+	reverse_proxy flight:3100
+}
+
 handle /login* {
 	reverse_proxy flight:3100
 }

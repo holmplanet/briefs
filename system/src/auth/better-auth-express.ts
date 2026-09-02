@@ -44,7 +44,8 @@ export function createBetterAuthCompatibilityHandler(
     const originalUrl = request.url;
     const originalPath = request.path;
     const mountedUrl = request.url.startsWith("/oauth") ? request.url : `/oauth${request.url}`;
-    request.url = rewriteBetterAuthCompatibilityPath(mountedUrl);
+    const isJwtTokenRequest = request.method === "GET" && originalPath === "/oauth/token";
+    request.url = isJwtTokenRequest ? mountedUrl : rewriteBetterAuthCompatibilityPath(mountedUrl);
     const registrationPath = originalPath === "/oauth/register" || originalPath === "/oauth/oauth2/register";
       if (registrationPath && options.allowedRedirectUris?.length) {
         const redirectUris = request.body?.redirect_uris;

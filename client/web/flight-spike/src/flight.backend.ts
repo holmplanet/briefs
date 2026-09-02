@@ -158,7 +158,27 @@ router.get("/api/flight/auth/session", async (context) => {
     : { authenticated: false };
 });
 
-router.get("/api/flight/auth/logout", (context) => {
+router.get("/api/flight/auth/logout", async (context) => {
+  const config = loadFlightAuthConfig();
+  const providerCookies = context.request.headers.cookie;
+  if (config.issuer && providerCookies) {
+    try {
+      const response = await fetch(`${config.issuer}/sign-out`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          origin: providerOrigin(config),
+          cookie: providerCookies,
+        },
+        body: JSON.stringify({}),
+      });
+      const headers = response.headers as Headers & { getSetCookie?: () => string[] };
+      const setCookies = headers.getSetCookie?.() ?? splitSetCookieHeader(headers.get("set-cookie") ?? "");
+      if (setCookies.length > 0) context.set("Set-Cookie", setCookies);
+    } catch {
+      // Always clear Flight's local session even if the provider is unavailable.
+    }
+  }
   context.cookies.set(SESSION_COOKIE, "", { expires: new Date(0), path: "/" });
   context.redirect("/login");
 });

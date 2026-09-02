@@ -39,6 +39,33 @@ export function getBriefsMcpUrl(): string {
   return (process.env.NEXT_PUBLIC_MCP_URL ?? "http://localhost:3334/mcp").replace(/\/$/, "");
 }
 
+type BriefsAuthContext = {
+  config: ReturnType<typeof loadAuthConfig>;
+  session: NonNullable<Awaited<ReturnType<typeof getSession>>>;
+  headers: Headers;
+};
+
+/** Keeps Daily's token-bearing session boundary in one server-side helper. */
+async function getBriefsAuthContext(): Promise<BriefsAuthContext> {
+  const config = loadAuthConfig();
+  const session = await getSession(config);
+  if (!session) {
+    throw new Error("Not authenticated");
+  }
+  if (config.issuer && !session.accessToken) {
+    throw new BriefsAuthError();
+  }
+
+  const headers = new Headers();
+  if (session.accessToken) {
+    headers.set("Authorization", `Bearer ${session.accessToken}`);
+  } else {
+    headers.set("X-Briefs-User-Id", session.userId);
+  }
+
+  return { config, session, headers };
+}
+
 function getBriefsMcpHealthUrl(): string {
   const configuredUrl = (process.env.MCP_HEALTH_URL ?? getBriefsMcpUrl()).replace(/\/$/, "");
   return configuredUrl.endsWith("/api/mcp")
@@ -47,15 +74,7 @@ function getBriefsMcpHealthUrl(): string {
 }
 
 export async function getBriefsUserId(): Promise<string> {
-  const config = loadAuthConfig();
-  const session = await getSession(config);
-  if (!session) {
-    throw new Error("Not authenticated");
-  }
-  if (config.issuer && !session.accessToken) {
-    throw new BriefsAuthError();
-  }
-  return session.userId;
+  return (await getBriefsAuthContext()).session.userId;
 }
 
 type FetchOptions = RequestInit & {
@@ -63,22 +82,12 @@ type FetchOptions = RequestInit & {
 };
 
 async function briefsFetch<T>(path: string, options: FetchOptions = {}): Promise<T> {
-  const config = loadAuthConfig();
-  const session = await getSession(config);
-  if (!session) {
-    throw new Error("Not authenticated");
+  const { session, headers } = await getBriefsAuthContext();
+  const requestHeaders = new Headers(headers);
+  for (const [name, value] of new Headers(options.headers)) {
+    requestHeaders.set(name, value);
   }
-  if (config.issuer && !session.accessToken) {
-    throw new BriefsAuthError();
-  }
-
-  const requestHeaders = new Headers(options.headers);
   requestHeaders.set("Content-Type", "application/json");
-  if (session.accessToken) {
-    requestHeaders.set("Authorization", `Bearer ${session.accessToken}`);
-  } else {
-    requestHeaders.set("X-Briefs-User-Id", session.userId);
-  }
 
   const response = await fetch(`${getBriefsApiBase()}${path}`, {
     ...options,

@@ -10,5 +10,15 @@
     -Server
   }
 
-  reverse_proxy daily:3000
+  handle /items* {
+    reverse_proxy flight:3100
+  }
+
+  handle /api/flight* {
+    reverse_proxy flight:3100
+  }
+
+  handle {
+    reverse_proxy daily:3000
+  }
 }

@@ -69,6 +69,49 @@ services:
       timeout: 5s
       retries: 3
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - private
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  flight:
+    image: ${FLIGHT_IMAGE:?FLIGHT_IMAGE is required}
+    restart: unless-stopped
+    env_file:
+      - ${RUNTIME_ENV_FILE:-.env}
+    environment:
+      API_URL: http://system:8000
+      SESSION_SECRET_FILE: /run/secrets/session_secret
+      FLIGHT_REDIS_HOST: redis
+      FLIGHT_REDIS_PORT: 6379
+      FLIGHT_MODE: production
+      FLIGHT_DISABLE_VITE: "true"
+      FLIGHT_DIST_PATH: dist
+      FLIGHT_PORT: 3100
+      FLIGHT_MAX_WORKERS: ${FLIGHT_MAX_WORKERS:-2}
+    ports:
+      - "127.0.0.1:${FLIGHT_PORT:-3100}:3100"
+    secrets:
+      - session_secret
+    networks:
+      - private
+    depends_on:
+      system:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3100/api/flight/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
   daily:
     image: ${DAILY_IMAGE:?DAILY_IMAGE is required}
     restart: unless-stopped
@@ -94,6 +137,8 @@ services:
       system:
         condition: service_healthy
       mcp:
+        condition: service_healthy
+      flight:
         condition: service_healthy
 
   caddy:

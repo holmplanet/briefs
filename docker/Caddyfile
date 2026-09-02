@@ -11,31 +11,45 @@
   }
 
   handle /items* {
-    reverse_proxy flight:3100
+    reverse_proxy flight:3100 {
+      header_up X-Forwarded-Proto https
+    }
   }
 
 handle /api/flight* {
-	reverse_proxy flight:3100
+	reverse_proxy flight:3100 {
+	  header_up X-Forwarded-Proto https
+	}
 }
 
 handle /assets* {
-	reverse_proxy flight:3100
+	reverse_proxy flight:3100 {
+	  header_up X-Forwarded-Proto https
+	}
 }
 
 handle /login* {
-	reverse_proxy flight:3100
+	reverse_proxy flight:3100 {
+	  header_up X-Forwarded-Proto https
+	}
 }
 
 handle /consent* {
-	reverse_proxy flight:3100
+	reverse_proxy flight:3100 {
+	  header_up X-Forwarded-Proto https
+	}
 }
 
 handle /auth/callback* {
-	reverse_proxy flight:3100
+	reverse_proxy flight:3100 {
+	  header_up X-Forwarded-Proto https
+	}
 }
 
 handle /api/flight/auth* {
-	reverse_proxy flight:3100
+	reverse_proxy flight:3100 {
+	  header_up X-Forwarded-Proto https
+	}
 }
 
 handle {

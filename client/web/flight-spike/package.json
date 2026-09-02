@@ -2,6 +2,7 @@
   "name": "@briefs/flight-spike",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "flight --mode development --port 3100",
     "start": "FLIGHT_MAX_WORKERS=${FLIGHT_MAX_WORKERS:-2} FLIGHT_DISABLE_VITE=true FLIGHT_DIST_PATH=dist flight --mode production --disable_vite --port 3100",

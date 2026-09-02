@@ -29,6 +29,7 @@ COPY --from=build /repo/shared/dist /repo/shared/dist
 COPY client/web/flight-spike/package.json ./package.json
 COPY --from=build /repo/client/web/flight-spike/dist ./dist
 COPY --from=build /repo/client/web/flight-spike/src/flight.backend.ts ./src/flight.backend.ts
+COPY --from=build /repo/client/web/flight-spike/src/auth.ts ./src/auth.ts
 COPY docker/entrypoint-secrets.sh /usr/local/bin/briefs-entrypoint
 
 RUN chmod 755 /usr/local/bin/briefs-entrypoint

@@ -1,9 +1,13 @@
 import Router from "@koa/router";
+import { encodeBriefsSession } from "@briefs/shared/session";
 import { decodeBriefsSession } from "@briefs/shared/session";
+import { buildAuthorizeUrl, createOAuthState, createPkcePair, exchangeCode, loadFlightAuthConfig } from "./auth.ts";
 
-const router = new Router({ prefix: "/api/flight" });
+const router = new Router();
 
 const SESSION_COOKIE = "briefs_daily_session";
+const OAUTH_STATE_COOKIE = "briefs_flight_oauth_state";
+const OAUTH_VERIFIER_COOKIE = "briefs_flight_oauth_verifier";
 type FlightContext = Parameters<Parameters<typeof router.get>[1]>[0];
 
 function cookieValue(header: string | undefined, name: string): string | undefined {
@@ -12,6 +16,27 @@ function cookieValue(header: string | undefined, name: string): string | undefin
     .map((part) => part.trim())
     .find((part) => part.startsWith(`${name}=`))
     ?.slice(name.length + 1);
+}
+
+function splitSetCookieHeader(setCookie: string): string[] {
+  return setCookie.split(/,(?=\s*[^;,=]+=[^;,]*)/).map((value) => value.trim()).filter(Boolean);
+}
+
+function copyProviderCookies(context: FlightContext, response: Response) {
+  const headers = response.headers as Headers & { getSetCookie?: () => string[] };
+  const values = headers.getSetCookie?.() ?? splitSetCookieHeader(headers.get("set-cookie") ?? "");
+  for (const value of values) {
+    const [nameValue] = value.split(";", 1);
+    const separator = nameValue.indexOf("=");
+    if (separator <= 0) continue;
+    context.cookies.set(nameValue.slice(0, separator), nameValue.slice(separator + 1), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+  }
 }
 
 async function sessionFromRequest(context: Parameters<Parameters<typeof router.get>[1]>[0]) {
@@ -35,11 +60,88 @@ async function apiRequest(context: FlightContext, path: string, init?: RequestIn
   });
 }
 
-router.get("/health", (context) => {
+router.get("/api/flight/health", (context) => {
   context.body = { status: "ok", service: "briefs-flight-spike" };
 });
 
-router.get("/items", async (context) => {
+router.get("/api/flight/auth/start", async (context) => {
+  const config = loadFlightAuthConfig();
+  if (!config.issuer) { context.status = 503; context.body = { error: "OAuth is not configured" }; return; }
+  const state = createOAuthState();
+  const { verifier, challenge } = createPkcePair();
+  context.cookies.set(OAUTH_STATE_COOKIE, state, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 600 });
+  context.cookies.set(OAUTH_VERIFIER_COOKIE, verifier, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 600 });
+  context.body = { url: await buildAuthorizeUrl(config, state, challenge) };
+});
+
+router.post("/api/flight/auth/send-otp", async (context) => {
+  const config = loadFlightAuthConfig();
+  const body = (context.request as typeof context.request & { body?: { email?: string } }).body ?? {};
+  const email = body.email?.trim().toLowerCase() ?? "";
+  if (!config.issuer) { context.status = 503; context.body = { error: "OAuth is not configured" }; return; }
+  if (!email || !email.includes("@")) { context.status = 400; context.body = { error: "Enter a valid email" }; return; }
+  const response = await fetch(`${config.issuer}/email-otp/send-verification-otp`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, type: "sign-in" }) });
+  if (!response.ok) { context.status = 400; context.body = { error: (await response.text()) || "Unable to send sign-in code" }; return; }
+  context.body = { sent: true };
+});
+
+router.post("/api/flight/auth/verify-otp", async (context) => {
+  const config = loadFlightAuthConfig();
+  const body = (context.request as typeof context.request & { body?: { email?: string; otp?: string; oauthQuery?: string } }).body ?? {};
+  const email = body.email?.trim().toLowerCase() ?? "";
+  const otp = body.otp?.trim() ?? "";
+  if (!config.issuer) { context.status = 503; context.body = { error: "OAuth is not configured" }; return; }
+  const response = await fetch(`${config.issuer}/sign-in/email-otp`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, otp, ...(body.oauthQuery ? { oauth_query: body.oauthQuery } : {}) }) });
+  const location = response.headers.get("location");
+  const json = response.headers.get("content-type")?.includes("json") ? await response.json() as { url?: string } : {};
+  if (!response.ok && !location && !json.url) { context.status = 400; context.body = { error: "Invalid sign-in code" }; return; }
+  copyProviderCookies(context, response);
+  context.body = { continuation: location ?? json.url ?? `${config.appUrl}/` };
+});
+
+router.post("/api/flight/auth/consent", async (context) => {
+  const config = loadFlightAuthConfig();
+  const body = (context.request as typeof context.request & { body?: { oauthQuery?: string } }).body ?? {};
+  if (!config.issuer) { context.status = 503; context.body = { error: "OAuth is not configured" }; return; }
+  const response = await fetch(`${config.issuer}/oauth2/consent`, {
+    method: "POST",
+    headers: { "content-type": "application/json", ...(context.request.headers.cookie ? { cookie: context.request.headers.cookie } : {}) },
+    body: JSON.stringify({ accept: true, ...(body.oauthQuery ? { oauth_query: body.oauthQuery } : {}) }),
+  });
+  const result = response.headers.get("content-type")?.includes("json") ? await response.json() as { url?: string; redirect_uri?: string; error?: string } : {};
+  if (!response.ok) { context.status = 400; context.body = { error: result.error ?? "Unable to approve access" }; return; }
+  copyProviderCookies(context, response);
+  context.body = { continuation: result.url ?? result.redirect_uri ?? response.headers.get("location") };
+});
+
+router.get("/api/flight/auth/logout", (context) => {
+  context.cookies.set(SESSION_COOKIE, "", { expires: new Date(0), path: "/" });
+  context.redirect("/login");
+});
+
+router.get("/auth/callback", async (context) => {
+  const config = loadFlightAuthConfig();
+  const code = typeof context.query.code === "string" ? context.query.code : "";
+  const state = typeof context.query.state === "string" ? context.query.state : "";
+  const expectedState = context.cookies.get(OAUTH_STATE_COOKIE);
+  const verifier = context.cookies.get(OAUTH_VERIFIER_COOKIE);
+  if (!code || !state || !expectedState || state !== expectedState || !verifier) {
+    context.redirect(`${config.appUrl}/login?error=invalid_state`); return;
+  }
+  try {
+    const user = await exchangeCode(config, code, verifier);
+    const value = await encodeBriefsSession({ userId: user.userId, email: user.email, accessToken: user.accessToken, refreshToken: user.refreshToken, accessTokenExpiresAt: user.accessTokenExpiresAt, expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000 }, config.sessionSecret);
+    context.cookies.set(SESSION_COOKIE, value, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 30 * 24 * 60 * 60 });
+    context.cookies.set(OAUTH_STATE_COOKIE, "", { expires: new Date(0), path: "/" });
+    context.cookies.set(OAUTH_VERIFIER_COOKIE, "", { expires: new Date(0), path: "/" });
+    context.type = "html";
+    context.body = `<!doctype html><meta http-equiv="refresh" content="0;url=${config.appUrl}/">`;
+  } catch (error) {
+    context.redirect(`${config.appUrl}/login?error=${encodeURIComponent(error instanceof Error ? error.message : "Authentication failed")}`);
+  }
+});
+
+router.get("/api/flight/items", async (context) => {
   const response = await apiRequest(context, `/api/v1/items${typeof context.query.status === "string" ? `?status=${encodeURIComponent(context.query.status)}` : ""}`);
   if (!response) {
     context.status = 401;
@@ -50,7 +152,7 @@ router.get("/items", async (context) => {
   context.body = await response.json();
 });
 
-router.get("/items/:itemId", async (context) => {
+router.get("/api/flight/items/:itemId", async (context) => {
   const response = await apiRequest(context, `/api/v1/items/${encodeURIComponent(context.params.itemId)}`);
   if (!response) {
     context.status = 401;
@@ -61,7 +163,7 @@ router.get("/items/:itemId", async (context) => {
   context.body = await response.json();
 });
 
-router.get("/items/:itemId/activities", async (context) => {
+router.get("/api/flight/items/:itemId/activities", async (context) => {
   const response = await apiRequest(context, `/api/v1/items/${encodeURIComponent(context.params.itemId)}/activities`);
   if (!response) {
     context.status = 401;
@@ -72,7 +174,7 @@ router.get("/items/:itemId/activities", async (context) => {
   context.body = await response.json();
 });
 
-router.post("/items", async (context) => {
+router.post("/api/flight/items", async (context) => {
   const body = (context.request as typeof context.request & { body?: unknown }).body;
   const response = await apiRequest(context, "/api/v1/items", {
     method: "POST",

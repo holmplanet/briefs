@@ -6,7 +6,56 @@ type Item = { id: string; name: string; kind: string; status: string; lifecycle:
 type Activities = { activities: Array<{ id: string; type: string; summary?: string; occurredAt: string }> };
 
 function AppNav() {
-  return <nav className="nav"><a href="/">Flight spike</a><a href="/items">Items</a><a href="/items/new">New brief</a></nav>;
+  return <nav className="nav"><a href="/">Flight spike</a><a href="/items">Items</a><a href="/items/new">New brief</a><a href="/api/flight/auth/logout">Log out</a></nav>;
+}
+
+function AuthPage() {
+  const [email, setEmail] = useState("");
+  const [otp, setOtp] = useState("");
+  const [sent, setSent] = useState(false);
+  const [error, setError] = useState("");
+  const query = window.location.search.slice(1);
+  const params = new URLSearchParams(query);
+  const isProviderLogin = params.has("client_id") && params.has("redirect_uri");
+
+  async function submitEmail(event: FormEvent) {
+    event.preventDefault();
+    setError("");
+    const response = await fetch("/api/flight/auth/send-otp", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email }) });
+    const result = await response.json() as { error?: string };
+    if (!response.ok) { setError(result.error ?? "Unable to send sign-in code"); return; }
+    setSent(true);
+  }
+
+  async function submitOtp(event: FormEvent) {
+    event.preventDefault();
+    setError("");
+    const response = await fetch("/api/flight/auth/verify-otp", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, otp, oauthQuery: isProviderLogin ? query : "" }) });
+    const result = await response.json() as { continuation?: string; error?: string };
+    if (!response.ok || !result.continuation) { setError(result.error ?? "Invalid sign-in code"); return; }
+    window.location.assign(result.continuation);
+  }
+
+  async function startOAuth() {
+    const response = await fetch("/api/flight/auth/start");
+    const result = await response.json() as { url?: string; error?: string };
+    if (!response.ok || !result.url) { setError(result.error ?? "OAuth is not configured"); return; }
+    window.location.assign(result.url);
+  }
+
+  return <Page title="Sign in" description={isProviderLogin ? "Approve your client’s request after signing in." : "Use your Briefs identity to continue."}><form className="panel form" onSubmit={sent ? submitOtp : submitEmail}><label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required disabled={sent} /></label>{sent ? <label>Verification code<input inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(event) => setOtp(event.target.value)} required /></label> : null}{error ? <p className="error">{error}</p> : null}<button>{sent ? "Verify and continue" : "Send sign-in code"}</button></form>{!isProviderLogin && !sent ? <button className="secondary-button" type="button" onClick={() => void startOAuth()}>Continue with OAuth</button> : null}</Page>;
+}
+
+function ConsentPage() {
+  const [error, setError] = useState("");
+  const query = window.location.search.slice(1);
+  async function approve() {
+    const response = await fetch("/api/flight/auth/consent", { method: "POST", credentials: "include", headers: { "content-type": "application/json" }, body: JSON.stringify({ oauthQuery: query }) });
+    const result = await response.json() as { continuation?: string; error?: string };
+    if (!response.ok || !result.continuation) { setError(result.error ?? "Unable to approve access"); return; }
+    window.location.assign(result.continuation);
+  }
+  return <Page title="Allow access" description="Briefs is requesting permission to connect this client to your account."><section className="panel form"><p className="muted-text">The client will be able to act as you within the permissions it requested.</p>{error ? <p className="error">{error}</p> : null}<button onClick={() => void approve()}>Allow and continue</button><a href="/">Cancel</a></section></Page>;
 }
 
 function ItemsPage() {
@@ -87,6 +136,8 @@ export function App() {
       .catch(() => setHealth(null));
   }, []);
 
+  if (path === "/login") return <AuthPage />;
+  if (path === "/consent") return <ConsentPage />;
   if (path === "/items") return <ItemsPage />;
   if (path === "/items/new") return <NewItemPage />;
   if (path.startsWith("/items/")) return <ItemPage itemId={path.slice("/items/".length)} />;

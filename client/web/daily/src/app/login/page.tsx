@@ -12,6 +12,7 @@ import {
 } from "@/lib/auth";
 import { getInProcessOAuthFetch } from "@/lib/auth/in-process-oauth";
 import { buildPendingOtpRedirect } from "@/lib/auth/pending";
+import { OtpForm } from "./otp-form";
 
 const OAUTH_STATE_COOKIE = "briefs_oauth_state";
 const OAUTH_VERIFIER_COOKIE = "briefs_oauth_verifier";
@@ -190,70 +191,6 @@ export default async function LoginPage({
     redirect(buildPendingOtpRedirect(next));
   }
 
-  async function finishBetterAuthLogin(formData: FormData) {
-    "use server";
-
-    const authConfig = loadAuthConfig();
-    const cookieStore = await cookies();
-    const email = (cookieStore.get(BETTER_AUTH_PENDING_EMAIL_COOKIE)?.value
-      ?? String(formData.get("email") ?? "")).trim().toLowerCase();
-    const otp = String(formData.get("otp") ?? "").trim();
-    const next = safeNextPath(String(formData.get("next") ?? "/"));
-    const oauthQuery = cookieStore.get(BETTER_AUTH_PENDING_QUERY_COOKIE)?.value
-      ?? String(formData.get("oauth_query") ?? "");
-    const response = await (await getInProcessOAuthFetch())(
-      `${authConfig.issuer}/sign-in/email-otp`,
-      {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, otp, ...(oauthQuery ? { oauth_query: oauthQuery } : {}) }),
-      },
-    );
-    if (!response.ok && !response.headers.get("location")) {
-      const detail = await response.text();
-      redirect(`/login?otp=sent&error=${encodeURIComponent(detail || "Invalid sign-in code")}&next=${encodeURIComponent(next)}`);
-    }
-
-    if (!applyBetterAuthSessionCookies(response, cookieStore) && !response.headers.get("location")) {
-      redirect(`/login?error=Authentication%20session%20was%20not%20created&next=${encodeURIComponent(next)}`);
-    }
-
-    let continuation = response.headers.get("location") ?? "";
-    if (!continuation && response.ok && response.headers.get("content-type")?.includes("application/json")) {
-      const result = await response.json() as { redirect?: boolean; url?: string };
-      if (result.redirect && result.url) continuation = result.url;
-    }
-    if (continuation) {
-      cookieStore.delete(BETTER_AUTH_PENDING_EMAIL_COOKIE);
-      cookieStore.delete(BETTER_AUTH_PENDING_QUERY_COOKIE);
-      redirect(new URL(continuation, authConfig.issuer ?? "http://localhost").toString());
-    }
-
-    const state = createOAuthState();
-    const { verifier, challenge } = createPkcePair();
-    const authorizeUrl = await buildAuthorizeUrl(
-      authConfig,
-      state,
-      challenge,
-      await getInProcessOAuthFetch(),
-    );
-    cookieStore.set(OAUTH_STATE_COOKIE, `${state}:${next}`, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 600,
-    });
-    cookieStore.set(OAUTH_VERIFIER_COOKIE, verifier, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-      maxAge: 600,
-    });
-    redirect(authorizeUrl);
-  }
-
   const isBetterAuthProviderLogin = config.authProvider === "better-auth"
     && typeof params.client_id === "string"
     && typeof params.response_type === "string"
@@ -290,18 +227,7 @@ export default async function LoginPage({
         ) : null}
 
         {betterAuthOtpPending ? (
-          <form action={finishBetterAuthLogin} className="space-y-3">
-            <input type="hidden" name="email" value={pendingEmail || params.email || ""} />
-            <input type="hidden" name="next" value={nextPath} />
-            <input type="hidden" name="oauth_query" value={oauthQueryValue} />
-            <label className="block space-y-1 text-sm">
-              <span className="text-muted-foreground">Email code</span>
-              <input name="otp" inputMode="numeric" autoComplete="one-time-code" required className="w-full rounded-xl border border-border bg-background/60 px-3 py-2" />
-            </label>
-            <button type="submit" className="w-full rounded-full bg-gradient-to-r from-blue-500 to-violet-500 px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-blue-500/20">
-              Verify and continue
-            </button>
-          </form>
+          <OtpForm email={pendingEmail || String(params.email ?? "")} next={nextPath} oauthQuery={oauthQueryValue} />
         ) : isBetterAuthProviderLogin ? (
           <form action={sendBetterAuthOtp} className="space-y-3">
             <input type="hidden" name="next" value={nextPath} />

@@ -104,7 +104,10 @@ router.post("/api/flight/auth/verify-otp", async (context) => {
   const json = response.headers.get("content-type")?.includes("json") ? await response.json() as { url?: string } : {};
   if (!response.ok && !location && !json.url) { context.status = 400; context.body = { error: "Invalid sign-in code" }; return; }
   copyProviderCookies(context, response);
-  context.body = { continuation: location ?? json.url ?? `${config.appUrl}/` };
+  const continuation = location
+    ?? json.url
+    ?? (body.oauthQuery ? `${config.issuer}/oauth2/authorize?${body.oauthQuery}` : `${config.appUrl}/`);
+  context.body = { continuation };
 });
 
 router.post("/api/flight/auth/consent", async (context) => {

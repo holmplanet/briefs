@@ -11,3 +11,6 @@ h1 { max-width: 620px; margin: 18px 0; font-size: clamp(2.5rem, 7vw, 5rem); line
 .value { margin-top: 8px !important; font-weight: 600; }
 .pill { border: 1px solid #45495a; border-radius: 999px; padding: 6px 10px; color: #aeb3c0; font-size: 0.75rem; }
 .pill.online { border-color: #357a59; color: #8fe0b0; }
+.items-list { display: grid; gap: 8px; margin: 18px 0 0; padding: 0; list-style: none; }
+.item-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 14px; border: 1px solid #2b3040; border-radius: 14px; color: #e7e9ee; }
+.status { color: #91a4ff; font-size: 0.75rem; text-transform: capitalize; }

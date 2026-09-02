@@ -14,11 +14,27 @@
     reverse_proxy flight:3100
   }
 
-  handle /api/flight* {
-    reverse_proxy flight:3100
-  }
+handle /api/flight* {
+	reverse_proxy flight:3100
+}
 
-  handle {
+handle /login* {
+	reverse_proxy flight:3100
+}
+
+handle /consent* {
+	reverse_proxy flight:3100
+}
+
+handle /auth/callback* {
+	reverse_proxy flight:3100
+}
+
+handle /api/flight/auth* {
+	reverse_proxy flight:3100
+}
+
+handle {
     reverse_proxy daily:3000
   }
 }

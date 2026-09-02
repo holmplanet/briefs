@@ -24,7 +24,7 @@ function splitSetCookieHeader(setCookie: string): string[] {
 
 function secureCookie(context: FlightContext): boolean {
   return process.env.NODE_ENV === "production"
-    && (context.secure || context.get("x-forwarded-proto") === "https");
+    && context.get("x-forwarded-proto") === "https";
 }
 
 function copyProviderCookies(context: FlightContext, response: Response) {

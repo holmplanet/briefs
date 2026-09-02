@@ -3,6 +3,7 @@
 body { margin: 0; min-width: 320px; }
 .nav { display: flex; flex-wrap: wrap; gap: 18px; width: min(920px, calc(100% - 40px)); margin: 28px auto 0; font-size: 0.85rem; }
 .nav-brand { margin-right: 10px; color: #e7e9ee !important; font-weight: 700; }
+.nav-spacer { flex: 1; }.nav-user { max-width: 16rem; overflow: hidden; color: #7f8799; font-size: .75rem; text-overflow: ellipsis; white-space: nowrap; }
 .nav a { color: #aeb3c0; text-decoration: none; }
 .nav a:hover { color: #e7e9ee; }
 .shell { width: min(720px, calc(100% - 40px)); margin: 0 auto; padding: 12vh 0; }

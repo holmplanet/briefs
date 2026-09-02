@@ -10,7 +10,11 @@ function apiJson<T>(path: string, init?: RequestInit): Promise<T> { return fetch
 function formatDate(value: string) { return new Date(value).toLocaleString(); }
 function statusTone(status: string) { return status === "done" ? "done" : status === "in_progress" ? "progress" : status === "cancelled" ? "cancelled" : ""; }
 function Badge({ children, tone = "" }: { children: ReactNode; tone?: string }) { return <span className={`badge ${tone}`}>{children}</span>; }
-function AppNav() { return <nav className="nav"><a className="nav-brand" href="/">Briefs</a><a href="/">Today</a><a href="/items">Items</a><a href="/connect">Connect</a><a href="/briefs/new">Start a brief</a><a href="/api/flight/auth/logout">Sign out</a></nav>; }
+function AppNav() {
+  const [session, setSession] = useState<{ authenticated: boolean; user?: { email?: string; id: string } } | null>(null);
+  useEffect(() => { apiJson<typeof session>("/api/flight/auth/session").then(setSession).catch(() => setSession({ authenticated: false })); }, []);
+  return <nav className="nav"><a className="nav-brand" href="/">Briefs</a><a href="/">Today</a><a href="/items">Items</a><a href="/connect">Connect</a><a href="/briefs/new">Start a brief</a><span className="nav-spacer" />{session?.authenticated ? <><span className="nav-user">{session.user?.email ?? session.user?.id}</span><a href="/api/flight/auth/logout">Sign out</a></> : <a href="/login">Sign in</a>}</nav>;
+}
 
 function AuthPage() {
   const [email, setEmail] = useState(""); const [otp, setOtp] = useState(""); const [sent, setSent] = useState(false); const params = new URLSearchParams(window.location.search); const isProviderLogin = params.has("client_id") && params.has("redirect_uri"); const [error, setError] = useState(params.get("error") ?? ""); const query = window.location.search.slice(1);

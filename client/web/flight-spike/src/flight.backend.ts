@@ -151,6 +151,13 @@ router.post("/api/flight/auth/consent", async (context) => {
   context.body = { continuation: result.url ?? result.redirect_uri ?? response.headers.get("location") };
 });
 
+router.get("/api/flight/auth/session", async (context) => {
+  const session = await sessionFromRequest(context);
+  context.body = session
+    ? { authenticated: true, user: { id: session.userId, email: session.email } }
+    : { authenticated: false };
+});
+
 router.get("/api/flight/auth/logout", (context) => {
   context.cookies.set(SESSION_COOKIE, "", { expires: new Date(0), path: "/" });
   context.redirect("/login");

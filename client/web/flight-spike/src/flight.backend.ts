@@ -4,6 +4,7 @@ import { decodeBriefsSession } from "@briefs/shared/session";
 const router = new Router({ prefix: "/api/flight" });
 
 const SESSION_COOKIE = "briefs_daily_session";
+type FlightContext = Parameters<Parameters<typeof router.get>[1]>[0];
 
 function cookieValue(header: string | undefined, name: string): string | undefined {
   return header
@@ -19,29 +20,69 @@ async function sessionFromRequest(context: Parameters<Parameters<typeof router.g
   return decodeBriefsSession(cookieValue(context.request.headers.cookie, SESSION_COOKIE), secret);
 }
 
+async function apiRequest(context: FlightContext, path: string, init?: RequestInit) {
+  const session = await sessionFromRequest(context);
+  if (!session?.accessToken) return null;
+
+  const apiUrl = (process.env.API_URL ?? "http://localhost:8001").replace(/\/$/, "");
+  return fetch(`${apiUrl}${path}`, {
+    ...init,
+    headers: {
+      ...(init?.headers ?? {}),
+      Authorization: `Bearer ${session.accessToken}`,
+      ...(init?.body ? { "Content-Type": "application/json" } : {}),
+    },
+  });
+}
+
 router.get("/health", (context) => {
   context.body = { status: "ok", service: "briefs-flight-spike" };
 });
 
 router.get("/items", async (context) => {
-  const session = await sessionFromRequest(context);
-  if (!session) {
+  const response = await apiRequest(context, `/api/v1/items${typeof context.query.status === "string" ? `?status=${encodeURIComponent(context.query.status)}` : ""}`);
+  if (!response) {
     context.status = 401;
     context.body = { error: "unauthorized", error_description: "Valid Briefs session required" };
     return;
   }
+  context.status = response.status;
+  context.body = await response.json();
+});
 
-  if (!session.accessToken) {
+router.get("/items/:itemId", async (context) => {
+  const response = await apiRequest(context, `/api/v1/items/${encodeURIComponent(context.params.itemId)}`);
+  if (!response) {
     context.status = 401;
-    context.body = { error: "unauthorized", error_description: "Briefs access token required" };
+    context.body = { error: "unauthorized", error_description: "Valid Briefs session required" };
     return;
   }
+  context.status = response.status;
+  context.body = await response.json();
+});
 
-  const apiUrl = (process.env.API_URL ?? "http://localhost:8001").replace(/\/$/, "");
-  const status = typeof context.query.status === "string" ? `?status=${encodeURIComponent(context.query.status)}` : "";
-  const response = await fetch(`${apiUrl}/api/v1/items${status}`, {
-    headers: { Authorization: `Bearer ${session.accessToken}` },
+router.get("/items/:itemId/activities", async (context) => {
+  const response = await apiRequest(context, `/api/v1/items/${encodeURIComponent(context.params.itemId)}/activities`);
+  if (!response) {
+    context.status = 401;
+    context.body = { error: "unauthorized", error_description: "Valid Briefs session required" };
+    return;
+  }
+  context.status = response.status;
+  context.body = await response.json();
+});
+
+router.post("/items", async (context) => {
+  const body = (context.request as typeof context.request & { body?: unknown }).body;
+  const response = await apiRequest(context, "/api/v1/items", {
+    method: "POST",
+    body: JSON.stringify(body),
   });
+  if (!response) {
+    context.status = 401;
+    context.body = { error: "unauthorized", error_description: "Valid Briefs session required" };
+    return;
+  }
   context.status = response.status;
   context.body = await response.json();
 });

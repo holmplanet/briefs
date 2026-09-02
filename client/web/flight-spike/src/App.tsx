@@ -36,14 +36,7 @@ function AuthPage() {
     window.location.assign(result.continuation);
   }
 
-  async function startOAuth() {
-    const response = await fetch("/api/flight/auth/start");
-    const result = await response.json() as { url?: string; error?: string };
-    if (!response.ok || !result.url) { setError(result.error ?? "OAuth is not configured"); return; }
-    window.location.assign(result.url);
-  }
-
-  return <Page title="Sign in" description={isProviderLogin ? "Approve your client’s request after signing in." : "Use your Briefs identity to continue."}><form className="panel form" onSubmit={sent ? submitOtp : submitEmail}><label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required disabled={sent} /></label>{sent ? <label>Verification code<input inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(event) => setOtp(event.target.value)} required /></label> : null}{error ? <p className="error">{error}</p> : null}<button>{sent ? "Verify and continue" : "Send sign-in code"}</button></form>{!isProviderLogin && !sent ? <button className="secondary-button" type="button" onClick={() => void startOAuth()}>Continue with OAuth</button> : null}</Page>;
+  return <Page title="Sign in" description={isProviderLogin ? "Approve your client’s request after signing in." : "Use your Briefs identity to continue."}><form className="panel form" onSubmit={sent ? submitOtp : submitEmail}><label>Email<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required disabled={sent} /></label>{sent ? <label>Verification code<input inputMode="numeric" autoComplete="one-time-code" value={otp} onChange={(event) => setOtp(event.target.value)} required /></label> : null}{error ? <p className="error">{error}</p> : null}<button>{sent ? "Verify and continue" : "Send sign-in code"}</button></form></Page>;
 }
 
 function ConsentPage() {

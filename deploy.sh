@@ -147,7 +147,7 @@ for secret in postgres_password auth_secret session_secret resend_api_key databa
   "${SSH[@]}" "umask 077; tmp=\$(mktemp '$APP_DIR/secrets/.$secret.tmp.XXXXXX'); trap 'rm -f \"\$tmp\"' EXIT; cat > \"\$tmp\"; install -m 600 \"\$tmp\" '$APP_DIR/secrets/$secret'" < "$SECRET_DIR/$secret"
 done
 
-"${SSH[@]}" "cd '$APP_DIR' && docker compose --env-file .env -f docker-compose.prod.yml config --quiet && docker compose --env-file .env -f docker-compose.prod.yml up -d"
+"${SSH[@]}" "cd '$APP_DIR' && docker compose --env-file .env -f docker-compose.prod.yml config --quiet && docker compose --env-file .env -f docker-compose.prod.yml up -d --remove-orphans"
 # Caddy reads its bind-mounted configuration at process start. Explicitly
 # restart it after every bundle update so routing changes take effect.
 "${SSH[@]}" "cd '$APP_DIR' && docker compose --env-file .env -f docker-compose.prod.yml restart caddy"

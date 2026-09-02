@@ -15,6 +15,14 @@ function providerOrigin(config: ReturnType<typeof loadFlightAuthConfig>): string
   return config.issuer ? new URL(config.issuer).origin : "";
 }
 
+function isAllowedEmail(email: string): boolean {
+  const configured = (process.env.AUTH_ALLOWED_EMAILS ?? "")
+    .split(",")
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+  return configured.length === 0 || configured.includes(email);
+}
+
 function cookieValue(header: string | undefined, name: string): string | undefined {
   return header
     ?.split(";")
@@ -97,6 +105,7 @@ router.post("/api/flight/auth/send-otp", async (context) => {
   const email = body.email?.trim().toLowerCase() ?? "";
   if (!config.issuer) { context.status = 503; context.body = { error: "OAuth is not configured" }; return; }
   if (!email || !email.includes("@")) { context.status = 400; context.body = { error: "Enter a valid email" }; return; }
+  if (!isAllowedEmail(email)) { context.status = 403; context.body = { error: "That email is not authorized for this Briefs account." }; return; }
   const response = await fetch(`${config.issuer}/email-otp/send-verification-otp`, { method: "POST", headers: { "content-type": "application/json", origin: providerOrigin(config) }, body: JSON.stringify({ email, type: "sign-in" }) });
   if (!response.ok) { context.status = 400; context.body = { error: (await response.text()) || "Unable to send sign-in code" }; return; }
   context.body = { sent: true };

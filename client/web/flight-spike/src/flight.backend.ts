@@ -10,6 +10,10 @@ const OAUTH_STATE_COOKIE = "briefs_flight_oauth_state";
 const OAUTH_VERIFIER_COOKIE = "briefs_flight_oauth_verifier";
 type FlightContext = Parameters<Parameters<typeof router.get>[1]>[0];
 
+function providerOrigin(config: ReturnType<typeof loadFlightAuthConfig>): string {
+  return config.issuer ? new URL(config.issuer).origin : "";
+}
+
 function cookieValue(header: string | undefined, name: string): string | undefined {
   return header
     ?.split(";")
@@ -84,7 +88,7 @@ router.post("/api/flight/auth/send-otp", async (context) => {
   const email = body.email?.trim().toLowerCase() ?? "";
   if (!config.issuer) { context.status = 503; context.body = { error: "OAuth is not configured" }; return; }
   if (!email || !email.includes("@")) { context.status = 400; context.body = { error: "Enter a valid email" }; return; }
-  const response = await fetch(`${config.issuer}/email-otp/send-verification-otp`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, type: "sign-in" }) });
+  const response = await fetch(`${config.issuer}/email-otp/send-verification-otp`, { method: "POST", headers: { "content-type": "application/json", origin: providerOrigin(config) }, body: JSON.stringify({ email, type: "sign-in" }) });
   if (!response.ok) { context.status = 400; context.body = { error: (await response.text()) || "Unable to send sign-in code" }; return; }
   context.body = { sent: true };
 });
@@ -95,7 +99,7 @@ router.post("/api/flight/auth/verify-otp", async (context) => {
   const email = body.email?.trim().toLowerCase() ?? "";
   const otp = body.otp?.trim() ?? "";
   if (!config.issuer) { context.status = 503; context.body = { error: "OAuth is not configured" }; return; }
-  const response = await fetch(`${config.issuer}/sign-in/email-otp`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ email, otp, ...(body.oauthQuery ? { oauth_query: body.oauthQuery } : {}) }) });
+  const response = await fetch(`${config.issuer}/sign-in/email-otp`, { method: "POST", headers: { "content-type": "application/json", origin: providerOrigin(config) }, body: JSON.stringify({ email, otp, ...(body.oauthQuery ? { oauth_query: body.oauthQuery } : {}) }) });
   const location = response.headers.get("location");
   const json = response.headers.get("content-type")?.includes("json") ? await response.json() as { url?: string } : {};
   if (!response.ok && !location && !json.url) { context.status = 400; context.body = { error: "Invalid sign-in code" }; return; }
@@ -109,7 +113,7 @@ router.post("/api/flight/auth/consent", async (context) => {
   if (!config.issuer) { context.status = 503; context.body = { error: "OAuth is not configured" }; return; }
   const response = await fetch(`${config.issuer}/oauth2/consent`, {
     method: "POST",
-    headers: { "content-type": "application/json", ...(context.request.headers.cookie ? { cookie: context.request.headers.cookie } : {}) },
+    headers: { "content-type": "application/json", origin: providerOrigin(config), ...(context.request.headers.cookie ? { cookie: context.request.headers.cookie } : {}) },
     body: JSON.stringify({ accept: true, ...(body.oauthQuery ? { oauth_query: body.oauthQuery } : {}) }),
   });
   const result = response.headers.get("content-type")?.includes("json") ? await response.json() as { url?: string; redirect_uri?: string; error?: string } : {};

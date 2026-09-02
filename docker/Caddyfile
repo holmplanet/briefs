@@ -46,12 +46,6 @@ handle /auth/callback* {
 	}
 }
 
-handle /api/flight/auth* {
-	reverse_proxy flight:3100 {
-	  header_up X-Forwarded-Proto https
-	}
-}
-
 handle {
     reverse_proxy daily:3000
   }

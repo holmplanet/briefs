@@ -26,6 +26,12 @@ function splitSetCookieHeader(setCookie: string): string[] {
   return setCookie.split(/,(?=\s*[^;,=]+=[^;,]*)/).map((value) => value.trim()).filter(Boolean);
 }
 
+function cookieHeader(response: Response): string {
+  const headers = response.headers as Headers & { getSetCookie?: () => string[] };
+  const values = headers.getSetCookie?.() ?? splitSetCookieHeader(headers.get("set-cookie") ?? "");
+  return values.map((value) => value.split(";", 1)[0]).join("; ");
+}
+
 function secureCookie(context: FlightContext): boolean {
   return process.env.NODE_ENV === "production" && context.secure;
 }
@@ -101,9 +107,26 @@ router.post("/api/flight/auth/verify-otp", async (context) => {
   if (!config.issuer) { context.status = 503; context.body = { error: "OAuth is not configured" }; return; }
   const response = await fetch(`${config.issuer}/sign-in/email-otp`, { method: "POST", headers: { "content-type": "application/json", origin: providerOrigin(config) }, body: JSON.stringify({ email, otp, ...(body.oauthQuery ? { oauth_query: body.oauthQuery } : {}) }) });
   const location = response.headers.get("location");
-  const json = response.headers.get("content-type")?.includes("json") ? await response.json() as { url?: string } : {};
+  const json = response.headers.get("content-type")?.includes("json") ? await response.json() as { url?: string; token?: string; user?: { id?: string; email?: string } } : {};
   if (!response.ok && !location && !json.url) { context.status = 400; context.body = { error: "Invalid sign-in code" }; return; }
+  const providerCookies = cookieHeader(response);
   copyProviderCookies(context, response);
+  if (!body.oauthQuery && json.user?.id && providerCookies) {
+    const tokenResponse = await fetch(`${config.issuer}/token`, {
+      headers: { cookie: providerCookies, origin: providerOrigin(config) },
+    });
+    if (!tokenResponse.ok) { context.status = 502; context.body = { error: "Unable to establish Briefs session" }; return; }
+    const token = (await tokenResponse.json() as { token?: string }).token;
+    if (!token) { context.status = 502; context.body = { error: "Better Auth did not return an API token" }; return; }
+    const session = await encodeBriefsSession({
+      userId: json.user.id,
+      email: json.user.email,
+      accessToken: token,
+      accessTokenExpiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+      expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000,
+    }, config.sessionSecret);
+    context.cookies.set(SESSION_COOKIE, session, { httpOnly: true, secure: secureCookie(context), sameSite: "lax", path: "/", maxAge: 30 * 24 * 60 * 60 * 1000 });
+  }
   const continuation = location
     ?? json.url
     ?? (body.oauthQuery ? `${config.issuer}/oauth2/authorize?${body.oauthQuery}` : `${config.appUrl}/`);

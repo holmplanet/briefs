@@ -31,7 +31,13 @@ export function createBetterAuthSpike(pool: Pool, config: BetterAuthSpikeConfig)
     secret: config.secret,
     trustedOrigins: [trustedOrigin],
     plugins: [
-      jwt(),
+      jwt({
+        jwt: {
+          issuer: config.issuer,
+          audience: config.apiResource,
+          expirationTime: "30d",
+        },
+      }),
       emailOTP({
         disableSignUp: false,
         expiresIn: 600,

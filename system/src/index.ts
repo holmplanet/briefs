@@ -16,8 +16,6 @@ export { bootstrap };
 
 export function createApp(context: AppContext): Express {
   const app = express();
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
 
   app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json({
@@ -33,6 +31,20 @@ export function createApp(context: AppContext): Express {
     });
     app.use((request, response, next) => {
       if (request.path.startsWith("/oauth")) {
+        // Better Auth must receive the raw request stream. The one exception is
+        // dynamic client registration, where the compatibility handler needs the
+        // parsed JSON to enforce Briefs' exact redirect URI allowlist.
+        const isRegistration = request.path === "/oauth/register" || request.path === "/oauth/oauth2/register";
+        if (isRegistration && request.is("application/json")) {
+          express.json()(request, response, (error) => {
+            if (error) {
+              next(error);
+              return;
+            }
+            void betterAuthHandler(request, response, next);
+          });
+          return;
+        }
         void betterAuthHandler(request, response, next);
         return;
       }
@@ -41,6 +53,11 @@ export function createApp(context: AppContext): Express {
   } else {
     app.use("/oauth", createOAuthRouter(context.config, context.auth, context.mailer));
   }
+
+  // Keep these parsers after the Better Auth handler. Parsing first consumes the
+  // IncomingMessage stream and prevents Better Auth from reading request bodies.
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
 
   mountApiRoutes(app, {
     items: context.items,

@@ -48,6 +48,7 @@ async function resolveAuth(req: express.Request): Promise<BriefsMcpAuth | null> 
     ? await verifyBetterAuthAccessToken(token, {
       issuer,
       audience: mcpResource,
+      jwksUrl: process.env.AUTH_JWKS_URL,
     })
     : await verifyAccessToken(token, process.env.AUTH_SECRET ?? "dev-briefs-auth-secret", issuer);
   if (!claims) return null;

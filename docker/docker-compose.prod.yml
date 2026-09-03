@@ -29,6 +29,7 @@ services:
       DATABASE_URL_FILE: /run/secrets/database_url
       AUTH_SECRET_FILE: /run/secrets/auth_secret
       RESEND_API_KEY_FILE: /run/secrets/resend_api_key
+      AUTH_JWKS_URL: http://127.0.0.1:8000/oauth/jwks
     ports:
       - "127.0.0.1:${APP_PORT:-8001}:8000"
     secrets:
@@ -54,6 +55,7 @@ services:
     environment:
       API_URL: http://system:8000
       AUTH_SECRET_FILE: /run/secrets/auth_secret
+      AUTH_JWKS_URL: http://system:8000/oauth/jwks
     ports:
       - "127.0.0.1:${MCP_PORT:-3334}:3334"
     secrets:

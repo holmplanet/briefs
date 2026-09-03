@@ -69,6 +69,7 @@ export function createApp(context: AppContext): Express {
       ? createBetterAuthResourceMiddleware({
         issuer: context.config.oauthIssuer,
         audience: context.config.apiResource,
+        jwksUrl: process.env.AUTH_JWKS_URL,
       })
       : undefined,
   });

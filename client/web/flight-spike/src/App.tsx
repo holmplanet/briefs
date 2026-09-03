@@ -38,4 +38,27 @@ function ItemPage({ itemId }: { itemId: string }) { const [item, setItem] = useS
 function NewBriefPage() { const [step, setStep] = useState(0); const [answers, setAnswers] = useState<QuestionAnswers>({}); const [error, setError] = useState(""); const [saving, setSaving] = useState(false); const question = createBriefFlow.questions[step]; const value = answers[question.id] ?? ""; const last = step === createBriefFlow.questions.length - 1; function update(value: string) { setAnswers((current) => ({ ...current, [question.id]: value })); setError(""); } async function next() { if (question.required && (!value || (typeof value === "string" && !value.trim()))) { setError("Answer this question to continue."); return; } if (!last) { setStep((current) => current + 1); return; } setSaving(true); try { const name = String(answers.name ?? "").trim(); const outcome = String(answers.outcome ?? "").trim(); const context = String(answers.context ?? "").trim(); const result = await apiJson<{ item: Item }>("/api/flight/items", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ name, kind: String(answers.kind ?? "task"), description: [`Outcome\n${outcome}`, context ? `Context\n${context}` : ""].filter(Boolean).join("\n\n") }) }); window.location.assign(`/items/${result.item.id}`); } catch (e) { setError(e instanceof Error ? e.message : "Could not save this brief."); setSaving(false); } } return <Page title="Start with intent" description={createBriefFlow.description}><section className="questionnaire"><div className="progress"><span style={{ width: `${((step + 1) / createBriefFlow.questions.length) * 100}%` }} /></div><small>{createBriefFlow.title} · {step + 1} of {createBriefFlow.questions.length}</small><h2>{question.label}</h2>{question.description ? <p className="muted-text">{question.description}</p> : null}{question.type === "single" ? <div className="options">{question.options.map((option) => <button className={value === option.value ? "option selected" : "option"} key={option.value} onClick={() => update(option.value)}><strong>{option.label}</strong>{option.description ? <small>{option.description}</small> : null}</button>)}</div> : question.multiline ? <textarea value={typeof value === "string" ? value : ""} onChange={(e) => update(e.target.value)} placeholder={question.placeholder} rows={6} autoFocus /> : <input value={typeof value === "string" ? value : ""} onChange={(e) => update(e.target.value)} placeholder={question.placeholder} autoFocus />}{error ? <p className="error">{error}</p> : null}<div className="question-actions"><button className="button" onClick={() => setStep((current) => Math.max(0, current - 1))} disabled={step === 0 || saving}>Back</button><button className="button primary" onClick={() => void next()} disabled={saving}>{saving ? "Saving…" : last ? "Create brief" : "Continue"}</button></div></section></Page>; }
 function McpConnect() { const config = JSON.stringify({ mcpServers: { briefs: { url: "/mcp" } } }, null, 2); return <section className="panel mcp-panel"><h2>Work through MCP</h2><p>Briefs is read-focused. Create tasks, update status, and capture work from your assistant via MCP — then view changes here.</p><p><strong>MCP server:</strong> Ready for assistant connections</p><pre>{config}</pre><small>MCP URL: <code>/mcp</code></small></section>; }
 function Page({ title, description, children }: { title: string; description: string; children: ReactNode }) { return <><AppNav /><main className="shell"><p className="eyebrow">Briefs</p><h1>{title}</h1><p className="lede">{description}</p>{children}</main></>; }
-export function App() { const path = window.location.pathname; if (path === "/login") return <AuthPage />; if (path === "/consent") return <ConsentPage />; if (path === "/items") return <ItemsPage />; if (path === "/briefs/new") return <NewBriefPage />; if (path === "/connect") return <Page title="Connect MCP" description="Your assistant is your inbox — connect once, then create and update items through MCP tools."><McpConnect /></Page>; if (path.startsWith("/items/")) return <ItemPage itemId={path.slice("/items/".length)} />; return <HomePage />; }
+function ProtectedApp({ path }: { path: string }) {
+  const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  useEffect(() => {
+    apiJson<{ authenticated: boolean }>("/api/flight/auth/session")
+      .then((session) => {
+        if (!session.authenticated) {
+          const next = `${window.location.pathname}${window.location.search}`;
+          window.location.assign(`/login?next=${encodeURIComponent(next)}`);
+          return;
+        }
+        setAuthenticated(true);
+      })
+      .catch(() => {
+        window.location.assign(`/login?next=${encodeURIComponent(window.location.pathname)}`);
+      });
+  }, []);
+  if (!authenticated) return <main className="auth-loading">Checking your Briefs session…</main>;
+  if (path === "/items") return <ItemsPage />;
+  if (path === "/briefs/new") return <NewBriefPage />;
+  if (path === "/connect") return <Page title="Connect MCP" description="Your assistant is your inbox — connect once, then create and update items through MCP tools."><McpConnect /></Page>;
+  if (path.startsWith("/items/")) return <ItemPage itemId={path.slice("/items/".length)} />;
+  return <HomePage />;
+}
+export function App() { const path = window.location.pathname; if (path === "/login") return <AuthPage />; if (path === "/consent") return <ConsentPage />; return <ProtectedApp path={path} />; }

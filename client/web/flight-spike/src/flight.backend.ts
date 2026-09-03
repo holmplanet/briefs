@@ -83,6 +83,19 @@ async function apiRequest(context: FlightContext, path: string, init?: RequestIn
   });
 }
 
+async function hasValidApiSession(session: Awaited<ReturnType<typeof sessionFromRequest>>): Promise<boolean> {
+  if (!session?.accessToken) return false;
+  const apiUrl = (process.env.API_URL ?? "http://localhost:8001").replace(/\/$/, "");
+  try {
+    const response = await fetch(`${apiUrl}/api/v1/actors/me`, {
+      headers: { Authorization: `Bearer ${session.accessToken}` },
+    });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 router.get("/api/flight/health", (context) => {
   context.body = { status: "ok", service: "briefs-flight-spike" };
 });
@@ -162,7 +175,8 @@ router.post("/api/flight/auth/consent", async (context) => {
 
 router.get("/api/flight/auth/session", async (context) => {
   const session = await sessionFromRequest(context);
-  context.body = session?.accessToken
+  const authenticated = session ? await hasValidApiSession(session) : false;
+  context.body = session && authenticated
     ? { authenticated: true, user: { id: session.userId, email: session.email } }
     : { authenticated: false };
 });

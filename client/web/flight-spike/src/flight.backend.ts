@@ -162,7 +162,7 @@ router.post("/api/flight/auth/consent", async (context) => {
 
 router.get("/api/flight/auth/session", async (context) => {
   const session = await sessionFromRequest(context);
-  context.body = session
+  context.body = session?.accessToken
     ? { authenticated: true, user: { id: session.userId, email: session.email } }
     : { authenticated: false };
 });

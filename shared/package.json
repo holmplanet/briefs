@@ -33,6 +33,10 @@
     "./auth": {
       "types": "./src/auth.ts",
       "default": "./dist/auth.js"
+    },
+    "./session": {
+      "types": "./src/session.ts",
+      "default": "./dist/session.js"
     }
   },
   "scripts": {

@@ -9,7 +9,7 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for the contribution workflow and
 npm ci
 npm run typecheck
 npm test
-npm run test -w @briefs/daily
+npm run test -w @briefs/flight-spike
 npm run build
 ```
 

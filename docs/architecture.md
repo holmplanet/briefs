@@ -17,12 +17,12 @@ Daily web app ──OAuth session─────────┘               �
 - `shared/` contains the schemas and domain types shared by every client.
 - `system/` owns the REST API, authentication issuer, services, and Postgres stores.
 - `client/mcp/` exposes assistant tools for reading and writing Briefs data.
-- `client/web/daily/` is the reference web interface and human brief-intake flow.
+- `client/web/flight-spike/` is the reference web interface and human brief-intake flow.
 - `client/web/docs/` contains the SDK and API documentation site.
 - `client/cli/` provides a terminal client and smoke-test commands.
 - `client/plugin/` contains assistant manifests and the Brief workflow skill.
 
-The repository intentionally ships one reference web client (`@briefs/daily`) and one
+The repository intentionally ships one reference web client (`@briefs/flight-spike`) and one
 documentation site (`@briefs/docs`). New domain-specific clients can be added as separate
 workspaces when a concrete product need exists; they are not bundled as placeholder apps.
 

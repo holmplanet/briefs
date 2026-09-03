@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type RequestHandler } from "express";
 
 import type { ActorService } from "../actor/service.js";
 import type { ItemService } from "../item/service.js";
@@ -11,11 +11,12 @@ export type ApiServices = {
   items: ItemService;
   actors: ActorService;
   briefs: import("../brief/service.js").BriefService;
+  authMiddleware?: RequestHandler;
 };
 
 export function mountApiRoutes(app: Router, services: ApiServices): void {
   const api = Router();
-  api.use(userMiddleware);
+  api.use(services.authMiddleware ?? userMiddleware);
   api.use("/actors", createActorRouter(services.actors));
   api.use("/items", createItemRouter(services.items));
   api.use("/briefs", createBriefRouter(services.briefs));

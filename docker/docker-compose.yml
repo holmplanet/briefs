@@ -17,6 +17,16 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   system:
     build:
       context: ..
@@ -31,8 +41,8 @@ services:
       API_DEV_BYPASS: ${API_DEV_BYPASS:-true}
       AUTH_SECRET: ${AUTH_SECRET:-dev-briefs-auth-secret}
       OAUTH_ISSUER: ${OAUTH_ISSUER-http://localhost:8001/oauth}
-      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID:-briefs-daily}
-      OAUTH_REDIRECT_URIS: ${OAUTH_REDIRECT_URIS-http://localhost:3000/auth/callback}
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID:-briefs-flight}
+      OAUTH_REDIRECT_URIS: ${OAUTH_REDIRECT_URIS-http://localhost:3100/auth/callback}
       OTP_MAILER: ${OTP_MAILER:-console}
       RESEND_API_KEY: ${RESEND_API_KEY-}
       EMAIL_FROM: ${EMAIL_FROM-}
@@ -68,29 +78,23 @@ services:
       system:
         condition: service_healthy
 
-  daily:
+  flight:
     build:
       context: ..
-      dockerfile: docker/Dockerfile.daily
-      args:
-        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8001}
-        NEXT_PUBLIC_MCP_URL: ${NEXT_PUBLIC_MCP_URL:-http://localhost:3334/mcp}
-        NEXT_PUBLIC_DOCS_URL: ${NEXT_PUBLIC_DOCS_URL:-http://localhost:3001}
+      dockerfile: docker/Dockerfile.flight
     ports:
-      - "${DAILY_PORT:-3000}:3000"
+      - "${FLIGHT_PORT:-3100}:3100"
     environment:
       API_URL: http://system:8000
-      MCP_HEALTH_URL: http://mcp:3334/mcp
-      NEXT_PUBLIC_DOCS_URL: ${NEXT_PUBLIC_DOCS_URL:-http://localhost:3001}
       APP_ENV: ${APP_ENV:-development}
       NODE_ENV: ${NODE_ENV:-development}
-      OAUTH_ISSUER: ${OAUTH_ISSUER-}
-      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID:-briefs-daily}
+      OAUTH_ISSUER: ${OAUTH_ISSUER-http://system:8000/oauth}
+      OAUTH_CLIENT_ID: ${OAUTH_CLIENT_ID:-briefs-flight}
       OAUTH_CLIENT_SECRET: ${OAUTH_CLIENT_SECRET-}
-      AUTH_DEV_BYPASS: ${AUTH_DEV_BYPASS:-true}
-      SESSION_SECRET: ${SESSION_SECRET:-dev-briefs-daily-session-secret}
-      DEV_USER_ID: ${DEV_USER_ID:-demo}
-      APP_URL: ${APP_URL:-http://localhost:3000}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-briefs-flight-session-secret}
+      APP_URL: ${APP_URL:-http://localhost:3100}
+      FLIGHT_PORT: 3100
+      FLIGHT_TRUST_PROXY: "false"
     depends_on:
       system:
         condition: service_healthy

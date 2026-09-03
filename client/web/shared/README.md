@@ -1,6 +1,6 @@
 # @briefs/web-shared
 
-Shared UI primitives and layout for Briefs web apps (`@briefs/docs`, `@briefs/daily`, and future clients).
+Shared UI primitives and layout for Briefs web apps (`@briefs/docs`, `@briefs/flight-spike`, and future clients).
 
 ## Contents
 

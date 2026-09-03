@@ -1,0 +1,45 @@
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS deps
+
+WORKDIR /repo
+
+COPY package.json package-lock.json tsconfig.base.json ./
+COPY shared/package.json shared/tsconfig.json shared/
+COPY client/web/flight-spike/package.json client/web/flight-spike/tsconfig.json client/web/flight-spike/vite.config.ts client/web/flight-spike/
+
+RUN npm ci -w @briefs/flight-spike -w @briefs/shared --include-workspace-root
+
+FROM deps AS build
+
+COPY shared/src shared/src
+COPY client/web/flight-spike/index.html client/web/flight-spike/
+COPY client/web/flight-spike/src client/web/flight-spike/src
+
+RUN npm run build -w @briefs/shared \
+  && npm run build -w @briefs/flight-spike
+
+FROM node:22-alpine@sha256:c610fcdfb1d5b4740dd70c284ed3cb16bb857e0f7166196e36a5501df7a3aa32 AS runtime
+
+WORKDIR /repo/client/web/flight-spike
+
+COPY --from=deps /repo/node_modules /repo/node_modules
+COPY package.json /repo/package.json
+COPY package-lock.json /repo/package-lock.json
+COPY shared/package.json /repo/shared/package.json
+COPY --from=build /repo/shared/dist /repo/shared/dist
+COPY client/web/flight-spike/package.json ./package.json
+COPY --from=build /repo/client/web/flight-spike/dist ./dist
+COPY --from=build /repo/client/web/flight-spike/src/flight.backend.ts ./src/flight.backend.ts
+COPY --from=build /repo/client/web/flight-spike/src/auth.ts ./src/auth.ts
+COPY docker/entrypoint-secrets.sh /usr/local/bin/briefs-entrypoint
+
+RUN chmod 755 /usr/local/bin/briefs-entrypoint
+
+USER node
+ENV NODE_ENV=production
+EXPOSE 3100
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:3100/api/flight/health >/dev/null || exit 1
+
+ENTRYPOINT ["/usr/local/bin/briefs-entrypoint"]
+CMD ["npm", "run", "start"]

@@ -29,6 +29,7 @@ services:
       DATABASE_URL_FILE: /run/secrets/database_url
       AUTH_SECRET_FILE: /run/secrets/auth_secret
       RESEND_API_KEY_FILE: /run/secrets/resend_api_key
+      AUTH_JWKS_URL: http://127.0.0.1:8000/oauth/jwks
     ports:
       - "127.0.0.1:${APP_PORT:-8001}:8000"
     secrets:
@@ -54,6 +55,7 @@ services:
     environment:
       API_URL: http://system:8000
       AUTH_SECRET_FILE: /run/secrets/auth_secret
+      AUTH_JWKS_URL: http://system:8000/oauth/jwks
     ports:
       - "127.0.0.1:${MCP_PORT:-3334}:3334"
     secrets:
@@ -69,32 +71,49 @@ services:
       timeout: 5s
       retries: 3
 
-  daily:
-    image: ${DAILY_IMAGE:?DAILY_IMAGE is required}
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    networks:
+      - private
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  flight:
+    image: ${FLIGHT_IMAGE:?FLIGHT_IMAGE is required}
     restart: unless-stopped
     env_file:
       - ${RUNTIME_ENV_FILE:-.env}
     environment:
       API_URL: http://system:8000
-      MCP_HEALTH_URL: http://mcp:3334/mcp
-      DATABASE_URL_FILE: /run/secrets/database_url
-      AUTH_SECRET_FILE: /run/secrets/auth_secret
       SESSION_SECRET_FILE: /run/secrets/session_secret
-      RESEND_API_KEY_FILE: /run/secrets/resend_api_key
+      FLIGHT_REDIS_HOST: redis
+      FLIGHT_REDIS_PORT: 6379
+      FLIGHT_MODE: production
+      FLIGHT_TRUST_PROXY: "true"
+      FLIGHT_DISABLE_VITE: "true"
+      FLIGHT_DIST_PATH: dist
+      FLIGHT_PORT: 3100
+      FLIGHT_MAX_WORKERS: ${FLIGHT_MAX_WORKERS:-2}
     ports:
-      - "127.0.0.1:${DAILY_PORT:-3000}:3000"
+      - "127.0.0.1:${FLIGHT_PORT:-3100}:3100"
     secrets:
-      - database_url
-      - auth_secret
       - session_secret
-      - resend_api_key
     networks:
       - private
     depends_on:
       system:
         condition: service_healthy
-      mcp:
+      redis:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3100/api/flight/health >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
 
   caddy:
     image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
@@ -111,7 +130,7 @@ services:
     networks:
       - private
     depends_on:
-      daily:
+      flight:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:2019/config/ >/dev/null || exit 1"]

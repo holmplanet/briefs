@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 
+import { verifyBetterAuthAccessToken } from "@briefs/system/auth/resource";
 import { verifyAccessToken } from "@briefs/shared/auth";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { isInitializeRequest } from "@modelcontextprotocol/sdk/types.js";
@@ -12,6 +13,13 @@ const port = Number(process.env.MCP_PORT ?? 3334);
 const devUserId = process.env.DEV_USER_ID ?? "demo";
 const production = process.env.APP_ENV === "production" || process.env.NODE_ENV === "production";
 const devSkipAuth = process.env.MCP_DEV_SKIP_AUTH === "true" && !production;
+const betterAuthEnabled = process.env.AUTH_PROVIDER === "better-auth";
+const mcpResource = process.env.MCP_RESOURCE ?? `http://localhost:${port}/mcp`;
+
+if (betterAuthEnabled && production) {
+  if (!process.env.MCP_RESOURCE) throw new Error("Production Better Auth requires MCP_RESOURCE");
+  if (new URL(mcpResource).protocol !== "https:") throw new Error("Production Better Auth requires MCP_RESOURCE to use HTTPS");
+}
 
 type Session = {
   transport: StreamableHTTPServerTransport;
@@ -35,11 +43,14 @@ async function resolveAuth(req: express.Request): Promise<BriefsMcpAuth | null> 
   }
 
   const issuer = (process.env.OAUTH_ISSUER ?? "http://localhost:8001/oauth").replace(/\/$/, "");
-  const claims = await verifyAccessToken(
-    authHeader.slice(7).trim(),
-    process.env.AUTH_SECRET ?? "dev-briefs-auth-secret",
-    issuer,
-  );
+  const token = authHeader.slice(7).trim();
+  const claims = betterAuthEnabled
+    ? await verifyBetterAuthAccessToken(token, {
+      issuer,
+      audience: mcpResource,
+      jwksUrl: process.env.AUTH_JWKS_URL,
+    })
+    : await verifyAccessToken(token, process.env.AUTH_SECRET ?? "dev-briefs-auth-secret", issuer);
   if (!claims) return null;
 
   return {

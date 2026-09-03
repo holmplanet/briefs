@@ -6,6 +6,8 @@ import express, { type Express, type Request, type Response } from "express";
 
 import { mountApiRoutes } from "./api/router.js";
 import { createOAuthRouter } from "./auth/oauth.js";
+import { createBetterAuthCompatibilityHandler } from "./auth/better-auth-express.js";
+import { createBetterAuthResourceMiddleware } from "./auth/better-auth-middleware.js";
 import { bootstrap, type AppContext } from "./bootstrap.js";
 import { closePool, createPool } from "./db.js";
 
@@ -14,8 +16,6 @@ export { bootstrap };
 
 export function createApp(context: AppContext): Express {
   const app = express();
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: false }));
 
   app.get("/health", (_req: Request, res: Response) => {
     res.status(200).json({
@@ -25,12 +25,53 @@ export function createApp(context: AppContext): Express {
     });
   });
 
-  app.use("/oauth", createOAuthRouter(context.config, context.auth, context.mailer));
+  if (context.betterAuth) {
+    const betterAuthHandler = createBetterAuthCompatibilityHandler(context.betterAuth, {
+      allowedRedirectUris: [...context.config.oauthRedirectUris, ...context.config.oauthAllowedRedirectUris],
+    });
+    app.use((request, response, next) => {
+      if (request.path.startsWith("/oauth")) {
+        // Better Auth must receive the raw request stream. The one exception is
+        // dynamic client registration, where the compatibility handler needs the
+        // parsed JSON to enforce Briefs' exact redirect URI allowlist.
+        const isRegistration = request.path === "/oauth/register" || request.path === "/oauth/oauth2/register";
+        if (isRegistration && request.is("application/json")) {
+          express.json()(request, response, (error) => {
+            if (error) {
+              next(error);
+              return;
+            }
+            void betterAuthHandler(request, response, next);
+          });
+          return;
+        }
+        void betterAuthHandler(request, response, next);
+        return;
+      }
+      next();
+    });
+  }
+
+  // Keep these parsers after the Better Auth handler. Parsing first consumes the
+  // IncomingMessage stream and prevents Better Auth from reading request bodies.
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: false }));
+
+  if (!context.betterAuth) {
+    app.use("/oauth", createOAuthRouter(context.config, context.auth, context.mailer));
+  }
 
   mountApiRoutes(app, {
     items: context.items,
     actors: context.actors,
     briefs: context.briefs,
+    authMiddleware: context.betterAuth
+      ? createBetterAuthResourceMiddleware({
+        issuer: context.config.oauthIssuer,
+        audience: context.config.apiResource,
+        jwksUrl: process.env.AUTH_JWKS_URL,
+      })
+      : undefined,
   });
 
   return app;

@@ -18,6 +18,10 @@
     "./web-oauth": {
       "types": "./src/web-oauth.ts",
       "default": "./dist/web-oauth.js"
+    },
+    "./auth/resource": {
+      "types": "./src/auth/better-auth-resource.ts",
+      "default": "./dist/auth/better-auth-resource.js"
     }
   },
   "type": "module",
@@ -30,9 +34,12 @@
     "test": "npm run build -w @briefs/shared && vitest run"
   },
   "dependencies": {
+    "@better-auth/mcp": "1.7.1",
     "@briefs/shared": "*",
+    "better-auth": "1.7.1",
     "dotenv": "^16.6.1",
     "express": "^5.2.1",
+    "jose": "6.2.5",
     "pg": "^8.16.3"
   },
   "devDependencies": {

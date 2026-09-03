@@ -20,7 +20,7 @@ export default function BuildPage() {
   "system",
   "client/web/shared",
   "client/web/docs",
-  "client/web/daily",
+  "client/web/flight-spike",
   "client/web/example"
 ]`}
           />
@@ -76,7 +76,7 @@ export default nextConfig;`}
         <DocSection id="api-client" title="API client">
           <p>
             Each client owns its API client module (see{" "}
-            <code className="text-foreground">client/web/daily/src/lib/briefs-api.ts</code>). Server components and
+            <code className="text-foreground">client/web/flight-spike/src/lib/briefs-api.ts</code>). Server components and
             server actions call the REST API with <code className="text-foreground">X-Briefs-User-Id</code> — avoid
             browser-side fetches unless you add CORS to the API.
           </p>
@@ -84,7 +84,7 @@ export default nextConfig;`}
 
         <DocSection id="reference" title="Reference apps">
           <p>
-            <code className="text-foreground">@briefs/daily</code> is the reference client and <code className="text-foreground">@briefs/docs</code>{" "}
+            <code className="text-foreground">@briefs/flight-spike</code> is the reference client and <code className="text-foreground">@briefs/docs</code>{" "}
             (this site) documents the platform. New clients should follow the same pattern: shared UI, an owned API
             client, and client-specific pages.
           </p>

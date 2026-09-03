@@ -3,7 +3,7 @@ import Link from "next/link";
 import { CodeBlock } from "@/components/docs/code-block";
 import { DocPageHeader, DocSection, DocTable } from "@/components/docs/doc-section";
 
-const dailySourceUrl = "https://github.com/holmplanet/briefs/tree/main/client/web/daily";
+const dailySourceUrl = "https://github.com/holmplanet/briefs/tree/main/client/web/flight-spike";
 
 export default function DailyPage() {
   return (
@@ -17,7 +17,7 @@ export default function DailyPage() {
       <div className="space-y-12">
         <DocSection id="role" title="What Daily does">
           <p>
-            Daily is the reference client in <code className="text-foreground">client/web/daily</code>. It shows
+            Daily is the reference client in <code className="text-foreground">client/web/flight-spike</code>. It shows
             the current item projection and append-only activity history from the Briefs System API. The default
             workflow is assistant-first: create or update work through MCP, then use Daily to review the result.
           </p>
@@ -65,7 +65,7 @@ export default function DailyPage() {
             </thead>
             <tbody className="divide-y divide-border/50 text-foreground/90">
               {[
-                ["client/web/daily", "The daily-driver web experience and auth/session boundary."],
+                ["client/web/flight-spike", "The daily-driver web experience and auth/session boundary."],
                 ["client/mcp", "Assistant-facing tools for creating, updating, and reading work."],
                 ["system", "REST API, persistence, actor resolution, and activity history."],
                 ["shared", "The Item, Actor, Activity, and input schemas shared by every client."],
@@ -83,10 +83,10 @@ export default function DailyPage() {
           <p>From the repository root, start the System API and Daily together:</p>
           <CodeBlock
             title="Terminal"
-            code={"npm ci\nnpm run dev:system    # API — http://localhost:8001\nnpm run dev:daily     # Daily — http://localhost:3000"}
+            code={"npm ci\nnpm run dev:system    # API — http://localhost:8001\nnpm run dev:flight     # Daily — http://localhost:3000"}
           />
           <p>
-            Copy <code className="text-foreground">client/web/daily/.env.example</code> to{" "}
+            Copy <code className="text-foreground">client/web/flight-spike/.env.example</code> to{" "}
             <code className="text-foreground">.env.local</code> in the Daily package. Without{" "}
             <code className="text-foreground">OAUTH_ISSUER</code>, a non-production process can use the development
             identity configured by <code className="text-foreground">DEV_USER_ID</code>.

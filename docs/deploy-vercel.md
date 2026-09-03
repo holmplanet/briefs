@@ -18,7 +18,7 @@ should normally be environment-specific.
 ## Project settings
 
 The repository root is the Vercel project root. `vercel.json` installs from the lockfile, builds
-the shared, System, MCP, and Daily workspaces, and writes output to `client/web/daily/.next`.
+the shared, System, MCP, and Daily workspaces, and writes output to `client/web/flight-spike/.next`.
 The Vercel project must provide the server-side variables from the matching deployment template;
 `NEXT_PUBLIC_*` values are only for browser-visible URLs and must never contain secrets.
 

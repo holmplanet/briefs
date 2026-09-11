@@ -15,9 +15,10 @@
     "@briefs/system": "*",
     "@briefs/web-shared": "*",
     "lucide-react": "^1.28.0",
-    "next": "16.3.0",
+    "next": "16.3.3",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "sharp": "0.35.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
